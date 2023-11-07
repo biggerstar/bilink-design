@@ -7,7 +7,10 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Main: typeof import('./src/components/Main.vue')['default']
-    Moveable: typeof import('moveable')
+    AScrollbar: typeof import('@arco-design/web-vue')['Scrollbar']
+    DesignCanvas: typeof import('./src/components/design-canvas/Design-Canvas.vue')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
+    ScaleControl: typeof import('./src/components/scale-control/scaleControl.vue')['default']
   }
 }

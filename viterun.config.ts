@@ -1,12 +1,10 @@
 import vue from '@vitejs/plugin-vue'
 import {resolve} from 'node:path'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
-import ElementPlus from 'unplugin-element-plus/vite'
 import bundleAnalyzer from 'rollup-plugin-bundle-analyzer'
 import {defineViteRunConfig, viteRunLogPlugin} from 'vite-run'
-
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite';
+import { ArcoResolver } from 'unplugin-vue-components/resolvers';
 export default defineViteRunConfig(() => {
   return {
     packages: [
@@ -66,12 +64,19 @@ export default defineViteRunConfig(() => {
               },
             }
           }),
-          ElementPlus(),
           AutoImport({
-            resolvers: [ElementPlusResolver()],
+            resolvers: [
+              ArcoResolver({
+                importStyle: 'css',
+              })
+            ],
           }),
           Components({
-            resolvers: [ElementPlusResolver()],
+            resolvers: [
+              ArcoResolver({
+                sideEffect: false,
+              })
+            ]
           }),
         ],
         resolve: {
