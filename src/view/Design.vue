@@ -15,12 +15,23 @@
       <div class="widgets-panel" v-show="activeTagIndex >= 0"></div>
     </div>
     <div id="main" class="main">
-      <Design-Canvas
-          :w="editorStore.canvas.width"
-          :h="editorStore.canvas.height"
-          :scale='editorStore.canvas.scale'
-      />
-      <ScaleControl selector="#main" :scaleWheelStep="editorStore.canvas.scaleWheelStep"/>
+      <DesignCanvas
+        :w="editorStore.canvas.width"
+        :h="editorStore.canvas.height"
+        :scale='editorStore.canvas.scale'
+        :watermark='watermarkData'
+      >
+        <W-Text data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></W-Text>
+        <W-Text data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></W-Text>
+        <W-Text data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></W-Text>
+      </DesignCanvas>
+      <div id="main-bottom">
+        <ScaleControl
+          class="scale-control"
+          selector="#main"
+          :scaleWheelStep="editorStore.canvas.scaleWheelStep"
+        />
+      </div>
     </div>
 
     <div class="widgets-detail"></div>
@@ -35,11 +46,13 @@ import {defaultMoveableOptions, MoveableManager} from '@/common/moveable'
 import DesignCanvas from "@/components/design-canvas/Design-Canvas.vue";
 import {useEditorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
+import WText from "@/components/w-text/W-Text.vue";
 
 const editorStore = useEditorStore()
 
 const tagList = ref(tags)
 const activeTagIndex = ref<number>(-1)
+const watermarkData = ref("bi.link")
 
 function gotoTag(index, item) {
   // console.log(item)
@@ -127,8 +140,10 @@ $tool-tags-width: 72px;
   }
 
   .main {
+    position: relative;
     flex: 1;
     overflow: hidden;
+    background-color: #F6F7F9;
     width: 100%;
     height: 100%;
   }
@@ -139,4 +154,19 @@ $tool-tags-width: 72px;
     background-color: #fae1f5;
   }
 }
+
+#main-bottom {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  display: flex;
+}
+
+.scale-control {
+  margin-left: auto;
+  margin-right: 15px;
+}
+
 </style>

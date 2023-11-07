@@ -1,10 +1,10 @@
-import vue from '@vitejs/plugin-vue'
 import {resolve} from 'node:path'
-import bundleAnalyzer from 'rollup-plugin-bundle-analyzer'
+import vue from '@vitejs/plugin-vue'
 import {defineViteRunConfig, viteRunLogPlugin} from 'vite-run'
-import AutoImport from 'unplugin-auto-import/vite'
+import bundleAnalyzer from 'rollup-plugin-bundle-analyzer'
 import Components from 'unplugin-vue-components/vite';
-import { ArcoResolver } from 'unplugin-vue-components/resolvers';
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
+import vueJsx from '@vitejs/plugin-vue-jsx';
 export default defineViteRunConfig(() => {
   return {
     packages: [
@@ -52,6 +52,7 @@ export default defineViteRunConfig(() => {
       return {
         plugins: [
           vue(),
+          vueJsx(),
           viteRunLogPlugin({
             build: {
               viteLog: {
@@ -64,19 +65,12 @@ export default defineViteRunConfig(() => {
               },
             }
           }),
-          AutoImport({
-            resolvers: [
-              ArcoResolver({
-                importStyle: 'css',
-              })
-            ],
-          }),
           Components({
             resolvers: [
-              ArcoResolver({
-                sideEffect: false,
-              })
-            ]
+              AntDesignVueResolver({
+                importStyle: false, // css in js
+              }),
+            ],
           }),
         ],
         resolve: {

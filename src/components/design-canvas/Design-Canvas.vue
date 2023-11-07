@@ -3,10 +3,10 @@
     <div id="editor-shell-wrap">
       <div id="editor-area-box">
         <div id="editor-area">
-          <slot></slot>
-          <div data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></div>
-          <div data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></div>
-          <div data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></div>
+          <a-watermark v-if="props.watermark" :content="props.watermark || ''" style="height: 100%; width: 100%">
+            <slot></slot>
+          </a-watermark>
+          <slot v-else ></slot>
         </div>
       </div>
     </div>
@@ -40,6 +40,10 @@ const props = defineProps({
     required: false,
     default: 60
   },
+  watermark: {
+    type: String,
+    required: false,
+  },
 })
 
 function setCurrentScale() {  // 设置当前尺寸，未设置 scale 或者 scale 为 -1 自动设置最佳尺寸
@@ -68,19 +72,16 @@ onMounted(() => {
 
 <style scoped lang="scss">
 #design-canvas {
-  height: 100%;
   width: 100%;
-  background-color: #F6F7F9;
+  height: 99.5%;
   overflow: auto;
 }
 
 #editor-shell-wrap {
-  padding: var(--canvas-padding);
   margin: auto;
+  padding: var(--canvas-padding);
   width: calc(var(--canvas-width) * var(--canvas-scale) + var(--canvas-padding) * 2);
   height: calc(var(--canvas-height) * var(--canvas-scale) + var(--canvas-padding) * 2);
-  //width:100%;
-  //height:100%;
 }
 
 #editor-area-box {
@@ -90,7 +91,6 @@ onMounted(() => {
 }
 
 #editor-area {
-  margin: auto;
   width: var(--canvas-width);
   height: var(--canvas-height);
   background: #b2afaf;

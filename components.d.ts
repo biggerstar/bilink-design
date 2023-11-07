@@ -7,10 +7,13 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    AScrollbar: typeof import('@arco-design/web-vue')['Scrollbar']
+    AButton: typeof import('ant-design-vue/es')['Button']
+    APopover: typeof import('ant-design-vue/es')['Popover']
+    AWatermark: typeof import('ant-design-vue/es')['Watermark']
     DesignCanvas: typeof import('./src/components/design-canvas/Design-Canvas.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    ScaleControl: typeof import('./src/components/scale-control/scaleControl.vue')['default']
+    ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']
+    WText: typeof import('./src/components/w-text/W-Text.vue')['default']
   }
 }
