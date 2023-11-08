@@ -2,11 +2,11 @@
   <div id="design-canvas" ref="designCanvas">
     <div id="editor-shell-wrap">
       <div id="editor-area-box">
-        <div id="editor-area">
+        <div id="editor-area" ref="editorArea">
           <a-watermark v-if="props.watermark" :content="props.watermark || ''" style="height: 100%; width: 100%">
             <slot></slot>
           </a-watermark>
-          <slot v-else ></slot>
+          <slot v-else></slot>
         </div>
       </div>
     </div>
@@ -14,11 +14,12 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import {isNumber} from "is-what";
 import {CSS_DEFINE} from "@/constant/index";
 
 const designCanvas = ref()
+const editorArea = ref()
 
 const props = defineProps({
   w: {
@@ -44,6 +45,11 @@ const props = defineProps({
     type: String,
     required: false,
   },
+  bgColor: {
+    type: String,
+    required: false,
+    default: '#FFF'
+  }
 })
 
 function setCurrentScale() {  // 设置当前尺寸，未设置 scale 或者 scale 为 -1 自动设置最佳尺寸
@@ -58,15 +64,16 @@ function setCurrentScale() {  // 设置当前尺寸，未设置 scale 或者 sca
   bodyStyle.setProperty(CSS_DEFINE["--canvas-height"], `${height}px`)
   bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], scale)
   bodyStyle.setProperty(CSS_DEFINE["--canvas-padding"], `${padding}px`)
+  editorArea.value.style.backgroundColor = props.bgColor
 }
 
 onMounted(() => {
   setCurrentScale()
 })
 
-// watch(props,() => {
-//   setCurrentScale()
-// })
+watch(props, () => {
+  setCurrentScale()
+})
 
 </script>
 
@@ -93,7 +100,6 @@ onMounted(() => {
 #editor-area {
   width: var(--canvas-width);
   height: var(--canvas-height);
-  background: #b2afaf;
   transform-origin: left top;
   transform: scale(var(--canvas-scale));
 }

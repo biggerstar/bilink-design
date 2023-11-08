@@ -6,9 +6,9 @@
       </template>
 
       <div class="adjustment-btn-box" @mouseleave="mouseleaveAdjustmentBtn">
-        <span v-show="isShowAdjustmentBtn" class="adjustment-btn-item">-</span>
-        <span v-show="isShowAdjustmentBtn" class="adjustment-btn-item">+</span>
-        <span class="adjustment-btn-item" @mouseenter="mouseenterAdjustmentBtn">
+        <span v-show="isShowAdjustmentBtn" class="adjustment-btn-item not-user-select">-</span>
+        <span v-show="isShowAdjustmentBtn" class="adjustment-btn-item not-user-select">+</span>
+        <span class="adjustment-btn-item not-user-select" @mouseenter="mouseenterAdjustmentBtn">
           {{ scaleValue }}
         </span>
       </div>
@@ -34,6 +34,9 @@ const props = defineProps({
   },
 })
 
+const emits = defineEmits(['scaleChanged'])
+
+
 const visible = ref<boolean>(false)
 const isShowAdjustmentBtn = ref<boolean>(false)
 const scaleValue = ref<string>('')
@@ -51,19 +54,24 @@ onMounted(() => {
     const isMetaKey = ev.metaKey || ev.ctrlKey
     const wheelDelta = ev['wheelDelta'] || ev.detail
 
-    // const editorElement: HTMLElement = document.querySelector('#editor-area')
-    // const inOriginInfo = getMouseInElementPercent(ev, editorElement)
-    // console.log(inOriginInfo)
-    // editorElement.style.transformOrigin = `${inOriginInfo.percentX}% ${inOriginInfo.percentY}%`
-
     if (isMetaKey && wheelDelta !== 0) {
       ev.preventDefault()
+
+      // const inOriginInfo = getMouseInElementPercent(ev, dom)
+      // dom.scrollTo({
+      //     left: inOriginInfo.percentX / 100 * dom.clientWidth,
+      //     top: inOriginInfo.percentY / 100 * dom.clientHeight,
+      //     behavior: "smooth",
+      //   }
+      // )
+
       const sign = wheelDelta > 0 ? 1 : -1
       const curScale = bodyStyle.getPropertyValue(CSS_DEFINE["--canvas-scale"]) * 1
       const newScale = (curScale + sign * props.scaleWheelStep).toFixed(2) * 1
       const limitScale = Math.min(2, Math.max(newScale, 0.1)) // 最小为0.1缩放,最大为4倍
       scaleValue.value = toPercent(limitScale)
       bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], limitScale.toString())
+      emits('scaleChanged')
     }
   }, {passive: false})
 })
@@ -91,10 +99,6 @@ $adjustment-btn-color: #f1f0f0;
   padding: 5px 5px;
   font-size: .9rem;
   font-weight: 600;
-  user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  -moz-user-input: none;
 }
 
 .adjustment-btn-item:hover {

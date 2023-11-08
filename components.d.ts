@@ -8,12 +8,20 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AButton: typeof import('ant-design-vue/es')['Button']
+    ACard: typeof import('ant-design-vue/es')['Card']
+    AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
+    APageHeader: typeof import('ant-design-vue/es')['PageHeader']
     APopover: typeof import('ant-design-vue/es')['Popover']
+    ASpace: typeof import('ant-design-vue/es')['Space']
     AWatermark: typeof import('ant-design-vue/es')['Watermark']
-    DesignCanvas: typeof import('./src/components/design-canvas/Design-Canvas.vue')['default']
+    CanvasDetail: typeof import('./src/components/design-canvas/CanvasDetail.vue')['default']
+    Card: typeof import('./src/components/card/Card.vue')['default']
+    DefaultEditorDetail: typeof import('./src/components/canvas/DefaultEditorDetail.vue')['default']
+    DesignCanvas: typeof import('./src/components/design-canvas/DesignCanvas.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']
-    WText: typeof import('./src/components/w-text/W-Text.vue')['default']
+    WText: typeof import('./src/components/w-text/WText.vue')['default']
+    WTextDetail: typeof import('./src/components/w-text/WTextDetail.vue')['default']
   }
 }

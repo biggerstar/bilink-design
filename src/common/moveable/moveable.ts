@@ -1,47 +1,45 @@
 import Moveable, {MoveableOptions, OnDrag, OnResize, OnRotate, OnScale} from "moveable";
 import {getElement4EventTarget} from "@/utils/tool";
-import {throttle} from 'lodash-es'
+import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
+import defaultConfig from "@/common/moveable/default-config";
 
 export const defaultMoveableOptions: MoveableOptions = {
   zoom: 0.8,
-  draggable: true,
-  clippable: false,
-  resizable: true,
-  scalable: false,
-  keepRatio: true,
-  rotatable: true,
   throttleDrag: 0,
   throttleResize: 0,
   throttleScale: 0,
   throttleRotate: 0,
-  renderDirections: ["n", "nw", "ne", "s", "se", "sw", "e", "w"],
+  // draggable: true,
+  // clippable: false,
+  // resizable: true,
+  // scalable: false,
+  // // keepRatio: true,
+  // rotatable: true,
+  // renderDirections: ["n", "nw", "ne", "s", "se", "sw", "e", "w"],
 }
 
 
 export class MoveableManager {
   public moveable: Moveable
   public container: HTMLElement
-  private _activeElement: HTMLElement | null | void
+  public activeElement: HTMLElement | null | void
   private __running: boolean
+  public eventHookList: Array<any>
 
-  public eventMap = <Record<any, any>>{
-    mousedown: (ev: MouseEvent) => {
-      const curClickEl = getElement4EventTarget(ev)
-      if (curClickEl && this.isWidgets(curClickEl)) {
-        this._activeElement = curClickEl
-        this.active4EventTarget(ev)
-      } else {
-        this.deActive()
-      }
-    },
-    mousemove: throttle((ev: MouseEvent) => {
-      this.active4EventTarget(ev)
-    }, 300),
+  constructor() {
+    this.eventHookList = createNativeEventHookList(this)
   }
 
   public isWidgets(el: HTMLElement) {
     return el.dataset['type'] === 'widgets'
   }
+
+  public getWidgetsName(el: HTMLElement) {
+    if (el && this.isWidgets(el)) {
+      return el.dataset['name']
+    }
+  }
+
 
   /**
    * 开始工作
@@ -51,20 +49,18 @@ export class MoveableManager {
     this.__running = true
     if (!container) container = document.body
     this.container = container
-    this.moveable = new Moveable(container, moveableOptions);
-    const moveable = this.moveable
-    moveable.renderDirections = ["nw", "ne", "sw", "se"];
+    const moveable = new Moveable(container, moveableOptions);
+    this.moveable = moveable
     moveable
       .on("drag", (ev: OnDrag) => {
         ev.target.style.transform = ev.transform;
       })
       .on("resize", (ev: OnResize) => {
-        moveable.keepRatio = false
         ev.target.style.width = `${ev.width}px`;
         ev.target.style.height = `${ev.height}px`;
       })
       .on("scale", (ev: OnScale) => {
-        console.log(ev);
+        // console.log(ev);
         ev.target.style.transform = ev.drag.transform;
       })
       .on("rotate", (ev: OnRotate) => {
@@ -72,8 +68,11 @@ export class MoveableManager {
         ev.target.style.transform = ev.drag.transform;
       })
 
-    ;const eventMap = this.eventMap
-    Object.keys(eventMap).forEach((name) => container && container.addEventListener(name, eventMap[name]))
+    ;const eventHookList = this.eventHookList
+    eventHookList.forEach((item) => {
+      const options = item['options']
+      container && container.addEventListener(item.name, item.call, options === void 0 ? {} : options)
+    })
   }
 
   /**
@@ -81,24 +80,32 @@ export class MoveableManager {
    * */
   public stop() {
     this.moveable.destroy()
-    Object.keys(this.eventMap).forEach((name, index, array) => {
-      this.container && this.container.removeEventListener(name, array[name])
+    this.eventHookList.forEach((item) => {
+      this.container && this.container.removeEventListener(item.name, item.call)
     })
   }
 
   /**
-   * 让某些元素活跃
+   * 让某些元素活跃,并将其设置默认组件配置
    * */
   public active(elements: HTMLElement | SVGElement | HTMLElement[] | SVGElement[]) {
     if (!elements) return
     const elList = !Array.isArray(elements) ? [elements] : elements
-    // if (this._activeElement) elList.push(this._activeElement)
+    // if (this.activeElement) elList.push(this.activeElement)
     const target = elList.filter((el: HTMLElement) => el && this.isWidgets(el))
+    target.forEach((el: any) => {
+      const widgetsName = this.getWidgetsName(el)
+      if (!widgetsName) return
+      if (widgetsName) {
+        const widgetsConfig = defaultConfig[widgetsName]
+        this.moveable.setState(widgetsConfig)
+      }
+    })
     if (target.length) this.moveable.target = target
   }
 
   public deActive() {
-    this._activeElement = null
+    this.activeElement = null
     this.moveable.target = []
   }
 
@@ -110,5 +117,4 @@ export class MoveableManager {
     if (elTarget) this.active(elTarget)
   }
 }
-
 

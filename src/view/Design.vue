@@ -14,59 +14,97 @@
       </div>
       <div class="widgets-panel" v-show="activeTagIndex >= 0"></div>
     </div>
-    <div id="main" class="main">
+    <div id="main" class="main" ref="mainRef">
       <DesignCanvas
         :w="editorStore.canvas.width"
         :h="editorStore.canvas.height"
         :scale='editorStore.canvas.scale'
+        :bgColor='editorStore.canvas.bgColor'
         :watermark='watermarkData'
       >
-        <W-Text data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></W-Text>
-        <W-Text data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></W-Text>
-        <W-Text data-type="widgets" style="height: 100px;width: 200px; background-color: #747bff"></W-Text>
+        <W-Text data-type="widgets"
+                style=" width: 500px;margin-top: 50px; background-color: #747bff"></W-Text>
+        <W-Text data-type="widgets"
+                style=" width: 500px;margin-top: 50px; background-color: #747bff"></W-Text>
+        <W-Text data-type="widgets"
+                style=" width: 500px;margin-top: 50px; background-color: #747bff"></W-Text>
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
           class="scale-control"
-          selector="#main"
+          selector="#design-canvas"
+          @scaleChanged='scaleChanged'
           :scaleWheelStep="editorStore.canvas.scaleWheelStep"
         />
       </div>
     </div>
 
-    <div class="widgets-detail"></div>
+    <div class="widgets-detail">
+      <div v-if="curDetailComp">
+        <component :is="curDetailComp" :detail="{}"></component>
+      </div>
+    </div>
 
   </div>
 </template>
 
 <script setup lang="ts">
 import tags from '@/mock/tags'
-import {onMounted, onUnmounted, ref} from "vue";
-import {defaultMoveableOptions, MoveableManager} from '@/common/moveable'
-import DesignCanvas from "@/components/design-canvas/Design-Canvas.vue";
+import {onMounted, onUnmounted, ref, shallowRef} from "vue";
+import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveable'
+import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {useEditorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
-import WText from "@/components/w-text/W-Text.vue";
+import WText from "@/components/w-text/WText.vue";
+import {getElement4EventTarget} from "@/utils/tool";
+import widgetsMap from "@/config/widgets-detail-map";
+// import editorData from "@/mock/editor-data";
 
 const editorStore = useEditorStore()
 
+// console.log(editorData)
+
 const tagList = ref(tags)
+const mainRef = ref<HTMLElement>()
 const activeTagIndex = ref<number>(-1)
 const watermarkData = ref("bi.link")
+const curDetailComp = shallowRef()
 
 function gotoTag(index, item) {
   // console.log(item)
   activeTagIndex.value = activeTagIndex.value === index ? -1 : index
 }
 
+function scaleChanged() {
+  editorStore.moveableManager.moveable.updateRect()
+}
+
+function getCurDetailComp(widgetsName = 'dev') {
+  return widgetsMap[widgetsName] || widgetsMap['default']
+}
+
+function listenClickWidgetsTarget(ev: MouseEvent) {
+  const clickTarget = getElement4EventTarget(ev)
+  if (!clickTarget) return
+  const widgetsName = clickTarget.dataset['name']
+  // console.log(widgetsName);
+  curDetailComp.value = getCurDetailComp(widgetsName)
+}
+
+
 let moveableManager: MoveableManager
 onMounted(() => {
+  curDetailComp.value = getCurDetailComp()
   moveableManager = new MoveableManager()
   moveableManager.start(defaultMoveableOptions, document.getElementById('main'))
-  editorStore.moveableManager = moveableManager
+  editorStore.moveableManager = <any>moveableManager
+  mainRef.value && mainRef.value!.addEventListener('click', listenClickWidgetsTarget)
+
 })
+
 onUnmounted(() => {
   moveableManager && moveableManager.stop()
+  mainRef.value && mainRef.value!.removeEventListener('click', listenClickWidgetsTarget)
 })
 
 </script>
@@ -106,6 +144,7 @@ $tool-tags-width: 72px;
     -ms-user-select: none;
     -webkit-user-select: none;
     overflow: hidden;
+    border-right: #d9d8d8 solid 1px;
 
     .tool-tags {
       display: flex;
@@ -151,7 +190,7 @@ $tool-tags-width: 72px;
   .widgets-detail {
     min-width: 260px;
     flex-basis: 300px;
-    background-color: #fae1f5;
+    border-left: #d9d8d8 solid 1px;
   }
 }
 
