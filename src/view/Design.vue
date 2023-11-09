@@ -5,7 +5,7 @@
   <div class="work-area">
     <div class="aside">
       <div class="tool-tags">
-        <div v-for="(item,index) in tagList" :key="index" @click="gotoTag(index,item)">
+        <div v-for="(item,index) in tagList" :key="index" @click="gotoTag(index)">
           <div class="tag" :class="{activeTag: activeTagIndex === index }">
             <i class="iconfont icon" :class="item.icon"> </i>
             <div>{{ item.name }}</div>
@@ -22,12 +22,9 @@
         :bgColor='editorStore.canvas.bgColor'
         :watermark='watermarkData'
       >
-        <W-Text data-type="widgets"
-                style=" width: 500px;margin-top: 50px; background-color: #747bff"></W-Text>
-        <W-Text data-type="widgets"
-                style=" width: 500px;margin-top: 50px; background-color: #747bff"></W-Text>
-        <W-Text data-type="widgets"
-                style=" width: 500px;margin-top: 50px; background-color: #747bff"></W-Text>
+        <component v-if="editorStore.currentProject" :is="widgetsMap[item.type]"
+                   v-for="item in editorStore.currentProject.items"
+                   :config="item"></component>
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
@@ -41,7 +38,7 @@
 
     <div class="widgets-detail">
       <div v-if="curDetailComp">
-        <component :is="curDetailComp" :detail="{}"></component>
+        <component :is="curDetailComp"></component>
       </div>
     </div>
 
@@ -49,28 +46,24 @@
 </template>
 
 <script setup lang="ts">
-import tags from '@/mock/tags'
 import {onMounted, onUnmounted, ref, shallowRef} from "vue";
 import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveable'
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {useEditorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
-import WText from "@/components/w-text/WText.vue";
 import {getElement4EventTarget} from "@/utils/tool";
-import widgetsMap from "@/config/widgets-detail-map";
-// import editorData from "@/mock/editor-data";
+import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
+import {apiGetProjectInfo} from "@/api/getProjectInfo";
+import {apiGetAsideTags} from "@/api/getAsideTags";
 
 const editorStore = useEditorStore()
-
-// console.log(editorData)
-
-const tagList = ref(tags)
+const tagList = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagIndex = ref<number>(-1)
 const watermarkData = ref("bi.link")
 const curDetailComp = shallowRef()
 
-function gotoTag(index, item) {
+function gotoTag(index) {
   // console.log(item)
   activeTagIndex.value = activeTagIndex.value === index ? -1 : index
 }
@@ -80,7 +73,7 @@ function scaleChanged() {
 }
 
 function getCurDetailComp(widgetsName = 'dev') {
-  return widgetsMap[widgetsName] || widgetsMap['default']
+  return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
 function listenClickWidgetsTarget(ev: MouseEvent) {
@@ -91,15 +84,16 @@ function listenClickWidgetsTarget(ev: MouseEvent) {
   curDetailComp.value = getCurDetailComp(widgetsName)
 }
 
-
 let moveableManager: MoveableManager
-onMounted(() => {
+onMounted(async () => {
   curDetailComp.value = getCurDetailComp()
   moveableManager = new MoveableManager()
   moveableManager.start(defaultMoveableOptions, document.getElementById('main'))
   editorStore.moveableManager = <any>moveableManager
   mainRef.value && mainRef.value!.addEventListener('click', listenClickWidgetsTarget)
 
+  apiGetProjectInfo().then(res => res.code === 200 && editorStore.setEditorProject(res.data))
+  apiGetAsideTags().then(res => res.code === 200 && (tagList.value = res.data))
 })
 
 onUnmounted(() => {

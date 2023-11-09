@@ -1,7 +1,7 @@
 import Moveable, {MoveableOptions, OnDrag, OnResize, OnRotate, OnScale} from "moveable";
-import {getElement4EventTarget} from "@/utils/tool";
 import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
 import defaultConfig from "@/common/moveable/default-config";
+import {getWidgetsName, isWidgets, parseWidget4DomChain} from "@/utils/method";
 
 export const defaultMoveableOptions: MoveableOptions = {
   zoom: 0.8,
@@ -29,17 +29,6 @@ export class MoveableManager {
   constructor() {
     this.eventHookList = createNativeEventHookList(this)
   }
-
-  public isWidgets(el: HTMLElement) {
-    return el.dataset['type'] === 'widgets'
-  }
-
-  public getWidgetsName(el: HTMLElement) {
-    if (el && this.isWidgets(el)) {
-      return el.dataset['name']
-    }
-  }
-
 
   /**
    * 开始工作
@@ -86,15 +75,15 @@ export class MoveableManager {
   }
 
   /**
-   * 让某些元素活跃,并将其设置默认组件配置
+   * 让某些元素活跃
    * */
   public active(elements: HTMLElement | SVGElement | HTMLElement[] | SVGElement[]) {
     if (!elements) return
     const elList = !Array.isArray(elements) ? [elements] : elements
     // if (this.activeElement) elList.push(this.activeElement)
-    const target = elList.filter((el: HTMLElement) => el && this.isWidgets(el))
+    const target = elList.filter((el: HTMLElement) => el && isWidgets(el))
     target.forEach((el: any) => {
-      const widgetsName = this.getWidgetsName(el)
+      const widgetsName = getWidgetsName(el)
       if (!widgetsName) return
       if (widgetsName) {
         const widgetsConfig = defaultConfig[widgetsName]
@@ -104,17 +93,25 @@ export class MoveableManager {
     if (target.length) this.moveable.target = target
   }
 
+  /**
+   * 让dom链上的最近的小组件活跃
+   * */
+  public activeWidgets(elements: HTMLElement | SVGElement): {
+    name: string,
+    el: HTMLElement
+  } {
+    const widgetsEl = parseWidget4DomChain(<any>elements)
+    if (!widgetsEl) return
+    this.active(widgetsEl)
+    return {
+      name: getWidgetsName(widgetsEl),
+      el: widgetsEl
+    }
+  }
+
   public deActive() {
     this.activeElement = null
     this.moveable.target = []
-  }
-
-  /**
-   * 让事件中的发起目标元素活跃
-   * */
-  public active4EventTarget(ev: Event) {
-    const elTarget = getElement4EventTarget(ev)
-    if (elTarget) this.active(elTarget)
   }
 }
 

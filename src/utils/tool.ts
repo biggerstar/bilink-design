@@ -1,5 +1,5 @@
 export function getElement4EventTarget(ev: Event): HTMLElement | null {
-  return <HTMLElement>(ev.target || ev.srcElement)
+  return <HTMLElement>(ev.target || ev['srcElement'])
 }
 
 /** 小数转百分比 */

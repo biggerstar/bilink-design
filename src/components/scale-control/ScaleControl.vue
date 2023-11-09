@@ -20,7 +20,6 @@
 import {onMounted, ref} from "vue";
 import {CSS_DEFINE} from "@/constant";
 import {toPercent} from "@/utils/tool";
-import {getMouseInElementPercent} from "@/utils/method";
 
 const props = defineProps({
   selector: {  // 将该工具绑定到某个el元素中

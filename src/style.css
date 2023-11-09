@@ -149,3 +149,24 @@ html, body, #app {
   margin: 10px auto;
 }
 
+.fill-box {
+  height: 100%;
+  width: 100%;
+}
+
+:root {
+  --color-gray-1000: #000000;
+  --color-gray-900: #222529;
+  --color-gray-800: #4c535c;
+  --color-gray-700: #7f8792;
+  --color-gray-600: #9da3ac;
+  --color-gray-500: #b4b8bf;
+  --color-gray-400: #d9dcdf;
+  --color-gray-300: #e8eaec;
+  --color-gray-200: #f1f2f4;
+  --color-gray-100: #f6f7f9;
+}
+
+.moveable-rotation {
+  height: 15px !important;
+}

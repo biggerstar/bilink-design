@@ -10,17 +10,20 @@ export default function createNativeEventHookList(moveableManger: MoveableManage
       call: (ev: MouseEvent) => {
         const curClickEl = getElement4EventTarget(ev)
         if (!curClickEl) return
-        const widgetsName = moveableManger.getWidgetsName(curClickEl)
-        if (!widgetsName) return moveableManger.deActive()
-        moveableManger.activeElement = curClickEl
-        moveableManger.active4EventTarget(ev)
+        const res = moveableManger.activeWidgets(curClickEl)
+        if (!res) return moveableManger.deActive()
+        else{
+          moveableManger.activeElement = res.el
+        }
       }
     },
     {
       name: 'mousemove',
       call: throttle((ev: MouseEvent) => {
-        if (ev.buttons === 0) moveableManger.active4EventTarget(ev)  // 鼠标未按下才自动跳框
-      }, 200)
+        const overEl = getElement4EventTarget(ev)
+        if (!overEl || ev.buttons !== 0 /*  鼠标未按下才自动跳框 */) return
+        moveableManger.activeWidgets(overEl)
+      }, 160)
     },
     {
       name: 'mousemove',

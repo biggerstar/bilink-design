@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {MoveableManager} from "@/common/moveable/moveable";
 
-type StoreType = {
+type StateType = {
   moveableManager: MoveableManager,
   canvas: {
     scale: number,
@@ -10,10 +10,16 @@ type StoreType = {
     height: number;
     bgColor: string;
   },
+  currentProject: Record<any, any>
+  activeItem: any,
   editorList: Array<any>
 }
 
-export const useEditorStore = defineStore<'editor', StoreType>('editor', {
+type ActionType = {
+  setEditorProject: (projectInfo) => void
+}
+
+export const useEditorStore = defineStore<'editor', StateType, {}, ActionType>('editor', {
   state: () => ({
     moveableManager: void 0,
     canvas: {
@@ -23,9 +29,16 @@ export const useEditorStore = defineStore<'editor', StoreType>('editor', {
       height: 2200,
       bgColor: '#FFF'
     },
+    currentProject: void 0,
+    activeItem: null,
     editorList: [],
   }),
   getters: () => {
 
+  },
+  actions: {
+    setEditorProject(projectInfo) {
+      this.currentProject = projectInfo
+    },
   }
 })

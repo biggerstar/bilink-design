@@ -9,16 +9,34 @@
       />
       <card title="当前字体">
         <el-scrollbar height="90vh">
-          <div class="font-item" v-for="(item,index) in fonts" :key="index" @click="choiceFont(item)">
-            <img :src="item.preview.url" :alt="item.name" style="width: 75%;height:1.5rem; margin-top: 8px"/>
+          <div
+            class="font-item"
+            v-if="allFonts"
+            v-for="(item,index) in allFonts"
+            :key="index"
+            @click="choiceFont(item)"
+            :class="{'font-item-active':item.name === curFont.name}"
+          >
+            <span v-if="item.name === curFont.name">☑️</span>
+            <img draggable="false" :src="item.preview.url" :alt="item.name" style="width: 75%;height:1.5rem; "/>
           </div>
         </el-scrollbar>
       </card>
     </div>
     <div v-if="isShowMainDetailPage">
       <card title="文字">
-        <a-button @click="showSelectFontPage"></a-button>
-        console.log(222222222222222222)
+        <div style="display: flex; justify-content: space-around">
+          <content-box v-if="curFont" @click="showSelectFontPage" style="width: 65%; height: 2.5rem">
+            <img :src="curFont.preview.url" :alt="curFont.name" style="width: 75%; height: 60% "/>
+          </content-box>
+          <content-box style="width: 25%;height: 2.5rem">
+            <a-select
+              v-model:value="fontSizeValue"
+              size="middle"
+              :options="fontSizeRefList"
+            ></a-select>
+          </content-box>
+        </div>
       </card>
     </div>
   </div>
@@ -26,15 +44,21 @@
 
 <script setup>
 import Card from "@/components/card/Card.vue";
-import fonts from "@/mock/fonts";
-import {ref} from 'vue'
+import {apiGetAllFonts} from "@/api/getFontData.ts";
+import {onMounted, ref} from 'vue'
 import ElScrollbar from 'element-plus/es/components/scrollbar/index.mjs'
 import 'element-plus/es/components/scrollbar/style/index.mjs'
 import {useEditorStore} from "@/store/editor";
+import ContentBox from "@/components/content-box/ContentBox.vue";
+import {apiGetFontSizeList} from "@/api/getFontSizeList";
 
+const editorStore = useEditorStore()
 const isShowFontsPage = ref(false)
 const isShowMainDetailPage = ref(true)
-const editorStore = useEditorStore()
+const fontSizeValue = ref();
+const fontSizeRefList = ref()
+const allFonts = ref()
+
 
 function showSelectFontPage() {
   isShowMainDetailPage.value = false
@@ -46,25 +70,32 @@ function closeSelectFontPage() {
   isShowFontsPage.value = false
 }
 
-function choiceFont(item) {
-  if (!document.fonts) return console.error('抱歉，浏览器不支持 document.font 修改字体');
-  const {content} = item
-  const font = new FontFace(content.family, `url(${content.woff})`);
-  document.fonts.add(font);
-  font.load();
-  font.loaded.then(() => {
-    const activeElement = editorStore.moveableManager.activeElement
-    if (activeElement) activeElement.style.fontFamily = content.family;
-  }).catch(err => {
-    console.log(err);
-  });
+let curFont = ref()
 
+onMounted(() => {
+  apiGetAllFonts().then(res => {
+    const {code, data} = res
+    if (code !== 200) return
+    allFonts.value = data
+    curFont.value = data?.[0]
+  })
+  apiGetFontSizeList().then(res => {
+    const {code, data} = res
+    if (code !== 200) return
+    fontSizeValue.value = data[0]
+    fontSizeRefList.value = data.map(size => ({value: size, label: size}))
+  })
+})
+
+
+function choiceFont(item) {
+  console.log(item)
 }
 
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .detail-main {
   height: 100%;
   width: 100%;
@@ -81,12 +112,26 @@ function choiceFont(item) {
 }
 
 .font-item {
+  display: flex;
   width: 96%;
+  height: 2.5rem;
   margin: auto;
+  justify-content: space-evenly;
+  align-items: center;
+
+  span {
+    font-size: 1.1rem;
+  }
 }
 
 .font-item:hover {
   background-color: #E8EAEC;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.font-item-active {
+  background-color: #F0F6FF;
   border-radius: 5px;
 }
 
@@ -97,4 +142,12 @@ function choiceFont(item) {
 :deep(.ant-page-header) {
   padding: 3px 20px;
 }
+
+:deep(.ant-select-selector) {
+  background-color: transparent !important;
+  border: none !important;
+  border-color: transparent;
+  font-size: 1rem;
+}
+
 </style>

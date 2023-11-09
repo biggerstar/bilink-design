@@ -3,10 +3,9 @@
     <div id="editor-shell-wrap">
       <div id="editor-area-box">
         <div id="editor-area" ref="editorArea">
-          <a-watermark v-if="props.watermark" :content="props.watermark || ''" style="height: 100%; width: 100%">
-            <slot></slot>
+          <slot></slot>
+          <a-watermark :content="props.watermark || ''" style="height: 100%; width: 100%;z-index: -1">
           </a-watermark>
-          <slot v-else></slot>
         </div>
       </div>
     </div>
@@ -98,6 +97,7 @@ watch(props, () => {
 }
 
 #editor-area {
+  position: relative;
   width: var(--canvas-width);
   height: var(--canvas-height);
   transform-origin: left top;
