@@ -1,4 +1,4 @@
-export default [
+export default  [
   {
     "id": "33912837",
     "source": "GD",
@@ -1723,7 +1723,7 @@ export default [
   {
     "id": "100041903",
     "source": "GD",
-    "name": "AlimamaShuHeiTi",
+    "name": 'AlimamaShuHeiTi',
     "preview": {
       "url": "https://st0.dancf.com/02/cms/202210210448-1326.svg",
       "width": 300,
@@ -4579,7 +4579,7 @@ export default [
     "price": null,
     "items": [],
     "content": {
-      "family": "Hellofont FangHuaTi",
+      "family": 'Hellofont FangHuaTi',
       "alias": "字由芳华体",
       "style": "normal",
       "weight": 400,
@@ -4790,7 +4790,7 @@ export default [
   {
     "id": "33925852",
     "source": "GD",
-    "name": "Slideqiuhong-Regular",
+    "name": 'Slideqiuhong-Regular',
     "preview": {
       "url": "https://st0.dancf.com/csc/49/fonts/0/20200809-150853-0ddb.svg",
       "width": 326,
