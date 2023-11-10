@@ -99,12 +99,14 @@ export class MoveableManager {
   public activeWidgets(elements: HTMLElement | SVGElement): {
     name: string,
     el: HTMLElement
-  } {
+  } | void {
     const widgetsEl = parseWidget4DomChain(<any>elements)
     if (!widgetsEl) return
+    const widgetsName = getWidgetsName(widgetsEl)
+    if (!widgetsName) return
     this.active(widgetsEl)
     return {
-      name: getWidgetsName(widgetsEl),
+      name: widgetsName,
       el: widgetsEl
     }
   }

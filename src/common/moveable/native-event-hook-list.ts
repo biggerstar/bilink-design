@@ -2,7 +2,6 @@ import {getElement4EventTarget} from "@/utils/tool";
 import {throttle} from "lodash-es";
 import {setDirection} from "@/common/method/set-direction";
 import {MoveableManager} from "@/common/moveable/moveable";
-import {getWidgetsName} from "@/utils/method";
 
 export default function createNativeEventHookList(moveableManger: MoveableManager) {
   return [
@@ -11,7 +10,7 @@ export default function createNativeEventHookList(moveableManger: MoveableManage
       call: (ev: MouseEvent) => {
         const clickEl = getElement4EventTarget(ev)
         if (!clickEl) return
-        const widgetsName = getWidgetsName(clickEl, true)
+        // const widgetsName = getWidgetsName(clickEl, true)
         // console.log(widgetsName);
       }
     },

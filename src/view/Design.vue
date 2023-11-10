@@ -16,11 +16,11 @@
     </div>
     <div id="main" class="main" ref="mainRef">
       <DesignCanvas
-        v-if="editorStore.canvas"
-        :w="editorStore.canvas.width"
-        :h="editorStore.canvas.height"
-        :scale='editorStore.canvas.scale'
-        :bgColor='editorStore.canvas.bgColor'
+        v-if="editorStore.currentProject.canvas"
+        :w="editorStore.currentProject.canvas.width"
+        :h="editorStore.currentProject.canvas.height"
+        :scale='editorStore.currentProject.canvas.scale'
+        :bgColor='editorStore.currentProject.canvas.bgColor'
         :watermark='watermarkData'
       >
         <component v-if="editorStore.currentProject" :is="widgetsMap[item.type]"
@@ -29,11 +29,11 @@
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
-          v-if="editorStore.canvas"
+          v-if="editorStore.currentProject.canvas"
           class="scale-control"
           selector="#design-canvas"
           @scaleChanged='scaleChanged'
-          :scaleWheelStep="editorStore.canvas.scaleWheelStep"
+          :scaleWheelStep="editorStore.currentProject.canvas.scaleWheelStep"
         />
       </div>
     </div>
@@ -58,13 +58,14 @@ import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
 import {apiGetAsideTags} from "@/api/getAsideTags";
 import {apiGetAllFonts} from "@/api/getFontData";
-import {apiGetCanvasDefaultConfig} from "@/api/getCanvasDefaultConfig";
+import {apiGetWidgetsDetailConfig} from "@/api/getWidgetsDetailConfig";
+import {WATER_MARK} from "@/config/default";
 
 const editorStore = useEditorStore()
 const tagList = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagIndex = ref<number>(-1)
-const watermarkData = ref("bi.link")
+const watermarkData = ref(WATER_MARK)
 const curDetailComp = shallowRef()
 
 // console.log(editorStore)
@@ -77,7 +78,7 @@ function scaleChanged() {
   editorStore.moveableManager.moveable.updateRect()
 }
 
-function getCurDetailComp(widgetsName = 'dev') {
+function getCurDetailComp(widgetsName = 'default') {
   return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
@@ -88,7 +89,7 @@ function listenClickWidgetsTarget(ev: MouseEvent) {
   const res = moveableManger.activeWidgets(clickTarget)
   curDetailComp.value = null
   nextTick(() => {
-    curDetailComp.value = getCurDetailComp(res?.name)
+    curDetailComp.value = getCurDetailComp(res?.['name'])
     if (res) moveableManger.activeElement = res.el
     else moveableManger.deActive()
   })
@@ -104,10 +105,10 @@ onMounted(async () => {
 
   apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data))
   apiGetAsideTags().then(res => res.code === 200 && (tagList.value = res.data))
+  apiGetWidgetsDetailConfig().then(res => res.code === 200 && (editorStore.widgetsDetailConfig = res.data))
   const getAllFonts = apiGetAllFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
-  const getCanvasDefaultConfig = apiGetCanvasDefaultConfig().then(res => res.code === 200 && (editorStore.canvas = res.data))
-  Promise.all([getCanvasDefaultConfig, getAllFonts]).then(res => {
-    const fontId = editorStore.canvas?.font?.id
+  Promise.all([apiGetProjectInfo, getAllFonts]).then(() => {
+    const fontId = editorStore.currentProject?.canvas?.fontId
     if (!fontId || !mainRef.value) return
     editorStore.setFontFamily(<any>mainRef.value, fontId)
   })
@@ -200,7 +201,7 @@ $tool-tags-width: 72px;
 
   .widgets-detail {
     min-width: 260px;
-    flex-basis: 300px;
+    flex-basis: 260px;
     border-left: #d9d8d8 solid 1px;
   }
 }

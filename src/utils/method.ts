@@ -25,7 +25,7 @@ export function isWidgets(el: HTMLElement) {
  * @param el
  * @param parseChain 是否往上解析链上距离最近的组件
  * */
-export function getWidgetsName(el: HTMLElement, parseChain: boolean = false) {
+export function getWidgetsName(el: HTMLElement, parseChain: boolean = false): string | void {
   if (!el) return
   if (parseChain) el = <any>parseWidget4DomChain(el)
   if (el && isWidgets(el)) return el.dataset['name']
@@ -70,7 +70,7 @@ export function createSetWidgetsStyle(getElCb: () => HTMLElement | unknown): (na
   }
 }
 
-export function selectAllText4Element(el:HTMLElement) {
+export function selectAllText4Element(el: HTMLElement) {
   if (window.getSelection) {
     const range = document.createRange()
     range.selectNodeContents(el)
@@ -79,3 +79,17 @@ export function selectAllText4Element(el:HTMLElement) {
   }
 }
 
+/**
+ * 创建小组件配置映射处理函数
+ * 返回一个函数为setState用于触发 actionMap 传入的处理函数
+ * cb 回调函数
+ * */
+export function createHandlerAction<T>(actionMap: Record<any, any>, cb?: Function): (options: Record<any, any> & T) => void {
+  return /* setState */ function (options: Record<any, any>) {
+    for (const name in options) {
+      const func = actionMap[name]
+      if (isFunction(func)) func.call(null, options[name])
+      if (isFunction(cb)) cb.call(null, name, options)
+    }
+  }
+}

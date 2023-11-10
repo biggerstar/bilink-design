@@ -9,21 +9,23 @@ import {toRaw} from "vue";
 type StateType = {
   /** moveable 管理器 */
   moveableManager: MoveableManager,
-  /** 画布信息 */
-  canvas: {
-    scale: number,
-    scaleWheelStep: number,
-    width: number;
-    height: number;
-    bgColor: string;
-    font: {  // canvas 内所有元素默认使用的字体
-      id: string
-    }
-  },
+
+  widgetsDetailConfig: Record<any, any>
   /** 所有字体 */
   allFont: object[],
   /** 当前正在编辑的工程文件 */
-  currentProject: Record<any, any>
+  currentProject: {
+    /** 画布信息 */
+    canvas: {
+      scale: number,
+      scaleWheelStep: number,
+      width: number;
+      height: number;
+      bgColor: string;
+      fontId: string   // canvas 内所有元素默认使用的字体
+    },
+    items: []
+  }
 }
 
 type GetterType = {
@@ -34,7 +36,7 @@ type GetterType = {
 type ActionType = {
   /** 载入当前要编辑的工程配置信息 */
   loadEditorProject(projectInfo): void,
-  /** 设置当前正在活跃的小组件配置,是否直接覆盖整个对象(值) */
+  /** 设置当前正在活跃的小组件配置,会自动更新源currentProject.items中的配置,是否直接覆盖整个对象(值) */
   updateActiveWidgetsState<T extends Record<any, any>>(projectInfo: T, coverKeys?: (keyof T)[]): void,
   /** 通过 id 获取字体信息  */
   getFont4Id(id: string): any,
@@ -44,14 +46,19 @@ type ActionType = {
   setFontSize(el: HTMLElement, size: string | number): any,
   /** 为指定元素设置大小和字体  */
   setFont(el: HTMLElement, options: { id?: string, size?: string }): any,
+  /** 获取某个组件详情页的配置信息  */
+  getWidgetsDetailConfig(name: string): any,
 }
 
 export const useEditorStore = defineStore<'editor', StateType, GetterType, ActionType>('editor', {
   state: () => ({
     moveableManager: void 0,
-    canvas: void 0,
     allFont: [],
-    currentProject: void 0,
+    currentProject: {
+      canvas: void 0,
+      items: [],
+    },
+    widgetsDetailConfig: {}
   }),
   getters: {
     activeOptions() {
@@ -71,6 +78,7 @@ export const useEditorStore = defineStore<'editor', StateType, GetterType, Actio
       const activeOptions = this.activeOptions
       const coverObj = pick(options, coverKeys)
       const deepMergeObj = omit(options, coverKeys)
+      /* 通过activeOptions引用更新在 currentProject.items 中的配置  */
       merge(activeOptions, deepMergeObj)
       Object.assign(activeOptions, coverObj)
       activeElement[DESIGN_SET_STATE](options)
@@ -95,6 +103,9 @@ export const useEditorStore = defineStore<'editor', StateType, GetterType, Actio
     setFont(el, {id, size} = {}) {
       if (id) this.setFontFamily(el, id)
       if (size) this.setFontSize(el, size)
+    },
+    getWidgetsDetailConfig(w_name) {
+      return this.widgetsDetailConfig?.[w_name]
     }
   },
 })

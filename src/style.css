@@ -154,6 +154,12 @@ html, body, #app {
   width: 100%;
 }
 
+.flex-center{
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center
+}
+
 :root {
   --color-gray-1000: #000000;
   --color-gray-900: #222529;

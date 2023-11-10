@@ -23,19 +23,29 @@
         </el-scrollbar>
       </card>
     </div>
+
     <div v-if="isShowMainDetailPage">
       <card title="文字">
-        <div style="display: flex; justify-content: space-around">
-          <content-box @click="showSelectFontPage" style="width: 65%; height: 2.5rem">
+        <div class="text-edit-style-setting">
+          <content-box class="text-edit-style-setting-item" @click="showSelectFontPage" style="width: 65%;">
             <img draggable="false" v-if="curFont" :src="curFont.preview.url" :alt="curFont ?curFont?.name : ''"
                  style="width: 75%; height: 60% "/>
+            <span v-else>默认字体</span>
           </content-box>
-          <content-box style="width: 25%;height: 2.5rem">
+          <content-box class="text-edit-style-setting-item" style="width: 30%;">
             <a-select
               v-model:value="fontSizeValue"
               size="middle"
               :options="fontSizeRefList"
             ></a-select>
+          </content-box>
+          <content-box class="text-edit-style-setting-item" style="width: 100%;">
+            <CheckBox v-if="textStyleList" :data="textStyleList" @changed="textStyleStatusChanged">
+            </CheckBox>
+          </content-box>
+          <content-box class="text-edit-style-setting-item" style="width: 100%;">
+            <CheckBox v-if="alignList" type="radio" :data="alignList" @changed="alignStatusChanged">
+            </CheckBox>
           </content-box>
         </div>
       </card>
@@ -43,7 +53,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Card from "@/components/card/Card.vue";
 import {nextTick, onMounted, ref, watch} from 'vue'
 import ElScrollbar from 'element-plus/es/components/scrollbar/index.mjs'
@@ -51,6 +61,8 @@ import 'element-plus/es/components/scrollbar/style/index.mjs'
 import {useEditorStore} from "@/store/editor";
 import ContentBox from "@/components/content-box/ContentBox.vue";
 import {apiGetFontSizeList} from "@/api/getFontSizeList";
+import CheckBox from "@/components/checkbox/CheckBox.vue";
+import {WIDGETS_NAMES} from "@/constant";
 
 const editorStore = useEditorStore()
 const isShowFontsPage = ref(false)
@@ -71,20 +83,56 @@ function closeSelectFontPage() {
   isShowFontsPage.value = false
 }
 
+function getConflictItems(curItem) {
+  return /* key冲突的item */ textStyleList.value.filter(item => item.key === curItem.key && item !== curItem)
+}
+
+/** 设置冲突的样式控制按钮,会自动处理冲突 */
+function activeStyleItems(curItem) {
+  const conflictItem = getConflictItems(curItem)
+  conflictItem.forEach(item => item.selected = false)
+}
+
+function textStyleStatusChanged(curItem) {
+  let style = {}
+  const curStatus = curItem.selected
+  if (!curStatus) Object.keys(curItem.style).forEach(name => style[name] = false)
+  else {
+    style = curItem.style
+    activeStyleItems(curItem)
+  }
+  // console.log(curStatus, style)
+  editorStore.updateActiveWidgetsState(style)
+}
+
+function alignStatusChanged(item) {
+  editorStore.updateActiveWidgetsState({
+    textAlign: item.name
+  })
+}
+
+function updateTextStyle(textStyle: any[]) {
+  const activeOptions = editorStore.activeOptions
+  textStyle.forEach(item => {
+    const isActive = item.style[item.key] === activeOptions[item.key]
+    if (isActive) activeStyleItems(item)
+    item.selected = isActive
+  })
+}
+
 
 onMounted(() => {
   nextTick(() => {  // 显示当前字体
     const activeOptions = editorStore.activeOptions
     if (!activeOptions) return
-    const font = activeOptions.font
-    const fontId = font.id || editorStore.canvas?.font?.id
+    const fontId = activeOptions.fontId || editorStore.currentProject?.canvas?.fontId
     if (fontId) curFont.value = editorStore.getFont4Id(fontId)
   })
   apiGetFontSizeList().then(res => {
     const {code, data} = res
     if (code !== 200) return
     const activeOptions = editorStore.activeOptions
-    fontSizeValue.value = activeOptions.font.size
+    fontSizeValue.value = activeOptions.fontSize
     fontSizeRefList.value = data.map(size => ({value: size, label: size}))
   })
 })
@@ -98,17 +146,27 @@ function choiceFont(item) {
 function updateFont() {
   const item = curFont.value
   if (!item) return
-  const font = {}
-  if (fontSizeValue.value) font.size = Number(fontSizeValue.value)
-  if (item.id) font.id = item.id
-  editorStore.updateActiveWidgetsState({font}, ['font'])
+  const font: Record<any, any> = {}
+  if (fontSizeValue.value) font.fontSize = Number(fontSizeValue.value)
+  if (item.id) font.fontId = item.id
+  editorStore.updateActiveWidgetsState(font)
 }
+
+
+const alignList = ref()
+const textStyleList = ref()
+onMounted(() => {
+  const detailConfig = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
+  alignList.value = detailConfig.align
+  textStyleList.value = detailConfig.textStyle
+  const activeOptions = editorStore.activeOptions
+  alignList.value && alignList.value.forEach(item => item.selected = item.name === activeOptions.textAlign)
+  updateTextStyle(detailConfig.textStyle)
+})
 
 watch([fontSizeValue, curFont], () => {
   updateFont()
-}, {
-  deep: true
-})
+}, {deep: true})
 
 </script>
 
@@ -150,6 +208,17 @@ watch([fontSizeValue, curFont], () => {
 .font-item-active {
   background-color: #F0F6FF;
   border-radius: 5px;
+}
+
+.text-edit-style-setting {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.text-edit-style-setting-item {
+  height: 2.5rem;
+  margin: 1% 0;
 }
 
 :deep(.ant-page-header-heading-title) {

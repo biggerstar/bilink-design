@@ -1,25 +1,25 @@
 <template>
-  <div v-if="editorStore.canvas" style=" width: 100%; height: 100%; ">
+  <div v-if="canvasInfo" style=" width: 100%; height: 100%; ">
     <card title="画布" class="not-user-select">
       <a-space v-if="isShowResizeCanvas">
         <a-space>
           <span>宽</span>
           <a-input-number
             :step="20"
-            v-model:value="editorStore.canvas.width"
+            v-model:value="canvasInfo.width"
           />
         </a-space>
         <a-space>
           <span>高</span>
           <a-input-number
             :step="20"
-            v-model:value="editorStore.canvas.height"
+            v-model:value="canvasInfo.height"
           />
         </a-space>
       </a-space>
       <div v-else class="canvas-size-info">
         <div>尺寸</div>
-        <div>{{ `${editorStore.canvas.width} x ${editorStore.canvas.height}px` }}</div>
+        <div>{{ `${canvasInfo.width} x ${canvasInfo.height}px` }}</div>
       </div>
       <div class="reset-canvas-btn" v-if="!isShowResizeCanvas" @click='isShowResizeCanvas=true'>调整尺寸</div>
       <div class="reset-canvas-btn" v-else @click='isShowResizeCanvas=false'>完成</div>
@@ -28,7 +28,7 @@
 
     <card title="背景色" class="not-user-select">
       <template #header>
-        <el-color-picker v-model="editorStore.canvas.bgColor" show-alpha :predefine="predefineColors"/>
+        <el-color-picker v-model="canvasInfo.bgColor" show-alpha :predefine="predefineColors"/>
       </template>
     </card>
 
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
+import {ref, watch} from 'vue';
 import Card from "@/components/card/Card.vue";
 import {useEditorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'
@@ -45,6 +45,9 @@ import 'element-plus/es/components/color-picker/style/index.mjs'
 const isShowResizeCanvas = ref(false)
 
 const editorStore = useEditorStore()
+const canvasInfo = ref()
+
+watch(editorStore, () => canvasInfo.value = editorStore.currentProject.canvas)
 
 const predefineColors = ref([
   '#ff4500',
@@ -68,7 +71,7 @@ const predefineColors = ref([
 
 <style scoped>
 .reset-canvas-btn {
-  background-color: #F1F2F4;
+  background-color: var(--color-gray-300);
   width: 90%;
   font-weight: 400;
   padding: 10px;
@@ -79,7 +82,7 @@ const predefineColors = ref([
 }
 
 .reset-canvas-btn:hover {
-  background-color: #E8EAEC;
+  background-color: var(--color-gray-400);
 }
 
 .canvas-size-info {

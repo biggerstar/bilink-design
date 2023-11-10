@@ -2,9 +2,12 @@ import {resolve} from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import {defineViteRunConfig, viteRunLogPlugin} from 'vite-run'
 import bundleAnalyzer from 'rollup-plugin-bundle-analyzer'
-import Components from 'unplugin-vue-components/vite';
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
 import vueJsx from '@vitejs/plugin-vue-jsx';
+import Components from 'unplugin-vue-components/vite';
+import {AntDesignVueResolver, ElementPlusResolver} from 'unplugin-vue-components/resolvers';
+import AutoImport from 'unplugin-auto-import/vite'
+import ElementPlus from 'unplugin-element-plus/vite'
+
 export default defineViteRunConfig(() => {
   return {
     packages: [
@@ -70,7 +73,11 @@ export default defineViteRunConfig(() => {
               AntDesignVueResolver({
                 importStyle: false, // css in js
               }),
+              ElementPlusResolver()
             ],
+          }),
+          AutoImport({
+            resolvers: [ElementPlusResolver()],
           }),
         ],
         resolve: {
