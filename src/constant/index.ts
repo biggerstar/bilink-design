@@ -7,5 +7,6 @@ export const CSS_DEFINE = {
 }
 
 
-
+export const DESIGN_OPTIONS = '__design_options__'
+export const DESIGN_SET_STATE = '__design_set_state__'
 

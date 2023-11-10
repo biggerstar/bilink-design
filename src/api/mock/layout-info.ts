@@ -4,9 +4,8 @@ export default {
     {
       uuid: '',
       type: 'w-text',
-      fontInfo: {
-        name: '',
-        size: 50
+      font: {
+        size: 30
       },
       text: 'console.log(111111111111111111)\n console.log(111111111111111111)',
       width: 500,
@@ -19,9 +18,8 @@ export default {
     {
       uuid: '',
       type: 'w-text',
-      fontInfo: {
-        id: '34002451',
-        name: 'Huiwen-mincho',
+      font: {
+        id: '33912832',
         size: 50,
       },
       text: 'console.log(111111111111111111)\n console.log(111111111111111111)',
@@ -35,9 +33,8 @@ export default {
     {
       uuid: '',
       type: 'w-text',
-      fontInfo: {
-        name: '',
-        size: 80
+      font: {
+        size: 90
       },
       text: 'console.log(111111111111111111)\n console.log(111111111111111111)',
       width: 600,

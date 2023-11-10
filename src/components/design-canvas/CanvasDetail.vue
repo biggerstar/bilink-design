@@ -1,5 +1,5 @@
 <template>
-  <div style=" width: 100%; height: 100%; ">
+  <div v-if="editorStore.canvas" style=" width: 100%; height: 100%; ">
     <card title="画布" class="not-user-select">
       <a-space v-if="isShowResizeCanvas">
         <a-space>

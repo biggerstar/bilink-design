@@ -16,6 +16,7 @@
     </div>
     <div id="main" class="main" ref="mainRef">
       <DesignCanvas
+        v-if="editorStore.canvas"
         :w="editorStore.canvas.width"
         :h="editorStore.canvas.height"
         :scale='editorStore.canvas.scale'
@@ -28,6 +29,7 @@
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
+          v-if="editorStore.canvas"
           class="scale-control"
           selector="#design-canvas"
           @scaleChanged='scaleChanged'
@@ -46,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, shallowRef} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, shallowRef} from "vue";
 import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveable'
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {useEditorStore} from "@/store/editor";
@@ -55,6 +57,8 @@ import {getElement4EventTarget} from "@/utils/tool";
 import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
 import {apiGetAsideTags} from "@/api/getAsideTags";
+import {apiGetAllFonts} from "@/api/getFontData";
+import {apiGetCanvasDefaultConfig} from "@/api/getCanvasDefaultConfig";
 
 const editorStore = useEditorStore()
 const tagList = ref()
@@ -63,6 +67,7 @@ const activeTagIndex = ref<number>(-1)
 const watermarkData = ref("bi.link")
 const curDetailComp = shallowRef()
 
+// console.log(editorStore)
 function gotoTag(index) {
   // console.log(item)
   activeTagIndex.value = activeTagIndex.value === index ? -1 : index
@@ -77,11 +82,16 @@ function getCurDetailComp(widgetsName = 'dev') {
 }
 
 function listenClickWidgetsTarget(ev: MouseEvent) {
+  const moveableManger = editorStore.moveableManager
   const clickTarget = getElement4EventTarget(ev)
   if (!clickTarget) return
-  const widgetsName = clickTarget.dataset['name']
-  // console.log(widgetsName);
-  curDetailComp.value = getCurDetailComp(widgetsName)
+  const res = moveableManger.activeWidgets(clickTarget)
+  curDetailComp.value = null
+  nextTick(() => {
+    curDetailComp.value = getCurDetailComp(res?.name)
+    if (res) moveableManger.activeElement = res.el
+    else moveableManger.deActive()
+  })
 }
 
 let moveableManager: MoveableManager
@@ -90,10 +100,17 @@ onMounted(async () => {
   moveableManager = new MoveableManager()
   moveableManager.start(defaultMoveableOptions, document.getElementById('main'))
   editorStore.moveableManager = <any>moveableManager
-  mainRef.value && mainRef.value!.addEventListener('click', listenClickWidgetsTarget)
+  mainRef.value && mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
 
-  apiGetProjectInfo().then(res => res.code === 200 && editorStore.setEditorProject(res.data))
+  apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data))
   apiGetAsideTags().then(res => res.code === 200 && (tagList.value = res.data))
+  const getAllFonts = apiGetAllFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
+  const getCanvasDefaultConfig = apiGetCanvasDefaultConfig().then(res => res.code === 200 && (editorStore.canvas = res.data))
+  Promise.all([getCanvasDefaultConfig, getAllFonts]).then(res => {
+    const fontId = editorStore.canvas?.font?.id
+    if (!fontId || !mainRef.value) return
+    editorStore.setFontFamily(<any>mainRef.value, fontId)
+  })
 })
 
 onUnmounted(() => {

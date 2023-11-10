@@ -15,9 +15,9 @@
             v-for="(item,index) in allFonts"
             :key="index"
             @click="choiceFont(item)"
-            :class="{'font-item-active':item.name === curFont.name}"
+            :class="{'font-item-active':item.name === curFont?.name}"
           >
-            <span v-if="item.name === curFont.name">☑️</span>
+            <span v-if="item.name === curFont?.name">☑️</span>
             <img draggable="false" :src="item.preview.url" :alt="item.name" style="width: 75%;height:1.5rem; "/>
           </div>
         </el-scrollbar>
@@ -26,8 +26,9 @@
     <div v-if="isShowMainDetailPage">
       <card title="文字">
         <div style="display: flex; justify-content: space-around">
-          <content-box v-if="curFont" @click="showSelectFontPage" style="width: 65%; height: 2.5rem">
-            <img :src="curFont.preview.url" :alt="curFont.name" style="width: 75%; height: 60% "/>
+          <content-box @click="showSelectFontPage" style="width: 65%; height: 2.5rem">
+            <img draggable="false" v-if="curFont" :src="curFont.preview.url" :alt="curFont ?curFont?.name : ''"
+                 style="width: 75%; height: 60% "/>
           </content-box>
           <content-box style="width: 25%;height: 2.5rem">
             <a-select
@@ -44,8 +45,7 @@
 
 <script setup>
 import Card from "@/components/card/Card.vue";
-import {apiGetAllFonts} from "@/api/getFontData.ts";
-import {onMounted, ref} from 'vue'
+import {nextTick, onMounted, ref, watch} from 'vue'
 import ElScrollbar from 'element-plus/es/components/scrollbar/index.mjs'
 import 'element-plus/es/components/scrollbar/style/index.mjs'
 import {useEditorStore} from "@/store/editor";
@@ -58,11 +58,12 @@ const isShowMainDetailPage = ref(true)
 const fontSizeValue = ref();
 const fontSizeRefList = ref()
 const allFonts = ref()
-
+const curFont = ref()
 
 function showSelectFontPage() {
   isShowMainDetailPage.value = false
   isShowFontsPage.value = true
+  allFonts.value = editorStore.allFont
 }
 
 function closeSelectFontPage() {
@@ -70,28 +71,44 @@ function closeSelectFontPage() {
   isShowFontsPage.value = false
 }
 
-let curFont = ref()
 
 onMounted(() => {
-  apiGetAllFonts().then(res => {
-    const {code, data} = res
-    if (code !== 200) return
-    allFonts.value = data
-    curFont.value = data?.[0]
+  nextTick(() => {  // 显示当前字体
+    const activeOptions = editorStore.activeOptions
+    if (!activeOptions) return
+    const font = activeOptions.font
+    const fontId = font.id || editorStore.canvas?.font?.id
+    if (fontId) curFont.value = editorStore.getFont4Id(fontId)
   })
   apiGetFontSizeList().then(res => {
     const {code, data} = res
     if (code !== 200) return
-    fontSizeValue.value = data[0]
+    const activeOptions = editorStore.activeOptions
+    fontSizeValue.value = activeOptions.font.size
     fontSizeRefList.value = data.map(size => ({value: size, label: size}))
   })
 })
 
-
 function choiceFont(item) {
-  console.log(item)
+  const activeElement = editorStore.moveableManager.activeElement
+  if (!activeElement || !item) return
+  curFont.value = item
 }
 
+function updateFont() {
+  const item = curFont.value
+  if (!item) return
+  const font = {}
+  if (fontSizeValue.value) font.size = Number(fontSizeValue.value)
+  if (item.id) font.id = item.id
+  editorStore.updateActiveWidgetsState({font}, ['font'])
+}
+
+watch([fontSizeValue, curFont], () => {
+  updateFont()
+}, {
+  deep: true
+})
 
 </script>
 
