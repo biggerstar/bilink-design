@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AButton: typeof import('ant-design-vue/es')['Button']
+    AButtonGroup: typeof import('ant-design-vue/es')['ButtonGroup']
     ACard: typeof import('ant-design-vue/es')['Card']
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
     APageHeader: typeof import('ant-design-vue/es')['PageHeader']
@@ -23,8 +24,11 @@ declare module 'vue' {
     ContentBox: typeof import('./src/components/content-box/ContentBox.vue')['default']
     DefaultEditorDetail: typeof import('./src/components/canvas/DefaultEditorDetail.vue')['default']
     DesignCanvas: typeof import('./src/components/design-canvas/DesignCanvas.vue')['default']
+    ElButton: typeof import('element-plus/es')['ElButton']
+    ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCheckboxButton: typeof import('element-plus/es')['ElCheckboxButton']
     ElCheckboxGroup: typeof import('element-plus/es')['ElCheckboxGroup']
+    ElSpace: typeof import('element-plus/es')['ElSpace']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

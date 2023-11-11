@@ -6,7 +6,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 import Components from 'unplugin-vue-components/vite';
 import {AntDesignVueResolver, ElementPlusResolver} from 'unplugin-vue-components/resolvers';
 import AutoImport from 'unplugin-auto-import/vite'
-import ElementPlus from 'unplugin-element-plus/vite'
+import tailwindcss from 'tailwindcss';
 
 export default defineViteRunConfig(() => {
   return {
@@ -84,6 +84,11 @@ export default defineViteRunConfig(() => {
           extensions: ['.vue', '.css', '.js', '.ts'],
           alias: {
             '@': resolve(__dirname, 'src'),
+          }
+        },
+        css: {
+          postcss: {
+            plugins: [tailwindcss],
           }
         }
       }

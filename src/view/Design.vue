@@ -1,11 +1,35 @@
 <template>
   <div class="header">
-    <div>BiLink设计</div>
+    <div class="header-left" v-if="pageConfig">{{ pageConfig.brand }}</div>
+    <div class="header-right">
+      <el-button-group>
+        <el-button color="#2154F4" class="w-8/12" size="large" type="primary" @click="saveProject">保存</el-button>
+        <a-popover trigger="click" placement="bottomRight">
+          <template #content>
+            <div class="w-full h-[45px] font-bold text-[1.04rem] p-1">更多操作</div>
+            <div style="width: 360px; height: 400px" class="not-user-select">
+              <div class="w-full h-auto flex flex-wrap justify-evenly">
+                <div
+                  class="w-14 h-14 rounded-lg cursor-pointer"
+                  v-for="(item,index) in moreOperationList"
+                  :key="index + item.text">
+                  <ContentBox @click="item.handler">
+                    <div class="iconfont" :class="item.icon"></div>
+                  </ContentBox>
+                  <div class="text-center mt-1">{{ item.text }}</div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <el-button color="#2154F4" class="iconfont icon-androidgengduo w-1/6" size="large" type="primary"></el-button>
+        </a-popover>
+      </el-button-group>
+    </div>
   </div>
   <div class="work-area">
     <div class="aside">
-      <div class="tool-tags">
-        <div v-for="(item,index) in tagList" :key="index" @click="gotoTag(index)">
+      <div class="tool-tags" v-if="pageConfig">
+        <div v-for="(item,index) in pageConfig.asideTag" :key="index" @click="gotoTag(index)">
           <div class="tag" :class="{activeTag: activeTagIndex === index }">
             <i class="iconfont icon" :class="item.icon"> </i>
             <div>{{ item.name }}</div>
@@ -21,11 +45,14 @@
         :h="editorStore.currentProject.canvas.height"
         :scale='editorStore.currentProject.canvas.scale'
         :bgColor='editorStore.currentProject.canvas.bgColor'
-        :watermark='watermarkData'
+        :watermark='editorStore.currentProject.canvas.watermark'
       >
-        <component v-if="editorStore.currentProject" :is="widgetsMap[item.type]"
-                   v-for="item in editorStore.currentProject.items"
-                   :config="item"></component>
+        <component
+          v-if="editorStore.currentProject" :is="widgetsMap[item.type]"
+          v-for="item in editorStore.currentProject.items"
+          :config="item">
+
+        </component>
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
@@ -56,17 +83,42 @@ import ScaleControl from "@/components/scale-control/ScaleControl.vue";
 import {getElement4EventTarget} from "@/utils/tool";
 import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
-import {apiGetAsideTags} from "@/api/getAsideTags";
 import {apiGetAllFonts} from "@/api/getFontData";
 import {apiGetWidgetsDetailConfig} from "@/api/getWidgetsDetailConfig";
-import {WATER_MARK} from "@/config/default";
+import {apiGetPageConfig} from "@/api/getPageConfig";
+import ContentBox from '@/components/content-box/ContentBox.vue'
+import {notification} from 'ant-design-vue';
 
 const editorStore = useEditorStore()
-const tagList = ref()
+const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagIndex = ref<number>(-1)
-const watermarkData = ref(WATER_MARK)
 const curDetailComp = shallowRef()
+
+const moreOperationList = [
+  {
+    text: '下载',
+    icon: 'icon-xiazaidaoru',
+    handler: () => {
+      // do something
+      // console.log('click')
+    },
+  },
+  {
+    text: '分享',
+    icon: 'icon-fenxiang',
+    handler: () => {
+      // do something
+    },
+  },
+  {
+    text: '敬请期待',
+    icon: 'icon-jingqingqidai',
+    handler: () => {
+      // do something
+    },
+  },
+]
 
 // console.log(editorStore)
 function gotoTag(index) {
@@ -103,16 +155,31 @@ onMounted(async () => {
   editorStore.moveableManager = <any>moveableManager
   mainRef.value && mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
 
-  apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data))
-  apiGetAsideTags().then(res => res.code === 200 && (tagList.value = res.data))
+  apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = res.data))
   apiGetWidgetsDetailConfig().then(res => res.code === 200 && (editorStore.widgetsDetailConfig = res.data))
+  const getProjectInfo = apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data))
   const getAllFonts = apiGetAllFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
-  Promise.all([apiGetProjectInfo, getAllFonts]).then(() => {
+  Promise.all([getProjectInfo, getAllFonts]).then(() => {
     const fontId = editorStore.currentProject?.canvas?.fontId
     if (!fontId || !mainRef.value) return
     editorStore.setFontFamily(<any>mainRef.value, fontId)
   })
 })
+
+/*-----------------------------------header start-------------------------------------*/
+const openNotification = () => {
+  notification.open({
+    message: '保存成功',
+    description: '🎉🎉 您的项目已经保存成功啦!',
+    duration: 1.5,
+  });
+};
+
+function saveProject() {
+  sessionStorage.setItem('layout', JSON.stringify(editorStore.currentProject))
+  openNotification()
+}
+
 
 onUnmounted(() => {
   moveableManager && moveableManager.stop()
@@ -130,7 +197,8 @@ $tool-tags-width: 72px;
   display: flex;
   width: 100%;
   height: $header-height;
-  justify-content: space-around;
+  justify-content: space-between;
+  padding: 0 1%;
   align-items: center;
   font-weight: bolder;
   font-size: 1.2rem;
@@ -219,5 +287,4 @@ $tool-tags-width: 72px;
   margin-left: auto;
   margin-right: 15px;
 }
-
 </style>
