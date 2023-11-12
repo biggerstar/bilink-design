@@ -1,7 +1,17 @@
-import Moveable, {MoveableOptions, OnDrag, OnResize, OnRotate, OnScale} from "moveable";
+import Moveable, {
+  MoveableOptions,
+  OnDrag,
+  OnDragEnd,
+  OnResize,
+  OnResizeEnd,
+  OnRotate,
+  OnRotateEnd,
+  OnScale,
+  OnScaleEnd
+} from "moveable";
 import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
 import defaultConfig from "@/common/moveable/default-config";
-import {getWidgetsName, isWidgets, parseWidget4DomChain, toFixed} from "@/utils/method";
+import {CssTransformApi, getWidgetsName, isWidgets, parseWidget4DomChain, toFixed} from "@/utils/method";
 import {useEditorStore} from "@/store/editor";
 import './moveable-style.css'
 
@@ -20,6 +30,7 @@ export const defaultMoveableOptions: MoveableOptions = {
   elementGuidelines: ['div[data-type="widgets"]'],
   snapGridWidth: 6,
   snapGridHeight: 6,
+
   // draggable: true,
   // clippable: false,
   // resizable: true,
@@ -62,35 +73,46 @@ export class MoveableManager {
     const moveable = new Moveable(container, moveableOptions);
     this.moveable = moveable
 
+    /** 将 transform 字符串转换成适合组件的配置的对象 */
+    function parseTransform(transform: string) {
+      const cssTransformApi = new CssTransformApi()
+      cssTransformApi.load(transform)
+      const styleObj = cssTransformApi.getAll()
+      const transInfo = {}
+      for (const name in styleObj) {
+        if (['scale', 'rotate'].includes(name)) transInfo[name] = toFixed(styleObj[name][0], 3)
+        else if (name === 'translate') transInfo['location'] = styleObj[name].map(val => toFixed(val, 3))
+      }
+      return transInfo
+    }
+
+    function syncTransformConfig(transform: string) {
+      transform && editorStore.updateActiveWidgetsState(parseTransform(transform), {effectDom: false})
+    }
+
     moveable
-      .on("drag", (ev: OnDrag) => {
-        editorStore.updateActiveWidgetsState({
-          left: toFixed(ev.left, 3),
-          top: toFixed(ev.top, 3),
-        }, {effectDom: true})
-      })
+      .on("drag", (ev: OnDrag) => ev.target.style.transform = ev.transform)
+      .on("dragEnd", (ev: OnDragEnd) => syncTransformConfig(ev.lastEvent?.transform))
+      .on("scale", (ev: OnScale) =>/* 缩放时 width, height 不会变 */   ev.target.style.transform = ev.drag.transform)
+      .on("scaleEnd", (ev: OnScaleEnd) => syncTransformConfig(ev.lastEvent?.transform))
+      .on("rotate", (ev: OnRotate) => ev.target.style.transform = ev.drag.transform)
+      .on("rotateEnd", (ev: OnRotateEnd) => syncTransformConfig(ev.lastEvent?.transform))
       .on("resize", (ev: OnResize) => {
-        // ev.target.style.transform = ev.transform
-        // ev.target.style.width = `${ev.width}px`;
-        // ev.target.style.height = `${ev.height}px`;
-        editorStore.updateActiveWidgetsState({
-          width: toFixed(ev.width, 3),
-          height: toFixed(ev.height, 3),
-          // left: toFixed(ev.drag.left, 3),
-          // top: toFixed(ev.drag.top, 3),
-        }, {effectDom: true})
+        ev.target.style.transform = ev.transform
+        ev.target.style.width = `${ev.width}px`;
+        ev.target.style.height = `${ev.height}px`;
       })
-      .on("scale", (ev: OnScale) => {
-        const scale = ev.scale[0] || ev.scale[1]
+      .on("resizeEnd", (ev: OnResizeEnd) => {
+        const lastEvent: OnResize = ev.lastEvent
+        if (!lastEvent) return
+        syncTransformConfig(lastEvent.transform)
         editorStore.updateActiveWidgetsState({
-          scale: toFixed(scale, 3),
-        }, {effectDom: true})
+          width: toFixed(lastEvent.width, 3),
+          height: toFixed(lastEvent.height, 3),
+        })
       })
-      .on("rotate", (ev: OnRotate) => {
-        editorStore.updateActiveWidgetsState({
-          rotate: toFixed(ev.rotation, 3),
-        }, {effectDom: true})
-      })
+
+    moveable.origin = true
 
     ;const eventHookList = this.eventHookList
     eventHookList.forEach((item) => {

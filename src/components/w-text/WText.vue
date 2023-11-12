@@ -57,15 +57,13 @@ const actionMap = {  // 对传入状态的处理函数
   width: (val) => setWidgetsStyle("width", val ? `${val}px` : 'auto'),
   height: (val) => setWidgetsStyle("height", val ? `${val}px` : 'auto'),
   bgColor: (val) => setWidgetsStyle('backgroundColor', val || 'transparent'),
-  left: (val) => setWidgetsStyle("left", val ? `${val}px` : '0'),
-  top: (val) => setWidgetsStyle("top", val ? `${val}px` : '0'),
   rotate: (deg) => {
     const transform = genTransform('rotate', `${deg}deg`)
     transform && setWidgetsStyle("transform", transform)
   },
-  translate: (val: string) => {
-    const translatePxStr = val.split(',').map(offset => `${offset}px`).toString()
-    const transform = genTransform('translate', `${translatePxStr}`)
+  transform: (transform) => setWidgetsStyle("transform", transform),
+  location: (loc: string[] | number[] = [0, 0]) => {
+    const transform = genTransform('translate', `${loc[0] || 0}px,${loc[1] || 0}px`)
     transform && setWidgetsStyle("transform", transform)
   },
   scale: (val: string) => {
@@ -93,6 +91,7 @@ const actionMap = {  // 对传入状态的处理函数
   fontStyle: (val) => setWidgetsStyle('fontStyle', (!val || !isString(val)) ? 'normal' : val),
   writingMode: (val) => setWidgetsStyle('writingMode', !val ? 'horizontal-tb' : val),
   textDecoration: (val) => setWidgetsStyle('textDecoration', !val ? 'none' : val),
+  style: (styleObj: Partial<CSSStyleDeclaration>) => Object.keys(styleObj).forEach(name => WText.value && (WText.value.style[name] = styleObj[name]))
 }
 
 const setState: Function = createHandlerAction(actionMap, () => {
@@ -126,6 +125,8 @@ function blurText() {
 .w-text {
   position: absolute;
   cursor: move;
+  left: 0;
+  top: 0;
 }
 
 .editing {

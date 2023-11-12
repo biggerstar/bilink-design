@@ -17,4 +17,4 @@ export async function apiGetProjectInfo() {
 setInterval(() => {
   const editorStore = useEditorStore()
   sessionStorage.setItem('layout', JSON.stringify(editorStore.currentProject))
-}, 150)
+}, 1000)

@@ -21,7 +21,8 @@ export default function createNativeEventHookList() {
         }
       },
       options: {
-        capture: true
+        capture: true,
+        // passive: true,
       }
     },
     {

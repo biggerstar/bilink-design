@@ -10,6 +10,8 @@ declare module 'vue' {
     AButton: typeof import('ant-design-vue/es')['Button']
     AButtonGroup: typeof import('ant-design-vue/es')['ButtonGroup']
     ACard: typeof import('ant-design-vue/es')['Card']
+    ADivider: typeof import('ant-design-vue/es')['Divider']
+    AInput: typeof import('ant-design-vue/es')['Input']
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
     APageHeader: typeof import('ant-design-vue/es')['PageHeader']
     APopover: typeof import('ant-design-vue/es')['Popover']

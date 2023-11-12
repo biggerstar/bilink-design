@@ -100,24 +100,40 @@ export function createHandlerAction<T>(actionMap: Record<any, any>, cb?: Functio
 export class CssTransformApi {
   public transform = ''
 
+  /** 载入 transform 字符串 */
   load(transform): this {
     this.transform = transform
     return this
   }
 
+  /** 修改 transform 中的函数值 */
   change(name: string, val: string): this {
     this.remove(name)
     this.transform = `${this.transform} ${name}(${val})`
     return this
   }
 
-  get(name): string | void {
+  /** 获取所有的函数名和值对象 */
+  getAll() {
+    const regex = /(\w+)\(([^)]+)\)/ig;
+    const result = {}
+    const matches = this.transform.matchAll(regex)
+    for (const match of matches) {
+      const funcName = match[1];
+      result[funcName] = match[2].split(',').map(param => parseFloat(param));
+    }
+    return result
+  }
+
+  /** 获取某个函数名的值 */
+  get(name): Array<any> | void {
     const reg = new RegExp(`${name}\\(([^)]*)\\)`)
     const matchData = this.transform.match(reg)
     if (!matchData || !matchData[1]) return
-    return matchData[1]
+    return matchData[1].split(',')
   }
 
+  /** 移除某个函数 */
   remove(name): this {
     const reg = new RegExp(`${name}\\([^)]*\\)`, 'g')
     this.transform = this.transform.replace(reg, '');
@@ -135,7 +151,8 @@ export function toFixed(num: number | string, toFixed: number = 0): number {
  * */
 export function getTranslate4Transform(transform: string, toFixed = 2): string | '' {
   const cssTransformApi = new CssTransformApi()
-  const translateData = cssTransformApi.load(transform).get('translate')
-  if (!translateData) return ''
-  return translateData.split(',').map(offset => parseInt(offset).toFixed(toFixed)).toString()
+  const translateInfo = cssTransformApi.load(transform).get('translate')
+  if (!translateInfo) return
+  if (!translateInfo.length) return ''
+  return translateInfo.map(offset => parseInt(offset).toFixed(toFixed)).toString()
 }

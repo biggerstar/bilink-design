@@ -143,13 +143,14 @@ function choiceFont(item) {
   curFont.value = item
 }
 
-function updateFont() {
-  const item = curFont.value
-  if (!item) return
+function updateFont({sizeChanged} = {}) {
+  // console.log(sizeChanged)
+  // if (sizeChanged) editorStore.updateActiveWidgetsState({style: {transformOrigin: 'left top'}}, {safe: true})
   const font: Record<any, any> = {}
   if (fontSizeValue.value) font.fontSize = Number(fontSizeValue.value)
-  if (item.id) font.fontId = item.id
+  if (curFont.value?.id) font.fontId = curFont.value.id
   editorStore.updateActiveWidgetsState(font)
+  // if (sizeChanged) editorStore.updateActiveWidgetsState({style: {transformOrigin: 'center center'}}, {safe: true})
 }
 
 
@@ -164,9 +165,8 @@ onMounted(() => {
   updateTextStyle(detailConfig.textStyle)
 })
 
-watch([fontSizeValue, curFont], () => {
-  updateFont()
-}, {deep: true})
+watch([fontSizeValue], () => updateFont({sizeChanged: true}), {deep: true})
+watch([curFont], () => updateFont(), {deep: true})
 
 </script>
 
