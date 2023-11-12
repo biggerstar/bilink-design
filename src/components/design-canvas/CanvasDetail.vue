@@ -31,7 +31,6 @@
         <el-color-picker v-model="canvasInfo.bgColor" show-alpha :predefine="predefineColors"/>
       </template>
     </card>
-
   </div>
 </template>
 
@@ -42,12 +41,15 @@ import {useEditorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'
 import 'element-plus/es/components/color-picker/style/index.mjs'
 
-const isShowResizeCanvas = ref(false)
-
 const editorStore = useEditorStore()
+const isShowResizeCanvas = ref(false)
 const canvasInfo = ref()
 
-watch(editorStore, () => canvasInfo.value = editorStore.currentProject.canvas)
+const existProjectInfo = editorStore.currentProject
+const showPage = () => canvasInfo.value = editorStore.currentProject.canvas
+
+if (existProjectInfo?.canvas) showPage()
+else watch(editorStore, () => showPage())
 
 const predefineColors = ref([
   '#ff4500',
@@ -65,7 +67,6 @@ const predefineColors = ref([
   'hsla(209, 100%, 56%, 0.73)',
   '#c7158577',
 ])
-
 
 </script>
 

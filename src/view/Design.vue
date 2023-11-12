@@ -48,6 +48,7 @@
         :watermark='editorStore.currentProject.canvas.watermark'
       >
         <component
+          class="widget-box-selection"
           v-if="editorStore.currentProject" :is="widgetsMap[item.type]"
           v-for="item in editorStore.currentProject.items"
           :config="item">
@@ -70,7 +71,6 @@
         <component :is="curDetailComp"></component>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -80,7 +80,6 @@ import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveabl
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {useEditorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
-import {getElement4EventTarget} from "@/utils/tool";
 import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
 import {apiGetAllFonts} from "@/api/getFontData";
@@ -88,6 +87,8 @@ import {apiGetWidgetsDetailConfig} from "@/api/getWidgetsDetailConfig";
 import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
 import {notification} from 'ant-design-vue';
+import {getWidgetsName} from "@/utils/method";
+import {globalStore} from "@/store/global";
 
 const editorStore = useEditorStore()
 const pageConfig = ref()
@@ -127,33 +128,31 @@ function gotoTag(index) {
 }
 
 function scaleChanged() {
-  editorStore.moveableManager.moveable.updateRect()
+  globalStore.moveableManager.moveable.updateRect()
 }
 
-function getCurDetailComp(widgetsName = 'default') {
+function getCurDetailComp(widgetsName: string | void = 'default') {
   return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
-function listenClickWidgetsTarget(ev: MouseEvent) {
-  const moveableManger = editorStore.moveableManager
-  const clickTarget = getElement4EventTarget(ev)
-  if (!clickTarget) return
-  const res = moveableManger.activeWidgets(clickTarget)
+function listenClickWidgetsTarget() {
+  let widgetName
+  const widgetEl = globalStore.moveableManager.currentWidget
+  if (widgetEl) widgetName = getWidgetsName(widgetEl)
+  const detailComp = getCurDetailComp(widgetName)
   curDetailComp.value = null
-  nextTick(() => {
-    curDetailComp.value = getCurDetailComp(res?.['name'])
-    if (res) moveableManger.activeElement = res.el
-    else moveableManger.deActive()
-  })
+  nextTick(() => curDetailComp.value = detailComp)
 }
 
 let moveableManager: MoveableManager
 onMounted(async () => {
   curDetailComp.value = getCurDetailComp()
   moveableManager = new MoveableManager()
-  moveableManager.start(defaultMoveableOptions, document.getElementById('main'))
-  editorStore.moveableManager = <any>moveableManager
-  mainRef.value && mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
+  globalStore.moveableManager = <any>moveableManager
+  if (mainRef.value) {
+    moveableManager.start(defaultMoveableOptions, mainRef.value)
+    mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
+  }
 
   apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = res.data))
   apiGetWidgetsDetailConfig().then(res => res.code === 200 && (editorStore.widgetsDetailConfig = res.data))
@@ -175,11 +174,10 @@ const openNotification = () => {
   });
 };
 
-function saveProject() {
+function saveProject() {  /* 保存当前工程 */
   sessionStorage.setItem('layout', JSON.stringify(editorStore.currentProject))
   openNotification()
 }
-
 
 onUnmounted(() => {
   moveableManager && moveableManager.stop()

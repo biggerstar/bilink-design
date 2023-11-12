@@ -28,7 +28,8 @@ import {onMounted, ref, shallowRef} from "vue";
 import {isObject, isString} from "is-what";
 import {DESIGN_OPTIONS, DESIGN_SET_STATE, WIDGETS_NAMES} from "@/constant";
 import {useEditorStore} from "@/store/editor";
-import {createHandlerAction, createSetWidgetsStyle, selectAllText4Element} from "@/utils/method";
+import {createHandlerAction, createSetWidgetsStyle, CssTransformApi, selectAllText4Element} from "@/utils/method";
+import {globalStore} from "@/store/global";
 
 const WText = shallowRef<HTMLElement>()
 const textContent = ref()
@@ -45,15 +46,35 @@ const props = defineProps({
 
 const setWidgetsStyle: (name: keyof CSSStyleDeclaration, val: string) => void = createSetWidgetsStyle(() => WText.value)
 
+/** 生成或者修改 当前元素transform 指定函数值，不会影响到字符中其他函数，返回一条修改后的字符串 */
+function genTransform(name: string, val: string) {
+  const cssTransformApi = new CssTransformApi()
+  cssTransformApi.load(WText.value!.style.transform).change(name, val)
+  return cssTransformApi.transform
+}
+
 const actionMap = {  // 对传入状态的处理函数
   width: (val) => setWidgetsStyle("width", val ? `${val}px` : 'auto'),
   height: (val) => setWidgetsStyle("height", val ? `${val}px` : 'auto'),
   bgColor: (val) => setWidgetsStyle('backgroundColor', val || 'transparent'),
-  left: (val) => setWidgetsStyle("left", `${val}px`),
-  top: (val) => setWidgetsStyle("top", `${val}px`),
-  rotate: (val) => setWidgetsStyle("transform", `rotate(${val}deg)`),
-  fontId: (fontId) => WText.value && editorStore.setFontFamily(WText.value, fontId),
-  fontSize: (size) => WText.value && editorStore.setFontSize(WText.value, size),
+  left: (val) => setWidgetsStyle("left", val ? `${val}px` : '0'),
+  top: (val) => setWidgetsStyle("top", val ? `${val}px` : '0'),
+  rotate: (deg) => {
+    const transform = genTransform('rotate', `${deg}deg`)
+    transform && setWidgetsStyle("transform", transform)
+  },
+  translate: (val: string) => {
+    const translatePxStr = val.split(',').map(offset => `${offset}px`).toString()
+    const transform = genTransform('translate', `${translatePxStr}`)
+    transform && setWidgetsStyle("transform", transform)
+  },
+  scale: (val: string) => {
+    const transform = genTransform('scale', `${val}`)
+    transform && setWidgetsStyle("transform", transform)
+  },
+  opacity: (val) => setWidgetsStyle("opacity", `${val}`),
+  fontId: (fontId) => editorStore.setFontFamily(<any>WText.value, fontId),
+  fontSize: (size) => editorStore.setFontSize(<any>WText.value, size),
   uuid: (val) => uuid.value = val,
   text: (text) => textContent.value = text.replace(/\n/g, '<br/>'),
   textAlign: (name: string) => {
@@ -74,27 +95,29 @@ const actionMap = {  // 对传入状态的处理函数
   textDecoration: (val) => setWidgetsStyle('textDecoration', !val ? 'none' : val),
 }
 
-const setState: Function = createHandlerAction(actionMap, () => editorStore.moveableManager.moveable.updateRect())
+const setState: Function = createHandlerAction(actionMap, () => {
+  globalStore.moveableManager.moveable.updateRect()
+})
 
 onMounted(async () => {
   if (!WText.value) return
   setState(props.config)
-  if (WText.value) WText.value.contentEditable = 'plaintext-only'
   WText.value[DESIGN_OPTIONS] = props.config
   WText.value[DESIGN_SET_STATE] = setState
 })
 
 function dbClickWText() {
-  const el = WText.value
-  if (el) {
-    el.focus()
-    if (!editing.value) selectAllText4Element(el)   // 只有首次双击会全选，后面编辑状态双击根据不同系统自己选择文字
-    editing.value = true
-  }
+  const el = <HTMLElement>WText.value
+  el.contentEditable = 'plaintext-only'
+  el.focus()
+  if (!editing.value) selectAllText4Element(el)   // 只有首次双击会全选，后面编辑状态双击根据不同系统自己选择文字
+  editing.value = true
 }
 
 function blurText() {
   editing.value = false
+  WText.value!.contentEditable = String(false)
+  window.getSelection().removeAllRanges()
 }
 
 </script>

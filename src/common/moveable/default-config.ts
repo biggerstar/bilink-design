@@ -9,10 +9,7 @@ export default {
     // scalable: true,
     draggable: true,
     rotatable: true,
-    throttleDrag: 0,
-    throttleResize: 0,
-    throttleScale: 0,
-    throttleRotate: 0,
-    renderDirections: ["nw", "ne", "s", "se", "sw", "e"],
+    // renderDirections: ["nw", "ne", "s", "se", "sw", "e"],
+    renderDirections: ["n", "nw", "ne", "s", "se", "sw", "e", "w"],
   }
 } as Record<any, MoveableOptions>

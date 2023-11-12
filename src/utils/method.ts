@@ -36,10 +36,8 @@ export function parseWidget4DomChain(el: HTMLElement): HTMLElement | void {
   let cont = 500
   let target = el
   while (cont--) {
-    if (isWidgets(target)) {
-      return target
-    }
-    target = <HTMLElement>(el.parentElement || el.parentElement)
+    if (isWidgets(target)) return target
+    target = <HTMLElement>(el.parentNode || el.parentElement)
     if (!target) break
   }
 }
@@ -74,8 +72,9 @@ export function selectAllText4Element(el: HTMLElement) {
   if (window.getSelection) {
     const range = document.createRange()
     range.selectNodeContents(el)
-    window.getSelection().removeAllRanges()
-    window.getSelection().addRange(range)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
   }
 }
 
@@ -92,4 +91,51 @@ export function createHandlerAction<T>(actionMap: Record<any, any>, cb?: Functio
       if (isFunction(cb)) cb.call(null, name, options)
     }
   }
+}
+
+/**
+ * 后面可以单独拎出来当工具用
+ * 操作 css transform 的 api，方便更新，删除 transform 的值
+ * */
+export class CssTransformApi {
+  public transform = ''
+
+  load(transform): this {
+    this.transform = transform
+    return this
+  }
+
+  change(name: string, val: string): this {
+    this.remove(name)
+    this.transform = `${this.transform} ${name}(${val})`
+    return this
+  }
+
+  get(name): string | void {
+    const reg = new RegExp(`${name}\\(([^)]*)\\)`)
+    const matchData = this.transform.match(reg)
+    if (!matchData || !matchData[1]) return
+    return matchData[1]
+  }
+
+  remove(name): this {
+    const reg = new RegExp(`${name}\\([^)]*\\)`, 'g')
+    this.transform = this.transform.replace(reg, '');
+    return this
+  }
+}
+
+/** 将数字转指定保留小数位 */
+export function toFixed(num: number | string, toFixed: number = 0): number {
+  return Number(Number(num).toFixed(toFixed))
+}
+
+/** 获取 transform 字符串中的 translate 值 返回值样式为 x,y
+ * toFixed 保留小数位
+ * */
+export function getTranslate4Transform(transform: string, toFixed = 2): string | '' {
+  const cssTransformApi = new CssTransformApi()
+  const translateData = cssTransformApi.load(transform).get('translate')
+  if (!translateData) return ''
+  return translateData.split(',').map(offset => parseInt(offset).toFixed(toFixed)).toString()
 }

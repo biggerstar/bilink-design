@@ -1,5 +1,5 @@
 <template>
-  <div id="design-canvas" ref="designCanvas">
+  <div id="design-canvas" ref="designCanvas" class="not-user-select">
     <div id="editor-shell-wrap">
       <div id="editor-area-box">
         <div id="editor-area" ref="editorArea">

@@ -63,6 +63,7 @@ import ContentBox from "@/components/content-box/ContentBox.vue";
 import {apiGetFontSizeList} from "@/api/getFontSizeList";
 import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
+import {globalStore} from "@/store/global";
 
 const editorStore = useEditorStore()
 const isShowFontsPage = ref(false)
@@ -112,34 +113,33 @@ function alignStatusChanged(item) {
 }
 
 function updateTextStyle(textStyle: any[]) {
-  const activeOptions = editorStore.activeOptions
+  const currentOptions = editorStore.getCurrentOptions()
+  if (!currentOptions) return
   textStyle.forEach(item => {
-    const isActive = item.style[item.key] === activeOptions[item.key]
+    const isActive = item.style[item.key] === currentOptions[item.key]
     if (isActive) activeStyleItems(item)
     item.selected = isActive
   })
 }
 
-
 onMounted(() => {
+  const currentOptions = editorStore.getCurrentOptions()
   nextTick(() => {  // 显示当前字体
-    const activeOptions = editorStore.activeOptions
-    if (!activeOptions) return
-    const fontId = activeOptions.fontId || editorStore.currentProject?.canvas?.fontId
+    if (!currentOptions) return
+    const fontId = currentOptions.fontId || editorStore.currentProject?.canvas?.fontId
     if (fontId) curFont.value = editorStore.getFont4Id(fontId)
   })
   apiGetFontSizeList().then(res => {
     const {code, data} = res
     if (code !== 200) return
-    const activeOptions = editorStore.activeOptions
-    fontSizeValue.value = activeOptions.fontSize
+    fontSizeValue.value = currentOptions?.fontSize || ''
     fontSizeRefList.value = data.map(size => ({value: size, label: size}))
   })
 })
 
 function choiceFont(item) {
-  const activeElement = editorStore.moveableManager.activeElement
-  if (!activeElement || !item) return
+  const currentWidget = globalStore.moveableManager.currentWidget
+  if (!currentWidget || !item) return
   curFont.value = item
 }
 
@@ -159,8 +159,8 @@ onMounted(() => {
   const detailConfig = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
   alignList.value = detailConfig.align
   textStyleList.value = detailConfig.textStyle
-  const activeOptions = editorStore.activeOptions
-  alignList.value && alignList.value.forEach(item => item.selected = item.name === activeOptions.textAlign)
+  const currentOptions = editorStore.getCurrentOptions()
+  alignList.value && alignList.value.forEach(item => item.selected = item.name === currentOptions.textAlign)
   updateTextStyle(detailConfig.textStyle)
 })
 
