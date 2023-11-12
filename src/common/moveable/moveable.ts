@@ -64,11 +64,10 @@ export class MoveableManager {
 
     moveable
       .on("drag", (ev: OnDrag) => {
-        ev.target.style.transform = ev.transform
         editorStore.updateActiveWidgetsState({
           left: toFixed(ev.left, 3),
           top: toFixed(ev.top, 3),
-        }, {effectDom: false})
+        }, {effectDom: true})
       })
       .on("resize", (ev: OnResize) => {
         // ev.target.style.transform = ev.transform
@@ -77,28 +76,20 @@ export class MoveableManager {
         editorStore.updateActiveWidgetsState({
           width: toFixed(ev.width, 3),
           height: toFixed(ev.height, 3),
-          left: toFixed(ev.drag.left, 3),
-          top: toFixed(ev.drag.top, 3),
+          // left: toFixed(ev.drag.left, 3),
+          // top: toFixed(ev.drag.top, 3),
         }, {effectDom: true})
       })
       .on("scale", (ev: OnScale) => {
-        console.log(ev);
-        // console.log(ev.drag.left, ev.drag.top)
         const scale = ev.scale[0] || ev.scale[1]
-        ev.target.style.transform = ev.drag.transform
         editorStore.updateActiveWidgetsState({
           scale: toFixed(scale, 3),
-          width: toFixed(ev.drag.width, 3),
-          height: toFixed(ev.drag.height, 3),
-          left: toFixed(ev.drag.left, 3),
-          top: toFixed(ev.drag.top, 3),
-        }, {effectDom: false})
+        }, {effectDom: true})
       })
       .on("rotate", (ev: OnRotate) => {
-        ev.target.style.transform = ev.drag.transform
         editorStore.updateActiveWidgetsState({
           rotate: toFixed(ev.rotation, 3),
-        }, {effectDom: false})
+        }, {effectDom: true})
       })
 
     ;const eventHookList = this.eventHookList
@@ -170,6 +161,9 @@ export class MoveableManager {
     this.currentElement = el
   }
 
+  /**
+   * 失活
+   * */
   public deActive() {
     this.currentElement = void 0
     this.overElement = void 0

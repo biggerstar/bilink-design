@@ -20,14 +20,21 @@ export function setDirection(moveable: Moveable, clickTarget: HTMLElement) {
       keepRatio: true,
       scalable: true,
       resizable: false,
-      snappable:true,
+      snappable: false,
     })
   } else if (direction === 'resize') {
     moveable.setState({
       keepRatio: false,
       resizable: true,
       scalable: false,
-      snappable:false,
+      snappable: false,
+    })
+  } else {
+    moveable.setState({
+      keepRatio: true,
+      scalable: true,
+      resizable: true,
+      snappable: true,
     })
   }
 }
