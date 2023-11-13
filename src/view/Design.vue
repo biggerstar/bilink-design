@@ -40,28 +40,21 @@
     </div>
     <div id="main" class="main" ref="mainRef">
       <DesignCanvas
-        v-if="editorStore.currentProject.canvas"
-        :w="editorStore.currentProject.canvas.width"
-        :h="editorStore.currentProject.canvas.height"
-        :scale='editorStore.currentProject.canvas.scale'
-        :bgColor='editorStore.currentProject.canvas.bgColor'
-        :watermark='editorStore.currentProject.canvas.watermark'
+        v-if="currentProjectInfo && currentProjectInfo.canvas"
+        :config="currentProjectInfo.canvas"
       >
         <component
           class="widget-box-selection"
-          v-if="editorStore.currentProject" :is="widgetsMap[item.type]"
-          v-for="item in editorStore.currentProject.items"
+          v-if="currentProjectInfo" :is="widgetsMap[item.type]"
+          v-for="item in currentProjectInfo.items"
           :config="item">
-
         </component>
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
-          v-if="editorStore.currentProject.canvas"
+          v-if="currentProjectInfo && currentProjectInfo.canvas"
           class="scale-control"
           selector="#design-canvas"
-          @scaleChanged='scaleChanged'
-          :scaleWheelStep="editorStore.currentProject.canvas.scaleWheelStep"
         />
       </div>
     </div>
@@ -78,7 +71,7 @@
 import {nextTick, onMounted, onUnmounted, ref, shallowRef} from "vue";
 import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveable'
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
-import {useEditorStore} from "@/store/editor";
+import {editorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
 import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
@@ -88,13 +81,14 @@ import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
 import {notification} from 'ant-design-vue';
 import {getWidgetsName} from "@/utils/method";
-import {globalStore} from "@/store/global";
+import {LineGuides} from "@/common/line-guides/line-guides";
+import {isNumber} from "is-what";
 
-const editorStore = useEditorStore()
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagIndex = ref<number>(-1)
 const curDetailComp = shallowRef()
+const currentProjectInfo = ref()
 
 const moreOperationList = [
   {
@@ -127,36 +121,44 @@ function gotoTag(index) {
   activeTagIndex.value = activeTagIndex.value === index ? -1 : index
 }
 
-function scaleChanged() {
-  globalStore.moveableManager.moveable.updateRect()
-}
-
 function getCurDetailComp(widgetsName: string | void = 'default') {
   return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
 function listenClickWidgetsTarget() {
   let widgetName
-  const widgetEl = globalStore.moveableManager.currentWidget
+  const widgetEl = editorStore.moveableManager.currentWidget
   if (widgetEl) widgetName = getWidgetsName(widgetEl)
   const detailComp = getCurDetailComp(widgetName)
   curDetailComp.value = null
   nextTick(() => curDetailComp.value = detailComp)
 }
 
-let moveableManager: MoveableManager
-onMounted(async () => {
+/**
+ * 载入工程配置成功后调用
+ * */
+function loadEditorProjectSuccess() {
+  currentProjectInfo.value = editorStore.currentProject
+  // updateDesignCanvas(editorStore.currentProject.canvas?.scale)
   curDetailComp.value = getCurDetailComp()
-  moveableManager = new MoveableManager()
-  globalStore.moveableManager = <any>moveableManager
+  lineGuides.mount(mainRef.value)
+}
+
+
+let moveableManager: MoveableManager
+let lineGuides: LineGuides
+onMounted(async () => {
   if (mainRef.value) {
-    moveableManager.start(defaultMoveableOptions, mainRef.value)
+    moveableManager = new MoveableManager()
+    editorStore.moveableManager = <any>moveableManager
+    moveableManager.mount(mainRef.value, defaultMoveableOptions)
     mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
+    lineGuides = new LineGuides()
   }
 
   apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = res.data))
   apiGetWidgetsDetailConfig().then(res => res.code === 200 && (editorStore.widgetsDetailConfig = res.data))
-  const getProjectInfo = apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data))
+  const getProjectInfo = apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data) || loadEditorProjectSuccess())
   const getAllFonts = apiGetAllFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
   Promise.all([getProjectInfo, getAllFonts]).then(() => {
     const fontId = editorStore.currentProject?.canvas?.fontId
@@ -180,7 +182,8 @@ function saveProject() {  /* 保存当前工程 */
 }
 
 onUnmounted(() => {
-  moveableManager && moveableManager.stop()
+  moveableManager && moveableManager.destroy()
+  lineGuides && lineGuides.destroy()
   mainRef.value && mainRef.value!.removeEventListener('click', listenClickWidgetsTarget)
 })
 

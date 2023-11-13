@@ -38,6 +38,7 @@ declare module 'vue' {
     ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
     ElSpace: typeof import('element-plus/es')['ElSpace']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    LineGuides: typeof import('./src/components/line-guides/LineGuides.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']

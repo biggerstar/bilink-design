@@ -60,13 +60,12 @@ export default {
     },
   ],
   canvas: {
-    scale: -1,
-    scaleWheelStep: 0.02,
     width: 1200,
     height: 2200,
     bgColor: '#FFF',
     color: '#000',
     watermark: 'bi.link',
     // font:'100041903',
-  }
+  },
+  scaleSizeList: [2, 1, 0.75, 0.5]
 }

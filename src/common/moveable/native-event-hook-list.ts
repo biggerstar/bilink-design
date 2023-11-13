@@ -1,8 +1,8 @@
 import {getElement4EventTarget} from "@/utils/tool";
 import {throttle} from "lodash-es";
 import {setDirection} from "@/common/method/set-direction";
-import {globalStore} from "@/store/global";
 import {parseWidget4DomChain} from "@/utils/method";
+import {editorStore} from "@/store/editor";
 
 export default function createNativeEventHookList() {
   return [
@@ -12,7 +12,7 @@ export default function createNativeEventHookList() {
         const downEl = getElement4EventTarget(ev)
         if (!downEl) return
         const widgetsEl = parseWidget4DomChain(downEl)
-        const moveableManager = globalStore.moveableManager
+        const moveableManager = editorStore.moveableManager
         // console.log(widgetsEl)
         if (widgetsEl) moveableManager.focus(downEl)
         else {
@@ -30,8 +30,8 @@ export default function createNativeEventHookList() {
       call: throttle((ev: MouseEvent) => {
         const overEl = getElement4EventTarget(ev)
         if (!overEl || ev.buttons !== 0 /*  鼠标未按下才自动跳框 */) return
-        globalStore.moveableManager.over(overEl)
-        setDirection(<any>globalStore.moveableManager.moveable, overEl)
+        editorStore.moveableManager.over(overEl)
+        setDirection(<any>editorStore.moveableManager.moveable, overEl)
       }, 80),
       options: true
     },

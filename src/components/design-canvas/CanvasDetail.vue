@@ -19,7 +19,7 @@
       </a-space>
       <div v-else class="canvas-size-info">
         <div>尺寸</div>
-        <div>{{ `${canvasInfo.width} x ${canvasInfo.height}px` }}</div>
+        <div>{{ `${canvasInfo.width} x ${canvasInfo.height} px` }}</div>
       </div>
       <div class="reset-canvas-btn" v-if="!isShowResizeCanvas" @click='isShowResizeCanvas=true'>调整尺寸</div>
       <div class="reset-canvas-btn" v-else @click='isShowResizeCanvas=false'>完成</div>
@@ -35,23 +35,22 @@
 </template>
 
 <script setup lang="ts">
-import {ref, watch} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import Card from "@/components/card/Card.vue";
-import {useEditorStore} from '@/store/editor'
+import {editorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'
 import 'element-plus/es/components/color-picker/style/index.mjs'
 import {predefineColorList} from "@/config/base";
+import {pick} from "lodash-es";
 
-const editorStore = useEditorStore()
 const isShowResizeCanvas = ref(false)
 const canvasInfo = ref()
-
-const existProjectInfo = editorStore.currentProject
-const showPage = () => canvasInfo.value = editorStore.currentProject.canvas
-
-if (existProjectInfo?.canvas) showPage()
-else watch(editorStore, () => showPage())
-
+onMounted(() => canvasInfo.value = editorStore.currentProject.canvas)
+watch([canvasInfo], () => {
+  editorStore.updateCanvasStyle(pick(canvasInfo.value, ['width', 'height', 'bgColor']))
+}, {
+  deep: true
+})
 
 </script>
 
