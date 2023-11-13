@@ -54,6 +54,7 @@ function genTransform(name: string, val: string) {
 }
 
 const actionMap = {  // 对传入状态的处理函数
+  uuid: (val) => uuid.value = val,
   width: (val) => setWidgetsStyle("width", val ? `${val}px` : 'auto'),
   height: (val) => setWidgetsStyle("height", val ? `${val}px` : 'auto'),
   bgColor: (val) => setWidgetsStyle('backgroundColor', val || 'transparent'),
@@ -73,13 +74,14 @@ const actionMap = {  // 对传入状态的处理函数
   opacity: (val) => setWidgetsStyle("opacity", `${val}`),
   fontId: (fontId) => editorStore.setFontFamily(<any>WText.value, fontId),
   fontSize: (size) => editorStore.setFontSize(<any>WText.value, size),
-  uuid: (val) => uuid.value = val,
+  lineHeight: (val = '1') => setWidgetsStyle("lineHeight", val),
+  letterSpacing: (val) => setWidgetsStyle("letterSpacing", `${val}px`),
   text: (text) => textContent.value = text.replace(/\n/g, '<br/>'),
   textAlign: (name: string) => {
     const config = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
     if (!config) return
     const align = config.align || []
-    const found = align.find(item => item.name === name)
+    const found = align.find(item => item.value === name)
     if (!found) return
     if (!isObject(found.style)) return
     for (const name in found.style) {

@@ -1,5 +1,6 @@
 <template>
   <div class="detail-main not-user-select">
+    <!-- 字体选择二级控件 -->
     <div v-if="isShowFontsPage" class="select-font-page">
       <a-page-header
         class="a-page-header"
@@ -39,13 +40,32 @@
               :options="fontSizeRefList"
             ></a-select>
           </content-box>
-          <content-box class="text-edit-style-setting-item" style="width: 100%;">
+          <!-- 文字样式控件 -->
+          <content-box class="text-edit-style-setting-item w-full">
             <CheckBox v-if="textStyleList" :data="textStyleList" @changed="textStyleStatusChanged">
             </CheckBox>
           </content-box>
-          <content-box class="text-edit-style-setting-item" style="width: 100%;">
+          <!-- 文字排列方向控件 -->
+          <content-box class="text-edit-style-setting-item w-full">
             <CheckBox v-if="alignList" type="radio" :data="alignList" @changed="alignStatusChanged">
             </CheckBox>
+          </content-box>
+          <!-- 行距 字距 调整控件 -->
+          <content-box v-if="spaceInfoList" class="w-full">
+            <SliderNumber class="w-full"
+                          v-for="item in curSpaceInfo"
+                          :max="item.max"
+                          :min="item.min"
+                          :step="item.step"
+                          v-model:value="item.value"
+                          @change="spaceInfoChanged(item)"
+            >
+              <template #icon>
+                <a-tooltip :title="item.tip">
+                  <div class="iconfont font-bold text-[1rem]" :class="item.icon"></div>
+                </a-tooltip>
+              </template>
+            </SliderNumber>
           </content-box>
         </div>
       </card>
@@ -55,15 +75,15 @@
 
 <script setup lang="ts">
 import Card from "@/components/card/Card.vue";
-import {nextTick, onMounted, ref, watch} from 'vue'
+import {nextTick, onMounted, ref, toRaw, watch} from 'vue'
 import ElScrollbar from 'element-plus/es/components/scrollbar/index.mjs'
 import 'element-plus/es/components/scrollbar/style/index.mjs'
 import {useEditorStore} from "@/store/editor";
 import ContentBox from "@/components/content-box/ContentBox.vue";
-import {apiGetFontSizeList} from "@/api/getFontSizeList";
 import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
 import {globalStore} from "@/store/global";
+import SliderNumber from "@/components/slider-number/SliderNumber.vue";
 
 const editorStore = useEditorStore()
 const isShowFontsPage = ref(false)
@@ -72,6 +92,10 @@ const fontSizeValue = ref();
 const fontSizeRefList = ref()
 const allFonts = ref()
 const curFont = ref()
+const alignList = ref()
+const textStyleList = ref()
+const spaceInfoList = ref()
+const curSpaceInfo = ref()
 
 function showSelectFontPage() {
   isShowMainDetailPage.value = false
@@ -88,12 +112,15 @@ function getConflictItems(curItem) {
   return /* key冲突的item */ textStyleList.value.filter(item => item.key === curItem.key && item !== curItem)
 }
 
-/** 设置冲突的样式控制按钮,会自动处理冲突 */
+/** 设置文字样式控件的冲突按钮,会自动处理冲突活跃显示与失活 */
 function activeStyleItems(curItem) {
   const conflictItem = getConflictItems(curItem)
   conflictItem.forEach(item => item.selected = false)
 }
 
+/**
+ * 文字样式控件点击后状态改变
+ * */
 function textStyleStatusChanged(curItem) {
   let style = {}
   const curStatus = curItem.selected
@@ -102,16 +129,19 @@ function textStyleStatusChanged(curItem) {
     style = curItem.style
     activeStyleItems(curItem)
   }
-  // console.log(curStatus, style)
   editorStore.updateActiveWidgetsState(style)
 }
 
+/**
+ * 文字排序控件点击后状态改变
+ * */
 function alignStatusChanged(item) {
-  editorStore.updateActiveWidgetsState({
-    textAlign: item.name
-  })
+  editorStore.updateActiveWidgetsState({textAlign: item.value})
 }
 
+/**
+ * 判断当前样式设置控件选择情况
+ * */
 function updateTextStyle(textStyle: any[]) {
   const currentOptions = editorStore.getCurrentOptions()
   if (!currentOptions) return
@@ -122,51 +152,53 @@ function updateTextStyle(textStyle: any[]) {
   })
 }
 
-onMounted(() => {
-  const currentOptions = editorStore.getCurrentOptions()
-  nextTick(() => {  // 显示当前字体
-    if (!currentOptions) return
-    const fontId = currentOptions.fontId || editorStore.currentProject?.canvas?.fontId
-    if (fontId) curFont.value = editorStore.getFont4Id(fontId)
-  })
-  apiGetFontSizeList().then(res => {
-    const {code, data} = res
-    if (code !== 200) return
-    fontSizeValue.value = currentOptions?.fontSize || ''
-    fontSizeRefList.value = data.map(size => ({value: size, label: size}))
-  })
-})
+function spaceInfoChanged(item) {
+  editorStore.updateActiveWidgetsState({[item.key]: item.value})
+}
 
+
+/** 二级页面选择字体后执行 */
 function choiceFont(item) {
   const currentWidget = globalStore.moveableManager.currentWidget
   if (!currentWidget || !item) return
   curFont.value = item
 }
 
-function updateFont({sizeChanged} = {}) {
-  // console.log(sizeChanged)
-  // if (sizeChanged) editorStore.updateActiveWidgetsState({style: {transformOrigin: 'left top'}}, {safe: true})
+/** 更新与加载远程字体 */
+function updateFont() {
   const font: Record<any, any> = {}
   if (fontSizeValue.value) font.fontSize = Number(fontSizeValue.value)
   if (curFont.value?.id) font.fontId = curFont.value.id
   editorStore.updateActiveWidgetsState(font)
-  // if (sizeChanged) editorStore.updateActiveWidgetsState({style: {transformOrigin: 'center center'}}, {safe: true})
 }
 
-
-const alignList = ref()
-const textStyleList = ref()
 onMounted(() => {
+  const currentOptions = toRaw(editorStore.getCurrentOptions() || {})
   const detailConfig = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
-  alignList.value = detailConfig.align
-  textStyleList.value = detailConfig.textStyle
-  const currentOptions = editorStore.getCurrentOptions()
-  alignList.value && alignList.value.forEach(item => item.selected = item.name === currentOptions.textAlign)
-  updateTextStyle(detailConfig.textStyle)
+  const {align, textStyle, spaceInfo, fontsSizeList} = detailConfig
+  alignList.value = align
+  alignList.value.forEach(item => item.selected = item.value === currentOptions.textAlign)
+  textStyleList.value = textStyle
+  spaceInfoList.value = spaceInfo
+  fontSizeRefList.value = (fontsSizeList || []).map(size => ({value: size, label: size}))
+  fontSizeValue.value = currentOptions?.fontSize || ''
+  curSpaceInfo.value = spaceInfo.map(item => {
+    const originSpaceVal = currentOptions[item.key || item.key]
+    return {
+      ...item,
+      value: originSpaceVal === void 0 ? item.value : originSpaceVal
+    }
+  })
+
+  updateTextStyle(textStyle)
+  nextTick(() => {  // 显示当前字体
+    if (!currentOptions) return
+    const fontId = currentOptions.fontId || editorStore.currentProject?.canvas?.fontId
+    if (fontId) curFont.value = editorStore.getFont4Id(fontId)
+  })
 })
 
-watch([fontSizeValue], () => updateFont({sizeChanged: true}), {deep: true})
-watch([curFont], () => updateFont(), {deep: true})
+watch([curFont, fontSizeValue], () => updateFont(), {deep: true})
 
 </script>
 

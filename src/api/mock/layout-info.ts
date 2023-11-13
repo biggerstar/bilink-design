@@ -25,6 +25,8 @@ export default {
       fontWeight: 'bold',
       writingMode: 'horizontal-tb',
       textDecoration: 'underline',
+      lineHeight: 1,
+      letterSpacing: 3,
     },
     {
       uuid: '#2',
@@ -53,6 +55,7 @@ export default {
       textAlign: 'center',
       textDecoration: 'underline',
       fontStyle: "italic",
+      lineHeight: 1,
       // scale: 1.3,
     },
   ],
