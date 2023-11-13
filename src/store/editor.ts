@@ -18,7 +18,8 @@ type StateType = {
       scaleWheelStep: number,
       width: number;
       height: number;
-      bgColor: string;
+      bgColor: string; //  背景颜色
+      color: string;   // 文字颜色
       fontId: string   // canvas 内所有元素默认使用的字体
       watermark?: string;
     },

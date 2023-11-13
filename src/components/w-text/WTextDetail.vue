@@ -52,13 +52,14 @@
           </content-box>
           <!-- 行距 字距 调整控件 -->
           <content-box v-if="spaceInfoList" class="w-full">
-            <SliderNumber class="w-full"
-                          v-for="item in curSpaceInfo"
-                          :max="item.max"
-                          :min="item.min"
-                          :step="item.step"
-                          v-model:value="item.value"
-                          @change="spaceInfoChanged(item)"
+            <SliderNumber
+              class="w-full ml-2 mr-2"
+              v-for="item in curSpaceInfo"
+              :max="item.max"
+              :min="item.min"
+              :step="item.step"
+              v-model:value="item.value"
+              @change="spaceInfoChanged(item)"
             >
               <template #icon>
                 <a-tooltip :title="item.tip">
@@ -68,6 +69,28 @@
             </SliderNumber>
           </content-box>
         </div>
+      </card>
+      <DividingLine/>
+      <card title="特效">
+        <div class="flex justify-between">
+          <span class="text-[0.9rem]">颜色</span>
+          <el-color-picker v-model="textColor" @change="textColorChanged" show-alpha :predefine="predefineColorList"/>
+        </div>
+      </card>
+      <card title="基础">
+        <SliderNumber
+          v-if="widgetOpacity"
+          class="w-full"
+          :max="100"
+          :min="0"
+          :step="1"
+          v-model:value="widgetOpacity"
+          @change="opacityChanged"
+        >
+          <template #icon>
+            <span class="text-[0.9rem] w-1/3 min-w-[60px]"> 不透明度</span>
+          </template>
+        </SliderNumber>
       </card>
     </div>
   </div>
@@ -84,6 +107,9 @@ import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
 import {globalStore} from "@/store/global";
 import SliderNumber from "@/components/slider-number/SliderNumber.vue";
+import DividingLine from '@/components/dividing-line/DividingLine.vue'
+import {predefineColorList} from "@/config/base";
+import {isNumber} from "is-what";
 
 const editorStore = useEditorStore()
 const isShowFontsPage = ref(false)
@@ -96,6 +122,8 @@ const alignList = ref()
 const textStyleList = ref()
 const spaceInfoList = ref()
 const curSpaceInfo = ref()
+const textColor = ref()
+const widgetOpacity = ref()
 
 function showSelectFontPage() {
   isShowMainDetailPage.value = false
@@ -152,9 +180,9 @@ function updateTextStyle(textStyle: any[]) {
   })
 }
 
-function spaceInfoChanged(item) {
-  editorStore.updateActiveWidgetsState({[item.key]: item.value})
-}
+const spaceInfoChanged = (item) => editorStore.updateActiveWidgetsState({[item.key]: item.value})
+const textColorChanged = (val) => editorStore.updateActiveWidgetsState({color: val})
+const opacityChanged = (val) => editorStore.updateActiveWidgetsState({opacity: val / 100})
 
 
 /** 二级页面选择字体后执行 */
@@ -176,6 +204,8 @@ onMounted(() => {
   const currentOptions = toRaw(editorStore.getCurrentOptions() || {})
   const detailConfig = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
   const {align, textStyle, spaceInfo, fontsSizeList} = detailConfig
+  textColor.value = currentOptions.color
+  widgetOpacity.value = isNumber(currentOptions.opacity) ? currentOptions.opacity * 100 : 100
   alignList.value = align
   alignList.value.forEach(item => item.selected = item.value === currentOptions.textAlign)
   textStyleList.value = textStyle

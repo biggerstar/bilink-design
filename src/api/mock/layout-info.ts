@@ -65,6 +65,7 @@ export default {
     width: 1200,
     height: 2200,
     bgColor: '#FFF',
+    color: '#000',
     watermark: 'bi.link',
     // font:'100041903',
   }

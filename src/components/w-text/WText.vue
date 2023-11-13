@@ -58,6 +58,7 @@ const actionMap = {  // 对传入状态的处理函数
   width: (val) => setWidgetsStyle("width", val ? `${val}px` : 'auto'),
   height: (val) => setWidgetsStyle("height", val ? `${val}px` : 'auto'),
   bgColor: (val) => setWidgetsStyle('backgroundColor', val || 'transparent'),
+  color: (val) => setWidgetsStyle('color', val || 'transparent'),
   rotate: (deg) => {
     const transform = genTransform('rotate', `${deg}deg`)
     transform && setWidgetsStyle("transform", transform)

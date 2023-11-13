@@ -28,7 +28,7 @@
 
     <card title="背景色" class="not-user-select">
       <template #header>
-        <el-color-picker v-model="canvasInfo.bgColor" show-alpha :predefine="predefineColors"/>
+        <el-color-picker v-model="canvasInfo.bgColor" show-alpha :predefine="predefineColorList"/>
       </template>
     </card>
   </div>
@@ -40,6 +40,7 @@ import Card from "@/components/card/Card.vue";
 import {useEditorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'
 import 'element-plus/es/components/color-picker/style/index.mjs'
+import {predefineColorList} from "@/config/base";
 
 const editorStore = useEditorStore()
 const isShowResizeCanvas = ref(false)
@@ -51,22 +52,6 @@ const showPage = () => canvasInfo.value = editorStore.currentProject.canvas
 if (existProjectInfo?.canvas) showPage()
 else watch(editorStore, () => showPage())
 
-const predefineColors = ref([
-  '#ff4500',
-  '#ff8c00',
-  '#ffd700',
-  '#90ee90',
-  '#00ced1',
-  '#1e90ff',
-  '#c71585',
-  'rgba(255, 69, 0, 0.68)',
-  'rgb(255, 120, 0)',
-  'hsv(51, 100, 98)',
-  'hsva(120, 40, 94, 0.5)',
-  'hsl(181, 100%, 37%)',
-  'hsla(209, 100%, 56%, 0.73)',
-  '#c7158577',
-])
 
 </script>
 
