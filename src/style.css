@@ -169,6 +169,10 @@ html, body, #app {
   box-sizing: border-box;
 }
 
+.widget-box-selection:hover {
+  z-index: 20010;
+}
+
 .widget-box-selection:hover::before {
   content: '';
   position: absolute;

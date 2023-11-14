@@ -2,6 +2,8 @@
   <div id="design-canvas" ref="designCanvas" class="not-user-select">
     <div id="editor-shell-wrap">
       <div id="editor-area-box" ref="editorAreaBox">
+        <div class="editor-area-mask"></div>
+        <!-- 取巧使用遮罩覆盖溢出元素 box-shadow 上颜色等于中间镂空两个部分就能分割开 -->
         <div id="editor-area" ref="editorArea">
           <slot></slot>
           <a-watermark :content="props.config.watermark || ''" style="height: 100%; width: 100%;z-index: -1">
@@ -59,9 +61,24 @@ onMounted(() => {
 }
 
 #editor-area-box {
+  position: relative;
   width: calc(var(--canvas-width) * var(--canvas-scale));
   height: calc(var(--canvas-height) * var(--canvas-scale));
-  overflow: hidden;
+  //overflow: hidden;
+}
+
+.editor-area-mask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 0 10000px #F6F7F9;
+  -webkit-box-shadow: 0 0 0 10000px #F6F7F9;
+  -moz-box-shadow: 0 0 0 10000px #F6F7F9;
+  z-index: 2000;
+  background-color: transparent;
+  pointer-events: none;
 }
 
 #editor-area {

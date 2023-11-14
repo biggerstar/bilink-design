@@ -29,6 +29,7 @@ export const defaultMoveableOptions: MoveableOptions = {
   elementGuidelines: ['div[data-type="widgets"]', 'scena-guides-horizontal', 'scena-guides-vertical'],
   snapGridWidth: 10,
   snapGridHeight: 10,
+  isDisplaySnapDigit: true,
   // draggable: true,
   // clippable: false,
   // resizable: true,

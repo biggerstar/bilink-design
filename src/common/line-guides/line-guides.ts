@@ -10,8 +10,8 @@ export class LineGuides {
   public resizeObserver: ResizeObserver | null = null
   public observerTarget: HTMLElement | null
 
-  public lineWeightTop = 30
-  public lineWeightLeft = 30
+  public lineWeightTop = 20
+  public lineWeightLeft = 20
 
   public __running: boolean
 
@@ -27,15 +27,18 @@ export class LineGuides {
       textColor: '#999999',
       displayDragPos: true,
       segment: 1,
-      lineOffset: 1,
-      // shortLineSize: 0,
+      textAlign: 'center',
+      direction: 'end',
+      longLineSize: 2,
+      // lineOffset: 1,
+      mainLineSize: 6,
       // longLineSize: 0,
-      // textOffset: 0,
     }
 
     const guidesTop = new Guides(<any>container, <NewGuidesOptions>{
       ...baseConfig,
       type: "horizontal",
+      textOffset: [0, 10],
       style: {
         position: 'absolute',
         left: '0',
@@ -49,11 +52,12 @@ export class LineGuides {
     const guidesLeft = new Guides(<any>container, <NewGuidesOptions>{
       ...baseConfig,
       type: "vertical",
+      textOffset: [10, 0],
       style: {
         position: 'absolute',
         left: '0',
         top: '0',
-        width: `${this.lineWeightLeft}px`
+        width: `${this.lineWeightLeft}px`,
       },
       ...options.top
     }).on("changeGuides", e => {
@@ -102,6 +106,6 @@ export class LineGuides {
     this.guidesLeft && this.guidesLeft.destroy()
     this.guidesTop = void 0
     this.guidesLeft = void 0
-    this.resizeObserver= null
+    this.resizeObserver = null
   }
 }
