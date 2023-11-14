@@ -77,6 +77,7 @@
           <el-color-picker v-model="textColor" @change="textColorChanged" show-alpha :predefine="predefineColorList"/>
         </div>
       </card>
+      <hr class="hr-line">
       <card title="基础">
         <SliderNumber
           v-if="widgetOpacity"

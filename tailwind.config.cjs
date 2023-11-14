@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './index.html',
-    './src/**/*.{vue,js,ts,js,jsx,tsx}'
+    './packages/**/index.html',
+    './packages/**/*.{vue,js,ts,js,jsx,tsx}'
   ],
   theme: {
     extend: {},
@@ -10,6 +10,6 @@ module.exports = {
   plugins: [],
 
   corePlugins: {
-    // preflight: false //禁用 Tailwind 的全局基本样式，会和 ant 样式冲突
+    preflight: false //禁用 Tailwind 的全局基本样式，会和 ant 样式冲突
   }
 };
