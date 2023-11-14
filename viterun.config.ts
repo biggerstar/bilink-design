@@ -21,12 +21,17 @@ export default defineViteRunConfig(() => {
           ['frontend_build', 'frontend_plugins', 'tailwindcss']
         ],
         buildGit: [
-          ['frontend_build', 'frontend_plugins', 'tailwindcss', 'page']   // 编译部署到git的产物
+          ['frontend_build', 'frontend_plugins', 'tailwindcss', 'page']   // 编译部署到git的产物,在本地无法预览
         ],
-        preview: ['p10000'],   // 部署到git page 在本地无法预览
+        preview: ['p10000'],
         size: [
           ['frontend_build', 'frontend_plugins', 'tailwindcss', 'bundleAnalyzer']
         ]
+      },
+      'backend': {
+        build: [
+          ['backend_build']
+        ],
       }
     },
     plugins: {
@@ -73,7 +78,16 @@ export default defineViteRunConfig(() => {
             input: `${options.packagePath}/index.html`
           }
         }
-      }
+      },
+      backend_build: (options) => {
+        return {
+          lib: {
+            entry: `${options.packagePath}/lib/www`,
+          },
+          watch: true,
+          rollupOptions: {}
+        }
+      },
     },
     preview: {
       p10000: {
