@@ -4,14 +4,15 @@
  * Module dependencies.
  */
 
-const app = require('../app');
-const http = require('http');
-require('dotenv').config();
+import {config} from "dotenv";
+import http from "http";
+import app from "../app.ts";
 
+config();
 /**
  * Get port from environment and store in Express.
  */
-console.log(process.env.PORT)
+
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
@@ -83,5 +84,7 @@ function onError(error) {
 
 function onListening() {
   const addr = server.address();
-  console.log('server listening: ', ` http://localhost:${addr['port']}`)
+  if (addr != null) {
+    console.log('server listening: ', ` http://localhost:${addr['port']}`)
+  }
 }

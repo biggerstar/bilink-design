@@ -1,10 +1,8 @@
 {
-  "name": "backend",
-  "version": "0.0.0",
+  "name": "bilink-design-backend",
   "private": true,
-  "type": "commonjs",
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-  },
-  "dependencies": {
   }
 }

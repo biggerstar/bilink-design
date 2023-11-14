@@ -29,6 +29,9 @@ export default defineViteRunConfig(() => {
         ]
       },
       'backend': {
+        dev: [
+          ['backend_build']
+        ],
         build: [
           ['backend_build']
         ],
@@ -82,10 +85,14 @@ export default defineViteRunConfig(() => {
       backend_build: (options) => {
         return {
           lib: {
-            entry: `${options.packagePath}/lib/www`,
+            entry: `${options.packagePath}/bin/www`,
+            name: 'design-backend',
+            format: ['cjs'],
           },
           watch: true,
-          rollupOptions: {}
+          rollupOptions: {
+            external: ['@type/*']
+          }
         }
       },
     },
@@ -108,7 +115,7 @@ export default defineViteRunConfig(() => {
     baseConfig(options) {
       return {
         resolve: {
-          extensions: ['.vue', '.css', '.js', '.ts'],
+          extensions: ['.vue', '.css', '.js', '.ts', 'mjs'],
           alias: {
             '@': resolve(__dirname, `${options.packagePath}/src`),
           }
