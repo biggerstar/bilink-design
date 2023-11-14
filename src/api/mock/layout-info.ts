@@ -65,6 +65,7 @@ export default {
     bgColor: '#FFF',
     color: '#000',
     watermark: 'bi.link',
+    guideline: true,
     // font:'100041903',
   },
   scaleSizeList: [2, 1, 0.75, 0.5]

@@ -18,7 +18,7 @@
             @click="choiceFont(item)"
             :class="{'font-item-active':item.name === curFont?.name}"
           >
-            <span v-if="item.name === curFont?.name">☑️</span>
+            <span v-if="item.name === curFont?.name">✔</span>
             <img draggable="false" :src="item.preview.url" :alt="item.name" style="width: 75%;height:1.5rem; "/>
           </div>
         </el-scrollbar>
@@ -70,7 +70,7 @@
           </content-box>
         </div>
       </card>
-      <DividingLine/>
+      <hr class="hr-line">
       <card title="特效">
         <div class="flex justify-between">
           <span class="text-[0.9rem]">颜色</span>
@@ -101,17 +101,14 @@ import Card from "@/components/card/Card.vue";
 import {nextTick, onMounted, ref, toRaw, watch} from 'vue'
 import ElScrollbar from 'element-plus/es/components/scrollbar/index.mjs'
 import 'element-plus/es/components/scrollbar/style/index.mjs'
-import {useEditorStore} from "@/store/editor";
+import {editorStore} from "@/store/editor";
 import ContentBox from "@/components/content-box/ContentBox.vue";
 import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
-import {globalStore} from "@/store/global";
 import SliderNumber from "@/components/slider-number/SliderNumber.vue";
-import DividingLine from '@/components/dividing-line/DividingLine.vue'
 import {predefineColorList} from "@/config/base";
 import {isNumber} from "is-what";
 
-const editorStore = useEditorStore()
 const isShowFontsPage = ref(false)
 const isShowMainDetailPage = ref(true)
 const fontSizeValue = ref();
@@ -187,7 +184,7 @@ const opacityChanged = (val) => editorStore.updateActiveWidgetsState({opacity: v
 
 /** 二级页面选择字体后执行 */
 function choiceFont(item) {
-  const currentWidget = globalStore.moveableManager.currentWidget
+  const currentWidget = editorStore.moveableManager.currentWidget
   if (!currentWidget || !item) return
   curFont.value = item
 }

@@ -35,5 +35,10 @@ export default function createNativeEventHookList() {
       }, 80),
       options: true
     },
+    {
+      name: 'scroll',
+      call: () => editorStore.moveableManager.moveable.updateRect(),
+      options: true
+    },
   ]
 }

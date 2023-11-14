@@ -8,6 +8,9 @@ dependencies:
   '@biggerstar/deepmerge':
     specifier: ^1.0.2
     version: 1.0.2
+  '@scena/guides':
+    specifier: ^0.29.2
+    version: 0.29.2
   ant-design-vue:
     specifier: ~4.0.6
     version: 4.0.6(vue@3.3.8)
@@ -41,6 +44,9 @@ dependencies:
   vue-router:
     specifier: ^4.2.5
     version: 4.2.5(vue@3.3.8)
+  vue3-guides:
+    specifier: ^0.12.2
+    version: 0.12.2
 
 devDependencies:
   '@types/lodash-es':
@@ -807,10 +813,37 @@ packages:
       '@daybrush/utils': 1.13.0
     dev: false
 
+  /@scena/guides@0.29.2:
+    resolution: {integrity: sha512-gnXiB/Ji3ix/mGCgJiWz4k6U9OjEwcpdKUvmh3pYLXuL2x6DouCPAJ/PwnrYgaSMURhSyNkzp4WJdHqbAdYDXw==}
+    dependencies:
+      '@scena/event-emitter': 1.0.5
+      croact: 1.0.4
+      croact-guides: 0.26.2
+    dev: false
+
   /@scena/matrix@1.1.1:
     resolution: {integrity: sha512-JVKBhN0tm2Srl+Yt+Ywqu0oLgLcdemDQlD1OxmN9jaCTwaFPZ7tY8n6dhVgMEaR9qcR7r+kAlMXnSfNyYdE+Vg==}
     dependencies:
       '@daybrush/utils': 1.13.0
+    dev: false
+
+  /@scena/react-guides@0.28.2:
+    resolution: {integrity: sha512-3TylBDU32BPk/SARQdZ2dkwW0NbQA7D21XUMMdGm/RXxuMNg39oHrxQ/XjlkFOvRFDgc7gPDsDgi1Am8wRuu1Q==}
+    dependencies:
+      '@daybrush/utils': 1.13.0
+      '@scena/dragscroll': 1.4.0
+      '@scena/react-ruler': 0.19.0
+      css-to-mat: 1.1.1
+      framework-utils: 1.1.0
+      gesto: 1.19.2
+      react-css-styled: 1.1.9
+    dev: false
+
+  /@scena/react-ruler@0.19.0:
+    resolution: {integrity: sha512-2OEOjLMOptDxdSuEqID2JAljQuYoeoV09MnLjiBeyzJxoUcVjzyBCPwkMbHRKj2Z3WrwztJAFBF+y6yNNM5Lcw==}
+    dependencies:
+      '@daybrush/utils': 1.13.0
+      framework-utils: 1.1.0
     dev: false
 
   /@simonwep/pickr@1.8.2:
@@ -1300,6 +1333,20 @@ packages:
       framework-utils: 1.1.0
     dev: false
 
+  /croact-guides@0.26.2:
+    resolution: {integrity: sha512-Q2oRK8jo70mLC93Drce+dEozqgJdVjpbC6b0OxXVbvaXaZnamNH6UHeileuATcXLRbsgY49XfI/2H0mY82vwJQ==}
+    dependencies:
+      '@daybrush/utils': 1.13.0
+      '@scena/dragscroll': 1.4.0
+      '@scena/react-guides': 0.28.2
+      croact-css-styled: 1.1.9
+      croact-ruler: 0.18.0
+      css-to-mat: 1.1.1
+      framework-utils: 1.1.0
+      gesto: 1.19.2
+      react-css-styled: 1.1.9
+    dev: false
+
   /croact-moveable@0.8.0(croact@1.0.4):
     resolution: {integrity: sha512-ZjHAskafO9BC8zeIPvZKRO4ZtbEeMg92WQPYcWI2clb7Z5s/wXq5ySfqMg7uqBvZQzG/570VcCfg3j32mOIWbA==}
     peerDependencies:
@@ -1320,6 +1367,12 @@ packages:
       overlap-area: 1.1.0
       react-css-styled: 1.1.9
       react-moveable: 0.55.0
+    dev: false
+
+  /croact-ruler@0.18.0:
+    resolution: {integrity: sha512-FZtYH1n3Mpv7VX24y26lAMOVqem+/qRG4a7nBy9pwDeh9Q8UycOQqAdmWxNC1CNh1Pw1k4K28/gRQOyo4r1Zag==}
+    dependencies:
+      '@scena/react-ruler': 0.19.0
     dev: false
 
   /croact@1.0.4:
@@ -2785,6 +2838,13 @@ packages:
     dependencies:
       is-plain-object: 3.0.1
       vue: 3.3.8(typescript@5.2.2)
+    dev: false
+
+  /vue3-guides@0.12.2:
+    resolution: {integrity: sha512-6YPMMtxwD6Jb6BDvzqJ86lEpjw7l9AN57j2Gpq5DWQ1zJnExY2HxuQjRMY5H0bevUgLBF6A7KuC5bzxDbvQLQw==}
+    dependencies:
+      '@scena/guides': 0.29.2
+      framework-utils: 1.1.0
     dev: false
 
   /vue@3.3.8(typescript@5.2.2):

@@ -27,14 +27,12 @@
 import {onMounted, ref, shallowRef} from "vue";
 import {isObject, isString} from "is-what";
 import {DESIGN_OPTIONS, DESIGN_SET_STATE, WIDGETS_NAMES} from "@/constant";
-import {useEditorStore} from "@/store/editor";
+import {editorStore} from "@/store/editor";
 import {createHandlerAction, createSetWidgetsStyle, CssTransformApi, selectAllText4Element} from "@/utils/method";
-import {globalStore} from "@/store/global";
 
 const WText = shallowRef<HTMLElement>()
 const textContent = ref()
 const uuid = ref()
-const editorStore = useEditorStore()
 const editing = ref(false)
 
 const props = defineProps({
@@ -97,9 +95,7 @@ const actionMap = {  // 对传入状态的处理函数
   style: (styleObj: Partial<CSSStyleDeclaration>) => Object.keys(styleObj).forEach(name => WText.value && (WText.value.style[name] = styleObj[name]))
 }
 
-const setState: Function = createHandlerAction(actionMap, () => {
-  globalStore.moveableManager.moveable.updateRect()
-})
+const setState: Function = createHandlerAction(actionMap)
 
 onMounted(async () => {
   if (!WText.value) return

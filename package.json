@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@biggerstar/deepmerge": "^1.0.2",
+    "@scena/guides": "^0.29.2",
     "ant-design-vue": "~4.0.6",
     "default-passive-events": "^2.0.0",
     "element-plus": "^2.4.2",
@@ -20,7 +21,8 @@
     "pinia": "^2.1.7",
     "uuid": "^9.0.1",
     "vue": "^3.3.8",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vue3-guides": "^0.12.2"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.11",

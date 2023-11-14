@@ -12,10 +12,9 @@ import Moveable, {
 import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
 import defaultConfig from "@/common/moveable/default-config";
 import {CssTransformApi, getWidgetsName, isWidgets, parseWidget4DomChain, toFixed} from "@/utils/method";
-import {useEditorStore} from "@/store/editor";
+import {editorStore} from "@/store/editor";
 import './moveable-style.css'
 
-const editorStore = useEditorStore()
 
 export const defaultMoveableOptions: MoveableOptions = {
   zoom: 0.8,
@@ -27,10 +26,9 @@ export const defaultMoveableOptions: MoveableOptions = {
   origin: false,
   snappable: true,
   rotationPosition: 'bottom',
-  elementGuidelines: ['div[data-type="widgets"]'],
-  snapGridWidth: 6,
-  snapGridHeight: 6,
-
+  elementGuidelines: ['div[data-type="widgets"]', 'scena-guides-horizontal', 'scena-guides-vertical'],
+  snapGridWidth: 10,
+  snapGridHeight: 10,
   // draggable: true,
   // clippable: false,
   // resizable: true,
@@ -46,6 +44,7 @@ export class MoveableManager {
   public container: HTMLElement
   public currentElement: HTMLElement | void   // 当前聚焦的元素
   public overElement: HTMLElement | void   //  当前鼠标指针停留位置的元素
+  public resizeObserver: ResizeObserver | null
 
   public get currentWidget(): HTMLElement | void {   // 获取当前活跃的组件
     return parseWidget4DomChain(<any>this.currentElement || this.overElement)
@@ -65,9 +64,10 @@ export class MoveableManager {
   /**
    * 开始工作
    * */
-  public start(moveableOptions: MoveableOptions = {}, container: HTMLElement | null | void) {
+  public mount(container: HTMLElement | string | null | void, moveableOptions: MoveableOptions = {}) {
     if (this.__running) return
     this.__running = true
+    if (typeof container === 'string') container = document.querySelector<HTMLElement>(container)
     if (!container) container = document.body
     this.container = container
     const moveable = new Moveable(container, moveableOptions);
@@ -85,6 +85,9 @@ export class MoveableManager {
       }
       return transInfo
     }
+
+    this.resizeObserver = new ResizeObserver(() => this.moveable.updateRect())
+    this.resizeObserver.observe(container)
 
     function syncTransformConfig(transform: string) {
       transform && editorStore.updateActiveWidgetsState(parseTransform(transform), {effectDom: false})
@@ -112,19 +115,18 @@ export class MoveableManager {
         })
       })
 
-    moveable.origin = true
 
     ;const eventHookList = this.eventHookList
     eventHookList.forEach((item) => {
       const options = item['options']
-      container && container.addEventListener(item.name, item.call, options === void 0 ? {} : options)
+      this.container && this.container.addEventListener(item.name, item.call, options === void 0 ? {} : options)
     })
   }
 
   /**
    * 停止 moveable 工作
    * */
-  public stop() {
+  public destroy() {
     this.moveable.destroy()
     this.eventHookList.forEach((item) => {
       this.container && this.container.removeEventListener(item.name, item.call)
@@ -190,6 +192,8 @@ export class MoveableManager {
     this.currentElement = void 0
     this.overElement = void 0
     this.moveable.target = []
+    this.resizeObserver && this.resizeObserver.disconnect()
+    this.resizeObserver = null
   }
 }
 

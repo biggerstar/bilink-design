@@ -1,7 +1,7 @@
 <template>
   <div id="design-canvas" ref="designCanvas" class="not-user-select">
     <div id="editor-shell-wrap">
-      <div id="editor-area-box">
+      <div id="editor-area-box" ref="editorAreaBox">
         <div id="editor-area" ref="editorArea">
           <slot></slot>
           <a-watermark :content="props.config.watermark || ''" style="height: 100%; width: 100%;z-index: -1">
@@ -18,6 +18,7 @@ import {editorStore} from "@/store/editor";
 
 const designCanvas = ref()
 const editorArea = ref()
+const editorAreaBox = ref()
 const props = defineProps({
   config: {
     type: Object,
@@ -25,17 +26,18 @@ const props = defineProps({
   }
 })
 onMounted(() => {
-  editorStore.editorAreaTarget = editorArea.value
   editorStore.designCanvasTarget = designCanvas.value
+  editorStore.editorAreaBoxTarget = editorAreaBox.value
+  editorStore.editorAreaTarget = editorArea.value
   editorStore.updateCanvasStyle({
     /* 外部无传入对应参数时的默认配置 */
     width: 600,
     height: 800,
     padding: 60,
     bgColor: '#FFF',
-    scale: void 0,
     ...props.config
   })
+  editorStore.updateCanvasStyle({scale: void 0,}, {safe: true})
 })
 
 
@@ -43,6 +45,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 #design-canvas {
+  position: relative;
   width: 100%;
   height: 99.5%;
   overflow: auto;

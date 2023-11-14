@@ -54,7 +54,7 @@
         <ScaleControl
           v-if="currentProjectInfo && currentProjectInfo.canvas"
           class="scale-control"
-          selector="#design-canvas"
+          selector="#main"
         />
       </div>
     </div>
@@ -81,14 +81,13 @@ import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
 import {notification} from 'ant-design-vue';
 import {getWidgetsName} from "@/utils/method";
-import {LineGuides} from "@/common/line-guides/line-guides";
-import {isNumber} from "is-what";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagIndex = ref<number>(-1)
 const curDetailComp = shallowRef()
 const currentProjectInfo = ref()
+let moveableManager: MoveableManager
 
 const moreOperationList = [
   {
@@ -139,21 +138,19 @@ function listenClickWidgetsTarget() {
  * */
 function loadEditorProjectSuccess() {
   currentProjectInfo.value = editorStore.currentProject
-  // updateDesignCanvas(editorStore.currentProject.canvas?.scale)
   curDetailComp.value = getCurDetailComp()
-  lineGuides.mount(mainRef.value)
+  if (editorStore.currentProject.canvas.guideline) setTimeout(() => editorStore.displayLineGuides(true), 100)
+  setTimeout(() => {
+    editorStore.moveableManager = <any>new MoveableManager()
+    editorStore.moveableManager.mount(mainRef.value, defaultMoveableOptions)
+  }, 100)
 }
 
 
-let moveableManager: MoveableManager
-let lineGuides: LineGuides
 onMounted(async () => {
   if (mainRef.value) {
-    moveableManager = new MoveableManager()
-    editorStore.moveableManager = <any>moveableManager
-    moveableManager.mount(mainRef.value, defaultMoveableOptions)
+
     mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
-    lineGuides = new LineGuides()
   }
 
   apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = res.data))
@@ -182,8 +179,8 @@ function saveProject() {  /* 保存当前工程 */
 }
 
 onUnmounted(() => {
-  moveableManager && moveableManager.destroy()
-  lineGuides && lineGuides.destroy()
+  editorStore.moveableManager && editorStore.moveableManager.destroy()
+  editorStore.lineGuides && editorStore.lineGuides.destroy()
   mainRef.value && mainRef.value!.removeEventListener('click', listenClickWidgetsTarget)
 })
 

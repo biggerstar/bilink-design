@@ -4,6 +4,7 @@ import {toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
 import {loadFont} from "@/utils/method";
 import {isNumber} from "is-what";
+import {LineGuides} from "@/common/line-guides/line-guides";
 
 type CanvasConfig = {
   scale: number | null,
@@ -15,6 +16,7 @@ type CanvasConfig = {
   color: string;   // 文字颜色
   fontId: string   // canvas 内所有元素默认使用的字体
   watermark?: string;
+  guideline?: boolean;
 }
 
 /**
@@ -24,6 +26,7 @@ type CanvasConfig = {
 class EditorStore {
   /** moveable 管理器 */
   public moveableManager: MoveableManager
+  public lineGuides: LineGuides
   /** 所有字体 */
   allFont: object[]
   public
@@ -65,10 +68,12 @@ class EditorStore {
     if (!currentWidget) return
     /* 通过activeOptions引用更新在 currentProject.items 中的配置  */
     deepmerge(this.getCurrentOptions(), activeInfo, options)
+    this.moveableManager?.moveable?.updateRect()
     if (effectDom) currentWidget[DESIGN_SET_STATE](activeInfo)
   }
 
   public designCanvasTarget: HTMLElement
+  public editorAreaBoxTarget: HTMLElement
   public editorAreaTarget: HTMLElement
 
   /**
@@ -97,6 +102,7 @@ class EditorStore {
       }
       bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], String(scale))  // 设置当前尺寸，未设置 scale 或者 scale 为 null 自动设置最佳尺寸
     }
+    this.moveableManager?.moveable?.updateRect()
     deepmerge(this.currentProject.canvas, canvasInfo, options)
   }
 
@@ -143,6 +149,21 @@ class EditorStore {
   /** 获取某个组件详情页的配置信息  */
   public getWidgetsDetailConfig(w_name: string): any {
     return this.widgetsDetailConfig?.[w_name]
+  }
+
+  /** 获取当前画布缩放级别  */
+  public getCurScaleValue = () => Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
+
+  /** 是否显示标尺  */
+  public displayLineGuides(isShow: boolean = true) {
+    if (isShow) {
+      if (!this.designCanvasTarget) return
+      this.lineGuides = new LineGuides()
+      this.lineGuides.mount(this.designCanvasTarget)
+    } else {
+      this.lineGuides && this.lineGuides.destroy()
+      this.lineGuides = void 0
+    }
   }
 }
 

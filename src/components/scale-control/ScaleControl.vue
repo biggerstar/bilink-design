@@ -9,11 +9,13 @@
           >
             <div
               v-for="item in itemGroup"
-              class="h-[40px] h-[220px] text-left leading-[40px]"
+              class="h-[40px] h-[220px] text-left leading-[40px] flex justify-between"
+              :style="item.style"
               :key="item.text"
               @click="item.handler"
             >
-              {{ item.text }}
+              <div>{{ item.text }}</div>
+              <div v-if="item.selected">✔</div>
             </div>
             <hr v-if="actionList[actionList.length - 1] !== itemGroup" class="m-[10px]">
           </div>
@@ -57,23 +59,55 @@ const props = defineProps({
     default: 0.2
   }
 })
-
+const displayLineGuides = ref(false)
+const lineGuidesList = [
+  {
+    text: '显示标尺和参考线',
+    handler() {
+      if (!editorStore.lineGuides) {
+        editorStore.displayLineGuides(true)
+        displayLineGuides.value = true
+      } else if (editorStore.lineGuides) {
+        editorStore.displayLineGuides(false)
+        displayLineGuides.value = false
+      }
+    },
+    get selected() {
+      return displayLineGuides
+    },
+    style: {
+      fontWeight: 'bold'
+    },
+  },
+]
 
 const scaleList = editorStore.currentProject.scaleSizeList.map(scaleNum => {
   return {
     text: toPercent(scaleNum),
-    handler: () => editorStore.updateCanvasStyle({scale: scaleNum},{safe:true})
+    handler() {
+      editorStore.updateCanvasStyle({scale: scaleNum}, {safe: true})
+      scaleValue.value = toPercent(scaleNum)
+    },
+    get selected() {
+      return scaleNum === editorStore.getCurScaleValue()
+    }
   }
 })
 
 const otherScaleList = [
   {
     text: '适合屏幕',
-    handler: () => editorStore.updateCanvasStyle({scale: null},{safe:true})
+    handler: () => {
+      editorStore.updateCanvasStyle({scale: null}, {safe: true})
+      scaleValue.value = toPercent(getCurScaleValue())
+    },
+    get selected() {
+      return !editorStore.currentProject.scaleSizeList.includes(editorStore.getCurScaleValue())
+    }
   },
 ]
 
-const actionList = [scaleList, otherScaleList]
+const actionList = ref([lineGuidesList, scaleList, otherScaleList])
 
 
 const visiblePopover = ref<boolean>(false)
@@ -82,28 +116,29 @@ const scaleValue = ref<string | number>('')
 
 const mouseenterAdjustmentBtn = () => isShowAdjustmentBtn.value = true
 const mouseleaveAdjustmentBtn = () => isShowAdjustmentBtn.value = false
+const getCurScaleValue = () => Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
 
 function addition(ev: Event) {
   ev.stopPropagation()
   visiblePopover.value = false
-  const curScaleNum = Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
+  const curScaleNum = getCurScaleValue()
   const newScaleVal = Math.min(2, toFixed(curScaleNum + props.scaleManualStep, 3))
   scaleValue.value = toPercent(newScaleVal)
-  editorStore.updateCanvasStyle({scale: newScaleVal},{safe:true})
+  editorStore.updateCanvasStyle({scale: newScaleVal}, {safe: true})
 }
 
 function subtraction(ev: Event) {
   ev.stopPropagation()
   visiblePopover.value = false
-  const curScaleNum = Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
+  const curScaleNum = getCurScaleValue()
   const newScaleVal = Math.max(0.1, toFixed(curScaleNum - props.scaleManualStep, 3))
   scaleValue.value = toPercent(newScaleVal)
-  editorStore.updateCanvasStyle({scale: newScaleVal},{safe:true})
+  editorStore.updateCanvasStyle({scale: newScaleVal}, {safe: true})
 }
 
 onMounted(() => {
   const bodyStyle = document.body.style
-  scaleValue.value = toPercent(bodyStyle.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
+  scaleValue.value = toPercent(getCurScaleValue())
   const selector: string = <string>props.selector
   let dom = document.querySelector(selector) || document.body
   dom.addEventListener("mousewheel", (ev: WheelEvent) => {
@@ -112,12 +147,12 @@ onMounted(() => {
     if (isMetaKey && wheelDelta !== 0) {
       ev.preventDefault()
       const sign = wheelDelta > 0 ? 1 : -1
-      const curScale = bodyStyle.getPropertyValue(CSS_DEFINE["--canvas-scale"]) * 1
+      const curScale = getCurScaleValue()
       const newScale = (curScale + sign * props.scaleWheelStep).toFixed(2) * 1
       const limitScale = Math.min(2, Math.max(newScale, 0.1)) // 最小为0.1缩放,最大为2倍
       scaleValue.value = toPercent(limitScale)
       bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], limitScale.toString())
-      editorStore.updateCanvasStyle({scale: limitScale},{safe:true})
+      editorStore.updateCanvasStyle({scale: limitScale}, {safe: true})
     }
   }, {passive: false})
 })
