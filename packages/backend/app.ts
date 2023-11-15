@@ -4,11 +4,12 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import indexRouter from "./routes/index.ts";
-import {cwd} from 'node:process'
+import process from 'node:process'
+
 const app = express()
 
 // view engine setup
-app.set('views', path.join(cwd(), 'views'))
+app.set('views', path.join(process.cwd(), 'views'))
 app.set('view engine', 'jade');
 
 app.use(logger('dev'))

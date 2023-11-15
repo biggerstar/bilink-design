@@ -51,7 +51,7 @@ export default defineViteRunConfig(() => {
           },
           server: {
             viteLog: {
-              transforming: true
+              transforming: false
             },
           }
         }),
