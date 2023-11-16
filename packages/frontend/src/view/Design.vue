@@ -1,4 +1,5 @@
 <template>
+  <!--  --------------------header---------------------  -->
   <div class="header">
     <div class="header-left" v-if="pageConfig">{{ pageConfig.brand }}</div>
     <div class="header-right">
@@ -27,17 +28,31 @@
     </div>
   </div>
   <div class="work-area">
+    <!--  --------------------aside---------------------  -->
     <div class="aside">
-      <div class="tool-tags" v-if="pageConfig">
-        <div v-for="(item,index) in pageConfig.asideTag" :key="index" @click="gotoTag(index)">
-          <div class="tag" :class="{activeTag: activeTagIndex === index }">
+      <div class="tool-tags h-full" v-if="pageConfig">
+        <div v-for="(item,index) in pageConfig.asideTag" :key="index" @click="showTagPage(item.comp)">
+          <div class="tag" :class="{activeTag:activeTagName && item.comp && activeTagName === item.comp }">
             <i class="iconfont icon" :class="item.icon"> </i>
-            <div>{{ item.name }}</div>
+            <div class="tag-name">{{ item.name }}</div>
           </div>
         </div>
       </div>
-      <div class="widgets-panel" v-show="activeTagIndex >= 0"></div>
+      <div class="widgets-panel" :style="{width: activeTagName ? '312px': '0'}">
+        <div class="relative w-full h-full">
+          <div class="aside-close-btn flex-col justify-center" v-show="activeTagName" @click="showTagPage()">
+            <img draggable="false" src="https://cdn.dancf.com/fe-assets/20221227/c1af0eecfff91f6a33bb285bebe2036b.svg" alt="">
+          </div>
+          <div style="min-width: 312px" class="w-full h-full">
+            <keep-alive>
+              <component :is="currentAsideTagComp"></component>
+            </keep-alive>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!--  --------------------main---------------------  -->
     <div id="main" class="main" ref="mainRef">
       <DesignCanvas
         v-if="currentProjectInfo && currentProjectInfo.canvas"
@@ -53,7 +68,7 @@
       <div id="main-bottom">
         <ScaleControl
           v-if="currentProjectInfo && currentProjectInfo.canvas"
-          class="scale-control"
+          class="scale-control z-[500]"
           selector="#main"
         />
       </div>
@@ -73,7 +88,7 @@ import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveabl
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {editorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
-import {widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
+import {asideTagMap, widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
 import {apiGetAllFonts} from "@/api/getFontData";
 import {apiGetWidgetsDetailConfig} from "@/api/getWidgetsDetailConfig";
@@ -84,10 +99,10 @@ import {getWidgetsName} from "@/utils/method";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
-const activeTagIndex = ref<number>(-1)
-const curDetailComp = shallowRef()
-const currentProjectInfo = ref()
-let moveableManager: MoveableManager
+const activeTagName = shallowRef<string>()
+const curDetailComp = shallowRef()  // 当前编辑区域点击小组件时对应的小组件配置页
+const currentProjectInfo = ref()   // 当前使用的工程文件
+const currentAsideTagComp = shallowRef()   // 当前左侧标签展开页使用的组件
 
 const moreOperationList = [
   {
@@ -114,10 +129,12 @@ const moreOperationList = [
   },
 ]
 
-// console.log(editorStore)
-function gotoTag(index) {
-  // console.log(item)
-  activeTagIndex.value = activeTagIndex.value === index ? -1 : index
+showTagPage('material')
+
+function showTagPage(name = '') {
+  activeTagName.value = activeTagName.value === name ? void 0 : name
+  currentAsideTagComp.value = name ? asideTagMap[name] : void 0
+  setTimeout(() => editorStore.lineGuides && editorStore.lineGuides.updateGuidesStyle(), 217)
 }
 
 function getCurDetailComp(widgetsName: string | void = 'default') {
@@ -200,13 +217,18 @@ $tool-tags-width: 72px;
   align-items: center;
   font-weight: bolder;
   font-size: 1.2rem;
+  border-bottom: rgba(227, 226, 226, 0.71) solid 1px;
 }
 
 .activeTag {
   background-color: #E8EAEC;
-  font-weight: bolder;
   color: black;
   border-radius: 10px;
+  font-family: "Microsoft YaHei", "Microsoft Sans Serif", system-ui;
+
+  .tag-name {
+    font-weight: 800 !important;
+  }
 }
 
 .work-area {
@@ -215,19 +237,21 @@ $tool-tags-width: 72px;
   display: flex;
 
   .aside {
+    display: flex;
+    justify-content: space-between;
     min-width: 56px;
     min-height: 66px;
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-user-select: none;
-    overflow: hidden;
     border-right: #d9d8d8 solid 1px;
 
     .tool-tags {
       display: flex;
       flex-direction: column;
       width: $tool-tags-width;
+      border-right: var(--color-gray-300) solid 1px;
 
       .tag {
         margin: 2px 7px;
@@ -238,21 +262,34 @@ $tool-tags-width: 72px;
         }
 
         div {
-          font-size: 1rem;
+          font-size: 0.95rem;
           transform: scale(0.8);
           color: #676c73;
-          font-weight: 500;
+          font-weight: 400;
         }
 
         width: auto;
         text-align: center;
         cursor: pointer;
       }
+
     }
 
     .widgets-panel {
-      width: calc(310px + $tool-tags-width);
+      transition: all 200ms;
+      width: calc(312px);
       height: auto;
+
+      .aside-close-btn {
+        width: 12px;
+        height: 80px;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translate(calc(100% - 3px), -50%);
+        z-index: 301;
+        cursor: pointer;
+      }
     }
   }
 

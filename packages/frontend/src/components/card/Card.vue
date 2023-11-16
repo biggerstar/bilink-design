@@ -25,6 +25,7 @@ const props = defineProps({
 .card-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-weight: bolder;
   text-align: center;
   font-size: 1rem;

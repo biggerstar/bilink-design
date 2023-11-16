@@ -26,6 +26,16 @@ export function curry(fn): Function {
   }
 }
 
+/**
+ * 判断一个元素是否已经滚动到底部
+ * offset 表示距离底部多少触发
+ * */
+export function isElementAtBottom(element: Element, offset: number = 0) {
+  const {scrollTop, clientHeight, scrollHeight} = element
+  if (clientHeight === 0 || scrollHeight === 0) return false
+  return scrollTop + clientHeight + offset >= scrollHeight
+}
+
 
 /**
  *  通用函数,传入一个对象数组，递归获取某一个层级的的某个键所有对象值

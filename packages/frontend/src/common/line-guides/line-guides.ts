@@ -43,7 +43,8 @@ export class LineGuides {
         position: 'absolute',
         left: '0',
         top: '0',
-        height: `${this.lineWeightTop}px`
+        height: `${this.lineWeightTop}px`,
+        zIndex: 300
       },
       ...options.top
     }).on("changeGuides", e => {
@@ -58,6 +59,7 @@ export class LineGuides {
         left: '0',
         top: '0',
         width: `${this.lineWeightLeft}px`,
+        zIndex: 300
       },
       ...options.top
     }).on("changeGuides", e => {
@@ -70,7 +72,7 @@ export class LineGuides {
     const el = editorStore.editorAreaBoxTarget
     if (!el) return console.error('未找到监听对象')
     this.observerTarget = el
-    this.resizeObserver = new ResizeObserver(() => this.updateGuidesStyle())
+    this.resizeObserver = new ResizeObserver(() => Promise.resolve(() => this.updateGuidesStyle()))
     this.resizeObserver.observe(el)
   }
 
@@ -95,6 +97,8 @@ export class LineGuides {
         guidesLeft.scroll(-offsetTop / scale)
         guidesTop.scrollGuides(-(offsetTop - this.lineWeightTop) / scale)
         guidesLeft.scrollGuides(-(offsetLeft - this.lineWeightLeft) / scale)
+        guidesTop.forceUpdate()
+        guidesLeft.forceUpdate()
       })
     }
   }
