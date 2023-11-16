@@ -1,6 +1,3 @@
-import {sleep} from '../../common/tool/tool.js'
-import {isFunction} from "is-what";
-
 const options = {
   method: 'GET',
   headers: {
@@ -28,39 +25,18 @@ const options = {
 };
 
 
-const page_size = 300
-let page_num = 1
-
 /**
  * 传入一个id, 获取该id的对应类型的组件数据列表
  * */
-async function _crawlMaterialDataDetail(id, page_size, page_num) {
+export async function crawlMaterialDataDetail(id, parent_id,page_size, page_num) {
   if (!id || !page_size || !page_num) return
   return new Promise((resolve, reject) => {
-    fetch(`https://www.gaoding.com/api/v3/cp/search-contents/simple?page_size=${page_size}&filter_id=${id}&is_group=true&page_num=${page_num}`, options)
+    const url = `https://www.gaoding.com/api/v3/cp/search-contents/simple?page_size=${page_size}&filter_id=${id}&filter_id=${parent_id}&is_group=true&page_num=${page_num}`
+    fetch(url, options)
       .then(response => response.json())
       .then(response => resolve(response))
       .catch(err => reject(err));
   })
-}
-
-let resultCont = 0
-
-/** 递归调用获取该 素材类型下的所有小组件 */
-export async function crawlMaterialDataDetail(id, callback) {
-  let cont = 500
-  while (cont--) {
-    const res = await _crawlMaterialDataDetail(id, page_size, page_num++)
-    if (!Array.isArray(res) || res.length === 0) {   // 递归时如果下个页面已经没有数据了则回归
-      page_num = 1
-      resultCont = 0
-      return
-    }
-    resultCont += res.length
-    if (isFunction(callback)) callback(res)
-    console.log('当前素材类型id', id, '已获取小组件个数', resultCont)
-    await sleep(1000)  // 每个请求间隔2秒，关爱稿定，不能太快太离谱
-  }
 }
 
 

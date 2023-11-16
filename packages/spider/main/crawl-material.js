@@ -22,22 +22,42 @@ export async function crawlMaterialData(id, startIndex = 0) {
       if (index < startIndex) continue
       console.log('索引:', index, '当前获取类别:', materialTypeItem.name, 'id为:', materialTypeItem.id);
       let err_count = 0
-      await crawlMaterialDataDetail(materialTypeItem.id, async (widgetsData = []) => {
-        for (const i in widgetsData) {
-          const item = widgetsData[i]
-          ModelMaterial.findByPk(item.id).then(res => {
-            if (res) return err_count++ % 50 === 0 && console.log('已存在', materialTypeItem.name, '错误个数', err_count - 1)
-            ModelMaterial.create({
+      let page_num = 0
+      let page_size = 300
+      let maxLoop = 500
+      let resultCont = 0
+      while (++page_num <= maxLoop) {
+        const materialData = await crawlMaterialDataDetail(materialTypeItem.id, materialTypeItem.parent_id, page_size, page_num)
+        if (!Array.isArray(materialData) || !materialData.length) {
+          page_num = 1
+          break
+        }
+        resultCont = resultCont + materialData.length
+        console.log('当前素材类型id', id, '已获取小组件个数', resultCont)
+        for (const i in materialData) {
+          const item = materialData[i]
+          await ModelMaterial.findOrCreate({
+            where: {
               id: item.id,
               parentId: materialTypeItem.id,
+            },
+            defaults: {
+              id: item.id,
+              parentId: materialTypeItem.id,
+              parentName: materialTypeItem.name,
               detail: item,
-            }).then(() => {
-              console.log('成功插入:', materialTypeItem.name, 'pid为:', materialTypeItem.id, 'id为:', item.id)
-            }).catch((err) => console.log(err.message))
+              title: item.title,
+              material_location: item.ext.material_location
+            }
+          }).then((res) => {
+            const [_, created] = res
+            if (!created) return err_count++ % 50 === 0 && console.log('已存在', materialTypeItem.name, '错误个数', err_count - 1)
+            console.log('成功插入:', materialTypeItem.name, '位置:', item.ext?.material_location, 'pid为:', materialTypeItem.id, '名称:', item.title)
           }).catch((err) => console.log(err.message))
         }
-      }).catch((err) => console.log(err.message))
-      await sleep(3000)
+        await sleep(2000)  // 每个请求间隔2秒，关爱稿定，不能太快太离谱
+      }
+      // await sleep(3000)
     }
   }
 }

@@ -7,7 +7,6 @@
 import {config} from "dotenv";
 import http from "http";
 import app from "../app.ts";
-
 config();
 /**
  * Get port from environment and store in Express.
@@ -85,6 +84,6 @@ function onError(error) {
 function onListening() {
   const addr = server.address();
   if (addr != null) {
-    console.log('server listening: ', ` http://localhost:${addr['port']}`)
+    console.log('\n  ➜  server listening: ', `http://localhost:${addr['port']}\n`)
   }
 }

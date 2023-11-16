@@ -4,14 +4,12 @@ import text from '../../meta/text-left-tag-source.js'
 import images from '../../meta/images-left-tag-source.js'
 import fonts from '../../meta/fonts.js'
 import template from '../../meta/template-left-tag-source.js'
-import {sleep} from '../../../common/tool/tool.js'
-import ResourceTree from "../../../common/db/model/ResourceTree.js";
+import ModelResourceTree from "../../../common/db/model/ResourceTree.js";
 
 /**
  * 初始化爬虫起始的种子数据
  * */
 export async function initMetaData() {
-  await sleep(3000)
 
   await ModelMeta.findOrCreate({
     where: {name: MetaEnum.fonts},
@@ -69,7 +67,7 @@ async function loadResourceTreeDataToDb(Resource) {
 
 
   for (const item of flattenedData) {
-    await ResourceTree.findOrCreate({
+    await ModelResourceTree.findOrCreate({
       where: {
         id: item.id
       },

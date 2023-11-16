@@ -1,7 +1,6 @@
 import {DataTypes} from "sequelize";
 import sequelize from '../sequelize.js'
 import fonts from "../../../spider/meta/fonts.js";
-import ResourceTree from "./ResourceTree.js";
 
 const ModelMeta = sequelize.define('meta', {
   name: {
@@ -12,12 +11,8 @@ const ModelMeta = sequelize.define('meta', {
     type: DataTypes.JSON,
     allowNull: false,
   },
-}, {
-  // 这是其他模型参数
 });
 
-if (process.env.ENV === 'development') ModelMeta.sync({force: true}).then()
-else ResourceTree.sync().then()
 
 export const MetaEnum = {  // 后面如果做后台管理考虑加入数据库中
   template: 'template',
