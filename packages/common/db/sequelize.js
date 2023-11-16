@@ -19,11 +19,10 @@ const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
   }
 });
 
-try {
-  await sequelize.authenticate();
-  console.log('host=', DB_HOST, 'DB_NAME=', DB_NAME, 'Connection has been established successfully.');
-} catch (error) {
-  throw new Error('Unable to connect to the database:' + error)
-}
+sequelize.authenticate()
+  .then(() => console.log('host=', DB_HOST, 'DB_NAME=', DB_NAME, 'Connection has been established successfully.'))
+  .catch((error) => {
+    throw new Error('Unable to connect to the database:' + error)
+  })
 
 export default sequelize

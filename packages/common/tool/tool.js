@@ -4,8 +4,10 @@ export function sleep(time = 1000) {
 
 /**
  * 获取树中叶子节点的所属对象
+ * @return {Array}
  * */
 export function getLeafChildren(arr) {
+  if (!arr) return void 0
   let result = [];
 
   function recursiveGetChildren(arr) {

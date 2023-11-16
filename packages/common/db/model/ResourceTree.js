@@ -1,28 +1,25 @@
 import {DataTypes} from "sequelize";
 import sequelize from '../sequelize.js'
 
-const ModelTemplate = sequelize.define('template', {
-  // 在这里定义模型属性
+const ResourceTree = sequelize.define('resource-tree', {
   id: {
     type: DataTypes.STRING,
     allowNull: false,
     primaryKey: true
   },
-  desc: {
+  parentId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  data: {
     type: DataTypes.JSON,
     allowNull: false,
   },
-  detail: {
-    type: DataTypes.JSON,
-    allowNull: false,
-  }
 }, {
   // 这是其他模型参数
 });
 
-await ModelTemplate.sync({
-  force: process.env.ENV === 'development'
-})
+if (process.env.ENV === 'development') ResourceTree.sync({force: true}).then()
+else ResourceTree.sync().then()
 
-
-export default ModelTemplate
+export default ResourceTree

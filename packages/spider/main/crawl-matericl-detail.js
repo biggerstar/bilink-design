@@ -1,4 +1,4 @@
-import {sleep} from '../common/index.js'
+import {sleep} from '../../common/tool/tool.js'
 import {isFunction} from "is-what";
 
 const options = {

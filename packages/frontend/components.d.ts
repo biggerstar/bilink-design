@@ -13,6 +13,7 @@ declare module 'vue' {
     ASelect: typeof import('ant-design-vue/es')['Select']
     ASlider: typeof import('ant-design-vue/es')['Slider']
     ASpace: typeof import('ant-design-vue/es')['Space']
+    ASpin: typeof import('ant-design-vue/es')['Spin']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     AWatermark: typeof import('ant-design-vue/es')['Watermark']
     CanvasDetail: typeof import('./src/components/design-canvas/CanvasDetail.vue')['default']
@@ -25,11 +26,15 @@ declare module 'vue' {
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    Material: typeof import('./src/components/aside/Material.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']
     SliderNumber: typeof import('./src/components/slider-number/SliderNumber.vue')['default']
     WText: typeof import('./src/components/w-text/WText.vue')['default']
     WTextDetail: typeof import('./src/components/w-text/WTextDetail.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
   }
 }

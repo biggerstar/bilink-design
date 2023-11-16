@@ -1,7 +1,7 @@
-import ModelMaterial from "../db/model/Material.js";
+import ModelMaterial from "../../common/db/model/Material.js";
 import {isObject} from "is-what";
 import {crawlMaterialDataDetail} from "./crawl-matericl-detail.js";
-import {getLeafChildren, sleep} from "../common/index.js";
+import {getLeafChildren, sleep} from "../../common/tool/tool.js";
 import {fetchSourceTree} from "./fetch-source-tree.js";
 
 let debugCont = process.env.ENV === 'development' ? 1 : Infinity

@@ -1,9 +1,9 @@
 import {DataTypes} from "sequelize";
 import sequelize from '../sequelize.js'
-import fonts from "../../meta/fonts.js";
+import fonts from "../../../spider/meta/fonts.js";
+import ResourceTree from "./ResourceTree.js";
 
 const ModelMeta = sequelize.define('meta', {
-  // 在这里定义模型属性
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -16,12 +16,12 @@ const ModelMeta = sequelize.define('meta', {
   // 这是其他模型参数
 });
 
-await ModelMeta.sync({
-  force: process.env.ENV === 'development'
-})
+if (process.env.ENV === 'development') ModelMeta.sync({force: true}).then()
+else ResourceTree.sync().then()
 
-export const MetaEnum = {
-  material: 'material',
+export const MetaEnum = {  // 后面如果做后台管理考虑加入数据库中
+  template: 'template',
+  icon: 'icon',
   materialType: 'material-type',
   text: 'text',
   images: 'images',

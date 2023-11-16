@@ -1,4 +1,4 @@
-import Template from "../db/model/Template.js";
+import Template from "../../common/db/model/Template.js";
 
 import sleep from 'atomic-sleep'
 import {crawlTemplateDetail} from "./crawl-template-detail.js";

@@ -1,11 +1,11 @@
-import express from "express"
-const router = express.Router();
+import * as allRouter from '../api/index.ts'
 
-/* GET home page. */
-router.get('/', function (req, res, next) {
-  res.send({some: 'aaaaa'})
+function createRoutes(app) {
+  for (const name in allRouter) {
+    app.use(allRouter[name])
+  }
+  return (req, resp, next) => next()
+}
 
-});
-
-export default router
+export default createRoutes
 

@@ -25,3 +25,23 @@ export function curry(fn): Function {
     }
   }
 }
+
+
+/**
+ *  通用函数,传入一个对象数组，递归获取某一个层级的的某个键所有对象值
+ *  @param objArr  对象数组
+ *  @param depth   深度，想获取第几层的值
+ *  @param key     获取某个深度的某某键，支持函数动态返回
+ * */
+export function getChildrenByDepth(objArr: object[], depth: number = 1, key: string | number | Function = 'children') {
+  if (typeof key === "function") key = key.call(null, objArr, depth, key)
+  if (depth === 0) return objArr  // depth每次减1直到 0 时作为终止条件, 当深度为0时，返回原始对象数组
+  const children = [];
+  for (const obj of objArr) {
+    if (obj[key] && Array.isArray(obj[key])) {
+      const childArr = getChildrenByDepth(obj[key], depth - 1, key);
+      children.push(...childArr);
+    }
+  }
+  return children;
+}
