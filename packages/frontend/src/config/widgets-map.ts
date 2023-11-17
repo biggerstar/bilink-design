@@ -5,7 +5,7 @@
 import DefaultEditorDetail from "@/components/design-canvas/CanvasDetail.vue";
 import WTextDetail from "@/components/w-text/WTextDetail.vue";
 import WText from "@/components/w-text/WText.vue";
-import Material from "@/components/aside/Material.vue";
+import Material from "@/components/aside/material/Material.vue";
 
 export const widgetsDetailMap = {
   'default': DefaultEditorDetail,

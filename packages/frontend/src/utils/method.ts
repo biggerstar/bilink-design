@@ -1,4 +1,4 @@
-import {isFunction} from "is-what";
+import {isFunction, isObject} from "is-what";
 
 /**
  * 某种鼠标响应事件时，计算鼠标指针在在目标元素内的百分比位置
@@ -155,4 +155,20 @@ export function getTranslate4Transform(transform: string, toFixed = 2): string |
   if (!translateInfo) return
   if (!translateInfo.length) return ''
   return translateInfo.map(offset => parseInt(offset).toFixed(toFixed)).toString()
+}
+
+/**
+ * 生成级联选择器数据树
+ * */
+export function genCascaderTree(sourceData: object[]) {
+  return sourceData.map(item => {
+    if (isObject(item) && Array.isArray(item.children)) {
+      const res = genCascaderTree(item.children)
+      return {
+        value: item.id.toString(),
+        label: item.name,
+        children: res
+      }
+    }
+  })
 }
