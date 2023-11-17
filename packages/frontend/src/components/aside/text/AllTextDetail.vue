@@ -1,10 +1,9 @@
-<!--  全部素材页面  -->
 <template>
   <InfiniteScroll class="w-full h-full" :is-loading="isLoading"
                   @scroll-to-bottom="loadNewRecordList">
-    <div class="w-full h-full mt-[16px]">
+    <div class="w-full h-full pb-6">
       <card
-        class="h-[184px] w-full mt-2 mb-5"
+        class="h-[146px] w-full "
         v-for="(item,index) in resourceData"
         :key="item.self?.name+'parent' + index"
         :data-material-type-id="item.self.id"
@@ -16,24 +15,24 @@
           >查看更多
           </div>
         </div>
-        <content-box>
-          <div class="h-[140px] w-full p-[5px] flex flex-wrap justify-between">
+        <div class="bg-gray-100 rounded-lg">
+          <div class="h-[96px] p-[6px] w-full flex flex-wrap justify-between">
             <div
-              class="icon-item w-[60px] h-[60px] items-center mt-[4px] mb-[4px] overflow-hidden cursor-pointer"
+              class="icon-item w-[80px] h-[80px] items-center mt-[4px] mb-[4px] overflow-hidden cursor-pointer"
               v-for="(childItem, index) in item.children" :key="index.toString() + 'child' + childItem?.name"
               :data-material-id="childItem.id"
             >
               <img
                 draggable="true"
                 style="background-repeat: no-repeat; background-size: cover"
-                width="56"
-                height="56"
+                width="80"
+                height="80"
                 :src="childItem.preview.url"
                 :alt="childItem.name"
               >
             </div>
           </div>
-        </content-box>
+        </div>
       </card>
     </div>
     <el-skeleton v-if="!resourceData" :rows="10" animated/>
@@ -43,12 +42,6 @@
 <script setup lang="ts">
 import {ref, watch} from "vue";
 import {apiGetList} from "@/api/getList";
-
-const resourceData = ref()
-let curLoadIndex = 0
-const isFilterEmptyCard = false
-let loadSize = 20
-const isLoading = ref(false)
 
 const props = defineProps({
   loadNewData: {   // 只要变化就读取新数据，不够优雅，后面通过mitt 或者 将该组件单独 作为展示组件 来做
@@ -60,6 +53,13 @@ const props = defineProps({
     default: []
   }
 })
+
+const resourceData = ref()
+const isLoading = ref(false)
+let curLoadIndex = 0
+const isFilterEmptyCard = false
+let loadSize = 20
+
 const emits = defineEmits(['changeId', 'load'])
 watch(props, async () => {
   const firstLoad = !resourceData.value
@@ -70,8 +70,6 @@ watch(props, async () => {
 function viewMoreMaterial(toItemInfo: string) {
   emits('changeId', toItemInfo)
 }
-
-/*-----------------------------------------------------------------------------------------*/
 
 /**
  * 分次根据不同场景进行动态渲染,如果没有 activeNavId 则加载全部，如果存在 activeNavId 则加载该id
@@ -107,7 +105,7 @@ async function getNextDataByAllPage(parentItem, opt = {}) {
   const res = await apiGetList({
     id: parentItem.id,
     page_num: 1,
-    page_size: 8,
+    page_size: 3,
     ...opt
   })
   return res?.data
@@ -116,9 +114,4 @@ async function getNextDataByAllPage(parentItem, opt = {}) {
 </script>
 
 <style scoped>
-.icon-item:hover {
-  background: var(--color-gray-400);
-  border-radius: 10px;
-}
-
 </style>

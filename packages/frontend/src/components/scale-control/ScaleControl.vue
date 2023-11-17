@@ -1,3 +1,5 @@
+<!--  工程中所有调整 scale 的操作都在该组件中 -->
+
 <template>
   <div>
     <a-popover v-model:open="visiblePopover" placement="topRight" trigger="click">

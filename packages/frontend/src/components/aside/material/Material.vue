@@ -26,7 +26,7 @@
                   @change="(_,opt)=> cascaderCurrentLabelName = opt[opt.length - 1].label"
                   v-model:value="cascaderValueList"
                   :options="cascaderOptions"
-                  placeholder="Please select">
+                  placeholder="">
                 </a-cascader>
               </div>
             </el-button>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="material-container">
-      <SecondaryDetail v-if="activeNavId" :id="activeNavId"></SecondaryDetail>
+      <SecondaryMaterialDetail v-if="activeNavId" :id="activeNavId"></SecondaryMaterialDetail>
       <AllMaterialDetail
         :list="allMaterialResourceData"
         @load="showHeaderTagBox = true"
@@ -53,13 +53,20 @@
  * */
 import {onMounted, ref, shallowRef, watch} from "vue";
 import AllMaterialDetail from "@/components/aside/material/AllMaterialDetail.vue";
-import SecondaryDetail from "@/components/aside/material/SecondaryDetail.vue";
+import SecondaryMaterialDetail from "@/components/aside/material/SecondaryMaterialDetail.vue";
 import {apiGetResource} from "@/api/getResource";
 import {getChildrenByDepth} from "@/utils/tool";
 import {genCascaderTree} from "@/utils/method";
 
-const PAGE_MATERIAL_ID = 4828240    // 素材类别的根ID
-const PAGE_MATERIAL_TYPE = 'icon'
+const props = <any>defineProps({
+  config: {
+    type: Object,
+    default: {}
+  }
+})
+const {config} = props
+const PAGE_MATERIAL_ID = config.materialId    // 素材类别的根ID
+const PAGE_MATERIAL_TYPE = config.materialType
 
 /*--------------------------------------------------------*/
 let allResourceData = []
@@ -75,45 +82,11 @@ watch(cascaderValueList, () => {   // 当级联选择器改变，则改变当前
   const list = cascaderValueList.value
   if (!Array.isArray(list)) return
   if (list.length) activeNavId.value = list[list.length - 1]
-  console.log(activeNavId.value)
+  // console.log(activeNavId.value)
 })
 
 /** 显示默认使用的 id 数据 */
-const navigationInfo = [
-  {
-    text: '全部',
-    id: '',
-    type: 'button',
-    handler: () => {
-
-    },
-  },
-  {
-    text: '容器',
-    id: '4828669',
-    type: 'button',
-  },
-  {
-    text: '形状',
-    id: '4828675',
-    type: 'button',
-  },
-  {
-    text: '图标',
-    id: '4828629',
-    type: 'button',
-  },
-  {
-    text: '便签',
-    id: '4828626',
-    type: 'button',
-  },
-  {
-    text: '更多',
-    id: '-1',
-    type: 'cascader',
-  },
-]
+const navigationInfo = config.navigationInfo
 
 onMounted(() => {
   /* 获取所有的列表数据 */

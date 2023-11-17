@@ -1,8 +1,7 @@
 <template>
   <InfiniteScroll class="w-full h-full" :is-loading="isLoading"
                   @scroll-to-bottom="loadNewRecordList">
-
-    <div class="flex justify-center   flex-wrap p-[10px]">
+    <div class="flex justify-center flex-wrap p-[10px] mb-16">
       <div
         class="icon-detail-item w-[88px] h-[88px] overflow-hidden mr-auto cursor-pointer flex justify-center items-center"
         v-for="(item,index) in materialDetail" :key="item.id + index.toString()">
@@ -12,15 +11,17 @@
           width="78"
           height="78"
           :src="item.preview.url" :alt="item.title"
+          @error="handleImageError($event)"
         >
       </div>
     </div>
   </InfiniteScroll>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {computed, onMounted, ref, watch} from 'vue'
 import {apiGetList} from "@/api/getList";
+import {getElement4EventTarget} from "@/utils/tool";
 
 const props = defineProps({
   id: {
@@ -56,7 +57,7 @@ function loadNewRecordList() {
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,
   }).then(async (res) => {
-    console.log(curUseId.value, res);
+    // console.log(curUseId.value, res);
     if (res.code === 404) return pageEnd = true
     if (res.code !== 200) return
     materialDetail.value = materialDetail.value.concat(res.data)
@@ -65,19 +66,17 @@ function loadNewRecordList() {
   })
 }
 
+/** 图片加载失败从dom中移除掉 */
+function handleImageError(ev: Event) {
+  const target = getElement4EventTarget(ev)
+  if (target && target.nodeName.toLowerCase() === 'img') {
+    const parentNode = target.parentElement
+    if (parentNode) parentNode.remove()
+  }
+}
+
 </script>
 
 <style scoped>
-.icon-detail-item {
-  background-color: #F1F2F4;
-  border-radius: 8px;
-  padding: 4px;
-  margin: 4px auto 4px 4px;
-}
 
-.icon-detail-item:hover {
-  background-color: rgba(140, 138, 138, 0.2);
-  opacity: 0.95;
-  filter: brightness(0.8);
-}
 </style>

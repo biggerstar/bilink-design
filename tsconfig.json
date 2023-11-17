@@ -35,6 +35,9 @@
   "ts-node": {
     "esm": true
   },
+  "exclude": [
+    "node_modules" // 排除的文件或文件夹路径
+  ],
   "include": [
     "packages/**/*.js",
     "packages/**/*.ts",

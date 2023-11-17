@@ -12,6 +12,7 @@ declare module 'vue' {
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
     AllDetail: typeof import('./src/components/aside/material/AllDetail.vue')['default']
     AllMaterialDetail: typeof import('./src/components/aside/material/AllMaterialDetail.vue')['default']
+    AllTextDetail: typeof import('./src/components/aside/text/AllTextDetail.vue')['default']
     APageHeader: typeof import('ant-design-vue/es')['PageHeader']
     APopover: typeof import('ant-design-vue/es')['Popover']
     ASelect: typeof import('ant-design-vue/es')['Select']
@@ -39,7 +40,10 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']
     SecondaryDetail: typeof import('./src/components/aside/material/SecondaryDetail.vue')['default']
+    SecondaryMaterialDetail: typeof import('./src/components/aside/material/SecondaryMaterialDetail.vue')['default']
+    SecondaryTextDetail: typeof import('./src/components/aside/text/SecondaryTextDetail.vue')['default']
     SliderNumber: typeof import('./src/components/slider-number/SliderNumber.vue')['default']
+    Text: typeof import('./src/components/aside/text/Text.vue')['default']
     WText: typeof import('./src/components/w-text/WText.vue')['default']
     WTextDetail: typeof import('./src/components/w-text/WTextDetail.vue')['default']
   }

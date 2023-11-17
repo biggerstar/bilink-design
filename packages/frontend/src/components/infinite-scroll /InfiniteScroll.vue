@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <el-scrollbar class="h-full w-full overflow-auto" ref="cardBoxRef" @scroll="infiniteScroll">
+  <el-scrollbar class="h-full w-full overflow-auto block" ref="cardBoxRef" noresize  @scroll="infiniteScroll">
     <div class="h-full w-full">
       <slot></slot>
     </div>

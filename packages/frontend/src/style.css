@@ -83,6 +83,7 @@ html, body, #app {
   max-height: 100vh;
   overflow: hidden;
   overscroll-behavior: none;
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
 }
 
 @media (prefers-color-scheme: light) {
@@ -106,13 +107,13 @@ html, body, #app {
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 10px;
+  border-radius: 6px;
   background: rgba(143, 146, 153, 0.6);
 }
 
 /* 滚动条滑块 */
 ::-webkit-scrollbar-thumb:hover {
-  border-radius: 10px;
+  border-radius: 7px;
   background: rgba(143, 146, 153, 0.9);
 }
 
