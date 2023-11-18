@@ -9,14 +9,14 @@
         >
           <el-button
             v-if="item.type === 'button'"
-            @mousedown="($event) => $event.preventDefault()"
+            @mousedown.prevent=""
             @click="()=> {activeNavId !== item.id && (activeNavId = item.id); cascaderCurrentLabelName ='更多'}"
             class="w-[54px]" :color="activeNavId === item.id ? '#2154F4' : '#F1F2F4'">
             {{ item.text }}
           </el-button>
           <div v-if="item.type === 'cascader'">
             <el-button
-              @mousedown="($event) => $event.preventDefault()"
+              @mousedown.prevent=""
               @click="showMoreCascader = true"
               class="cascader relative overflow-hidden"
               :color=" !navigationInfo.find(val=> activeNavId === val.id.toString()) ? '#2154F4' : '#F1F2F4'">
@@ -92,7 +92,7 @@ onMounted(() => {
     type: PAGE_MATERIAL_TYPE
   }).then(res => {
     if (!res.data) return
-    allResourceData = res.data?.data?.children
+    allResourceData = res?.data?.children
     allMaterialResourceData.value = getChildrenByDepth(allResourceData || [], 1)   // 所有二级页分类
     cascaderOptions.value = genCascaderTree(allResourceData)
   })

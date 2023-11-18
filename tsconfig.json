@@ -30,6 +30,9 @@
       "@/*": [
         "packages/frontend/src/*"
       ],
+      "@type/*": [
+        "packages/frontend/src/types/*"
+      ]
     },
   },
   "ts-node": {

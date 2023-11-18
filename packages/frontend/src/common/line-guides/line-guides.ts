@@ -47,7 +47,6 @@ export class LineGuides {
         zIndex: 300
       },
       ...options.top
-    }).on("changeGuides", e => {
     })
 
     const guidesLeft = new Guides(<any>container, <NewGuidesOptions>{
@@ -62,9 +61,8 @@ export class LineGuides {
         zIndex: 300
       },
       ...options.top
-    }).on("changeGuides", e => {
-
     })
+
     this.guidesLeft = <any>guidesLeft
     this.guidesTop = <any>guidesTop
 
@@ -73,6 +71,7 @@ export class LineGuides {
     if (!el) return console.error('未找到监听对象')
     this.observerTarget = el
     this.resizeObserver = new ResizeObserver(() => Promise.resolve(() => this.updateGuidesStyle()))
+    window.addEventListener("resize", () => this.__running && this.updateGuidesStyle())
     this.resizeObserver.observe(el)
   }
 

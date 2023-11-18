@@ -40,7 +40,7 @@ onMounted(() => {
     type: PAGE_MATERIAL_TYPE
   }).then(res => {
     if (!res.data) return
-    allResourceData = res.data?.data?.children
+    allResourceData = res?.data?.children
     allMaterialResourceData.value = getChildrenByDepth(allResourceData || [], 0)   // 所有二级页分类
     // console.log(allMaterialResourceData.value)
   })

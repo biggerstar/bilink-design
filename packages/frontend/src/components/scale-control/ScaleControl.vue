@@ -40,7 +40,6 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import {CSS_DEFINE} from "@/constant";
 import {toPercent} from "@/utils/tool";
 import {editorStore} from "@/store/editor";
 import {toFixed} from "@/utils/method";
@@ -83,11 +82,11 @@ const lineGuidesList = [
   },
 ]
 
-const scaleList = editorStore.currentProject.scaleSizeList.map(scaleNum => {
+const scaleList = editorStore.pageConfig.scaleSizeList.map(scaleNum => {
   return {
     text: toPercent(scaleNum),
     handler() {
-      editorStore.updateCanvasStyle({scale: scaleNum}, {safe: true})
+      editorStore.updateCanvasScale(scaleNum)
       scaleValue.value = toPercent(scaleNum)
     },
     get selected() {
@@ -100,11 +99,11 @@ const otherScaleList = [
   {
     text: '适合屏幕',
     handler: () => {
-      editorStore.updateCanvasStyle({scale: null}, {safe: true})
-      scaleValue.value = toPercent(getCurScaleValue())
+      editorStore.updateCanvasScale(null)
+      scaleValue.value = toPercent(editorStore.getCurScaleValue())
     },
     get selected() {
-      return !editorStore.currentProject.scaleSizeList.includes(editorStore.getCurScaleValue())
+      return !editorStore.pageConfig.scaleSizeList.includes(editorStore.getCurScaleValue())
     }
   },
 ]
@@ -118,29 +117,27 @@ const scaleValue = ref<string | number>('')
 
 const mouseenterAdjustmentBtn = () => isShowAdjustmentBtn.value = true
 const mouseleaveAdjustmentBtn = () => isShowAdjustmentBtn.value = false
-const getCurScaleValue = () => Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
 
 function addition(ev: Event) {
   ev.stopPropagation()
   visiblePopover.value = false
-  const curScaleNum = getCurScaleValue()
+  const curScaleNum = editorStore.getCurScaleValue()
   const newScaleVal = Math.min(2, toFixed(curScaleNum + props.scaleManualStep, 3))
   scaleValue.value = toPercent(newScaleVal)
-  editorStore.updateCanvasStyle({scale: newScaleVal}, {safe: true})
+  editorStore.updateCanvasScale(newScaleVal)
 }
 
 function subtraction(ev: Event) {
   ev.stopPropagation()
   visiblePopover.value = false
-  const curScaleNum = getCurScaleValue()
+  const curScaleNum = editorStore.getCurScaleValue()
   const newScaleVal = Math.max(0.1, toFixed(curScaleNum - props.scaleManualStep, 3))
   scaleValue.value = toPercent(newScaleVal)
-  editorStore.updateCanvasStyle({scale: newScaleVal}, {safe: true})
+  editorStore.updateCanvasScale(newScaleVal)
 }
 
 onMounted(() => {
-  const bodyStyle = document.body.style
-  scaleValue.value = toPercent(getCurScaleValue())
+  scaleValue.value = toPercent(editorStore.getCurScaleValue())
   const selector: string = <string>props.selector
   let dom = document.querySelector(selector) || document.body
   dom.addEventListener("mousewheel", (ev: WheelEvent) => {
@@ -149,12 +146,11 @@ onMounted(() => {
     if (isMetaKey && wheelDelta !== 0) {
       ev.preventDefault()
       const sign = wheelDelta > 0 ? 1 : -1
-      const curScale = getCurScaleValue()
+      const curScale = editorStore.getCurScaleValue()
       const newScale = (curScale + sign * props.scaleWheelStep).toFixed(2) * 1
       const limitScale = Math.min(2, Math.max(newScale, 0.1)) // 最小为0.1缩放,最大为2倍
       scaleValue.value = toPercent(limitScale)
-      bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], limitScale.toString())
-      editorStore.updateCanvasStyle({scale: limitScale}, {safe: true})
+      editorStore.updateCanvasScale(limitScale)
     }
   }, {passive: false})
 })

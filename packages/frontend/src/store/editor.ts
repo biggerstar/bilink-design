@@ -5,19 +5,8 @@ import {deepmerge} from "@biggerstar/deepmerge";
 import {loadFont} from "@/utils/method";
 import {isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
-
-type CanvasConfig = {
-  scale: number | null,
-  scaleWheelStep: number,
-  width: number;
-  height: number;
-  padding: number;
-  bgColor: string; //  背景颜色
-  color: string;   // 文字颜色
-  fontId: string   // canvas 内所有元素默认使用的字体
-  watermark?: string;
-  guideline?: boolean;
-}
+import {CurrentTemplate, LayoutConfig, PageConfig} from "@/types/layout";
+import {apiGetFonts} from "@/api/getFonts";
 
 /**
  * 设计页面(/design) 的store
@@ -31,19 +20,17 @@ class EditorStore {
   allFont: object[]
   public
   /** 当前正在编辑的工程文件 */
-  public currentProject: {
-    /* 画布信息 */
-    scaleSizeList: number[],
-    canvas: CanvasConfig,
-    /** 小组件信息集合 */
-    items: []
-  } = {
-    canvas: void 0,
-    items: [],
+  public pageConfig: PageConfig = {
+    brand: '',
+    asideTag: [],
     scaleSizeList: [],
+    widgetsDetail: {},
+    header: {
+      moreOperation: []
+    }
   }
-  /** 组件详情面板配置信息 */
-  public widgetsDetailConfig: {}
+
+  public currentTemplate: CurrentTemplate
 
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
@@ -52,9 +39,13 @@ class EditorStore {
     return currentWidget[DESIGN_OPTIONS]
   }
 
+  public getCurrentTemplateLayout(): LayoutConfig {
+    return this.currentTemplate.layouts[0]
+  }
+
   /** 载入当前要编辑的工程配置信息 */
   public loadEditorProject(projectInfo) {
-    this.currentProject = projectInfo
+    this.currentTemplate = projectInfo
   }
 
   /** 设置当前正在活跃的小组件配置,会自动更新源currentProject.items中的配置,是否直接覆盖整个对象(值)
@@ -66,45 +57,52 @@ class EditorStore {
     const {effectDom = true} = options
     const currentWidget = editorStore.moveableManager.currentWidget
     if (!currentWidget) return
-    /* 通过activeOptions引用更新在 currentProject.items 中的配置  */
+    /* 通过activeOptions引用更新在 currentTemplate.items 中的配置  */
     deepmerge(this.getCurrentOptions(), activeInfo, options)
     this.moveableManager?.moveable?.updateRect()
     if (effectDom) currentWidget[DESIGN_SET_STATE](activeInfo)
   }
 
-  public designCanvasTarget: HTMLElement
-  public editorAreaBoxTarget: HTMLElement
-  public editorAreaTarget: HTMLElement
+  public designCanvasTarget: HTMLElement  // #design-canvas
+  public editorAreaBoxTarget: HTMLElement  // #editor-area-box
+  public editorAreaTarget: HTMLElement  // #editor-area
+
+  /** 获取当前画布缩放级别  */
+  public getCurScaleValue = () => Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
+
+  /** 设置当前画布缩放级别，若传入为空或者null，则表示计算当前画布的最佳缩放比例，需要在首次加载画板功能时调用一次将画布设置到最佳尺寸  */
+  public updateCanvasScale(scale: number | null | void = null) {
+    const bodyStyle = document.body.style
+    if (!scale || isNumber(scale) && scale <= 0) {
+      const canvasInfo = this.currentTemplate.layouts[0]
+      const DC_Rect = this.designCanvasTarget.getBoundingClientRect()
+      scale = Number(Math.min((DC_Rect.width - 60 * 2) / canvasInfo.width, (DC_Rect.height - 60 * 2) / canvasInfo.height).toFixed(2))       // 获取最佳比例
+    }
+    bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], String(scale))  // 设置当前尺寸，未设置 scale 或者 scale 为 null 自动设置最佳尺寸
+    this.moveableManager?.moveable?.updateRect?.()
+    this.lineGuides?.updateGuidesStyle?.()
+  }
 
   /**
-   * 更新当前正在编辑的工程文件信息和相关状态,同步到当前工程( currentProject )使用的配置中
+   * 更新当前正在编辑的工程文件信息和相关状态,同步到当前工程( currentTemplate )使用的配置中
    * 并应用到当前的 canvas 画布中
    * safe 安全合并，在源对象上若没有的不会被合并, 默认 false
    * */
-  public updateCanvasStyle<T extends Record<any, any>>(canvasInfoOptions: T & Partial<CanvasConfig>, options: { safe?: boolean } = {}): void {
-    if (!this.currentProject) return
+  public updateCanvasStyle<T extends Record<any, any>>(canvasInfoOptions: T & Partial<LayoutConfig>, options: { safe?: boolean } = {}): void {
+    if (!this.currentTemplate) return
     if (!this.designCanvasTarget || !this.editorAreaTarget) throw new Error('designCanvas 未挂载')
-    const canvasInfo: CanvasConfig = <any>canvasInfoOptions
-    let {width, height, scale, padding, bgColor, color, fontId} = canvasInfo
+    const canvasInfo: LayoutConfig = <any>canvasInfoOptions
+    let {width, height, background} = canvasInfo
     const bodyStyle = document.body.style
-    const has = (key: keyof CanvasConfig) => Reflect.has(canvasInfo, key)
+    const has = (key: keyof LayoutConfig) => Reflect.has(canvasInfo, key)
     has('width') && bodyStyle.setProperty(CSS_DEFINE["--canvas-width"], `${width}px`)
     has('height') && bodyStyle.setProperty(CSS_DEFINE["--canvas-height"], `${height}px`)
-    has('padding') && bodyStyle.setProperty(CSS_DEFINE["--canvas-padding"], `${padding}px`)
-    has('bgColor') && (this.editorAreaTarget.style.backgroundColor = bgColor)
-    has('color') && (this.editorAreaTarget.style.color = color)
-    has('fontId') && (this.setFontFamily(this.designCanvasTarget, fontId))
-    if (has('scale')) {
-      if (!scale || isNumber(scale) && scale <= 0) {
-        const DC_Rect = this.designCanvasTarget.getBoundingClientRect()
-        const canvasInfo = this.currentProject.canvas
-        scale = Number(Math.min((DC_Rect.width - 60 * 2) / canvasInfo.width, (DC_Rect.height - 60 * 2) / canvasInfo.height).toFixed(2))       // 获取最佳比例
-      }
-      bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], String(scale))  // 设置当前尺寸，未设置 scale 或者 scale 为 null 自动设置最佳尺寸
-    }
+    has('background') && (this.editorAreaTarget.style.backgroundColor = background.color)
+    // has('fontId') && (this.setFontFamily(this.designCanvasTarget, fontId))
+
     this.moveableManager?.moveable?.updateRect?.()
     this.lineGuides?.updateGuidesStyle?.()
-    deepmerge(this.currentProject.canvas, canvasInfo, options)
+    deepmerge(this.currentTemplate.layouts, canvasInfo, options)
   }
 
   /**
@@ -113,20 +111,24 @@ class EditorStore {
    * */
   public updateCurrentProjectState<T extends Record<any, any>>(projectInfo: T, options: { safe?: boolean } = {}): void {
     projectInfo = toRaw(projectInfo)
-    if (!this.currentProject) return
-    deepmerge(this.currentProject, projectInfo, options)
+    if (!this.currentTemplate) return
+    deepmerge(this.currentTemplate, projectInfo, options)
   }
 
-  /** 通过 id 获取字体信息  */
-  public getFont4Id(id: string) {
-    if (!id) return
-    return this.allFont.find(item => item.id === id)
+  /** 通过 名称 获取字体信息  */
+  public getFont4FontName(fontName: string) {
+    if (!fontName || !this.allFont) return
+    return this.allFont.find(item => item.name === fontName)
   }
 
   /** 为指定元素设置字体  */
-  public setFontFamily(el: HTMLElement, id: string): any {
-    const fontData = this.getFont4Id(id)
-    if (!fontData) return
+  public async setFontFamily(el: HTMLElement, fontName: string): Promise<any> {
+    let fontData = this.getFont4FontName(fontName)
+    if (!fontData) {
+      const res = await apiGetFonts({name: fontName})
+      if (res && res.data && res.data.length) fontData = res.data[0]
+    }
+
     loadFont({
       url: fontData.content.woff,
       family: fontData.content.family,
@@ -149,11 +151,8 @@ class EditorStore {
 
   /** 获取某个组件详情页的配置信息  */
   public getWidgetsDetailConfig(w_name: string): any {
-    return this.widgetsDetailConfig?.[w_name]
+    return this.pageConfig.widgetsDetail?.[w_name]
   }
-
-  /** 获取当前画布缩放级别  */
-  public getCurScaleValue = () => Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
 
   /** 是否显示标尺  */
   public displayLineGuides(isShow: boolean = true) {

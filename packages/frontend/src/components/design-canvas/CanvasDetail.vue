@@ -28,7 +28,7 @@
 
     <card title="背景色" class="not-user-select">
       <template #header>
-        <el-color-picker v-model="canvasInfo.bgColor" show-alpha :predefine="predefineColorList"/>
+        <el-color-picker v-model="canvasInfo.background.color" show-alpha :predefine="predefineColorList"/>
       </template>
     </card>
   </div>
@@ -41,13 +41,15 @@ import {editorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'
 import 'element-plus/es/components/color-picker/style/index.mjs'
 import {predefineColorList} from "@/config/base";
-import {pick} from "lodash-es";
+import {LayoutConfig} from "@type/layout";
 
 const isShowResizeCanvas = ref(false)
-const canvasInfo = ref()
-onMounted(() => canvasInfo.value = editorStore.currentProject.canvas)
+const canvasInfo = ref<LayoutConfig>()
+onMounted(() => {
+  canvasInfo.value = editorStore.currentTemplate.layouts[0]
+})
 watch([canvasInfo], () => {
-  editorStore.updateCanvasStyle(pick(canvasInfo.value, ['width', 'height', 'bgColor']))
+  editorStore.updateCanvasStyle(canvasInfo.value)
 }, {
   deep: true
 })

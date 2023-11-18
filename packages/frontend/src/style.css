@@ -180,6 +180,7 @@ html, body, #app {
 }
 
 :root {
+  --canvas-padding: 60px;
   --widget-box-selection-line-weight: 3px;
   --widget-box-selection-color: #4af;
   --color-gray-1000: #000000;

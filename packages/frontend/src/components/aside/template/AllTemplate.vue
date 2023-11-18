@@ -107,7 +107,7 @@ function loadNewRecordList() {
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,
   }).then(async (res) => {
-    console.log(curUseId.value, res);
+    // console.log(curUseId.value, res);
     if (res.code === 404) return pageEnd = true
     if (res.code !== 200) return
     materialDetail.value = materialDetail.value.concat(res.data)

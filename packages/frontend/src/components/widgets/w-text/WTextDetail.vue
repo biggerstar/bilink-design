@@ -99,7 +99,7 @@
 
 <script setup lang="ts">
 import Card from "@/components/card/Card.vue";
-import {nextTick, onMounted, ref, toRaw, watch} from 'vue'
+import {onMounted, ref, toRaw, watch} from 'vue'
 import ElScrollbar from 'element-plus/es/components/scrollbar/index.mjs'
 import 'element-plus/es/components/scrollbar/style/index.mjs'
 import {editorStore} from "@/store/editor";
@@ -194,7 +194,7 @@ function choiceFont(item) {
 function updateFont() {
   const font: Record<any, any> = {}
   if (fontSizeValue.value) font.fontSize = Number(fontSizeValue.value)
-  if (curFont.value?.id) font.fontId = curFont.value.id
+  if (curFont.value?.id) font.fontFamily = curFont.value.name
   editorStore.updateActiveWidgetsState(font)
 }
 
@@ -219,11 +219,9 @@ onMounted(() => {
   })
 
   updateTextStyle(textStyle)
-  nextTick(() => {  // 显示当前字体
-    if (!currentOptions) return
-    const fontId = currentOptions.fontId || editorStore.currentProject?.canvas?.fontId
-    if (fontId) curFont.value = editorStore.getFont4Id(fontId)
-  })
+  // nextTick(() => {  // 显示当前字体
+  //   if (!currentOptions) return
+  // })
 })
 
 watch([curFont, fontSizeValue], () => updateFont(), {deep: true})

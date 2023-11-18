@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {isFunction, isObject} from "is-what";
 
 /**
@@ -75,21 +77,6 @@ export function selectAllText4Element(el: HTMLElement) {
     const selection = window.getSelection()
     selection.removeAllRanges()
     selection.addRange(range)
-  }
-}
-
-/**
- * 创建小组件配置映射处理函数
- * 返回一个函数为setState用于触发 actionMap 传入的处理函数
- * cb 回调函数
- * */
-export function createHandlerAction<T>(actionMap: Record<any, any>, cb?: Function): (options: Record<any, any> & T) => void {
-  return /* setState */ function (options: Record<any, any>) {
-    for (const name in options) {
-      const func = actionMap[name]
-      if (isFunction(func)) func.call(null, options[name])
-      if (isFunction(cb)) cb.call(null, name, options)
-    }
   }
 }
 

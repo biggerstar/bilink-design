@@ -48,7 +48,7 @@ onMounted(() => {
     id: PAGE_MATERIAL_TYPE_ID,
   }).then(res => {
     if (!res.data) return
-    allResourceData = res.data?.data?.children
+    allResourceData = res?.data?.children
     allMaterialResourceData.value = getChildrenByDepth(allResourceData || [], 1)   // 所有二级页分类
     cascaderOptions.value = genCascaderTree(allResourceData)
     // console.log(allMaterialResourceData.value)

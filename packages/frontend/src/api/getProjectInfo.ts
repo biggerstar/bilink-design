@@ -1,4 +1,4 @@
-import LayoutInfo from "@/api/mock/layout-info";
+import LayoutInfo from "@/api/mock/editor-data-gd";
 import {editorStore} from "@/store/editor";
 
 export async function apiGetProjectInfo() {
@@ -6,6 +6,7 @@ export async function apiGetProjectInfo() {
   // fetch(url)
   let layoutData = LayoutInfo
   const res = sessionStorage.getItem('layout')
+  res.toString();
   // if (res) layoutData = JSON.parse(res)
 
   return {
@@ -15,5 +16,5 @@ export async function apiGetProjectInfo() {
 }
 
 setInterval(() => {
-  sessionStorage.setItem('layout', JSON.stringify(editorStore.currentProject))
+  sessionStorage.setItem('layout', JSON.stringify(editorStore.currentTemplate))
 }, 1000)

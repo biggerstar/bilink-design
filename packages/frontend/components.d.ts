@@ -49,7 +49,9 @@ declare module 'vue' {
     Template: typeof import('./src/components/aside/template/Template.vue')['default']
     Test: typeof import('./src/components/aside/images/Test.vue')['default']
     Text: typeof import('./src/components/aside/text/Text.vue')['default']
-    WText: typeof import('./src/components/w-text/WText.vue')['default']
-    WTextDetail: typeof import('./src/components/w-text/WTextDetail.vue')['default']
+    WImage: typeof import('./src/components/widgets/w-image/WImage.vue')['default']
+    WImageDetail: typeof import('./src/components/widgets/w-image/WImageDetail.vue')['default']
+    WText: typeof import('./src/components/widgets/w-text/WText.vue')['default']
+    WTextDetail: typeof import('./src/components/widgets/w-text/WTextDetail.vue')['default']
   }
 }

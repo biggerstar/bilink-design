@@ -6,7 +6,7 @@
         <!-- 取巧使用遮罩覆盖溢出元素 box-shadow 上颜色等于中间镂空两个部分就能分割开 -->
         <div id="editor-area" ref="editorArea">
           <slot></slot>
-          <a-watermark :content="props.config.watermark || ''" style="height: 100%; width: 100%;z-index: -1">
+          <a-watermark :content="'bi.link'" style="height: 100%; width: 100%;z-index: -1">
           </a-watermark>
         </div>
       </div>
@@ -21,27 +21,16 @@ import {editorStore} from "@/store/editor";
 const designCanvas = ref()
 const editorArea = ref()
 const editorAreaBox = ref()
-const props = defineProps({
-  config: {
-    type: Object,
-    required: true,
-  }
-})
+
 onMounted(() => {
   editorStore.designCanvasTarget = designCanvas.value
   editorStore.editorAreaBoxTarget = editorAreaBox.value
   editorStore.editorAreaTarget = editorArea.value
-  editorStore.updateCanvasStyle({
-    /* 外部无传入对应参数时的默认配置 */
-    width: 1200,
-    height: 2200,
-    padding: 60,
-    bgColor: '#FFF',
-    ...props.config
-  })
-  editorStore.updateCanvasStyle({scale: void 0,}, {safe: true})
+  const templateConfig = editorStore.currentTemplate.layouts[0]
+  editorStore.displayLineGuides(true)
+  editorStore.updateCanvasStyle(templateConfig)
+  editorStore.updateCanvasScale()
 })
-
 
 </script>
 
@@ -83,6 +72,7 @@ onMounted(() => {
 
 #editor-area {
   position: relative;
+  background: #FFFFFF;
   width: var(--canvas-width);
   height: var(--canvas-height);
   transform-origin: left top;

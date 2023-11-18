@@ -22,7 +22,7 @@
               style="border: #e3e2e2 solid 1px"
               v-for="(childItem, index) in item.children" :key="index.toString() + 'child' + childItem?.name"
               :data-material-id="childItem.id"
-              :style="{ width: `${getItemOccupancyWidth(childItem,item,2)}`}"
+              :style="{ width: `${getItemOccupancyWidth(childItem,item)}`}"
             >
               <img
                 draggable="true"
@@ -49,7 +49,6 @@ import {toPercent} from "@/utils/tool";
 
 const props = defineProps({
   loadNewData: {   // 只要变化就读取新数据，不够优雅，后面通过mitt 或者 将该组件单独 作为展示组件 来做
-    type: Number,
     default: 0
   },
   list: {
@@ -61,7 +60,7 @@ const props = defineProps({
 /** 获取当前图片在一行中占用的比例
  * 实现原理，通过获取当前item 图片的宽高比例/ 所有图片宽度比例(width / height)总和
  * */
-function getItemOccupancyWidth(childItem, item, columNum = 3) {
+function getItemOccupancyWidth(childItem, item) {
   const countHeight = item.children.reduce((pre, cur) => pre + cur.preview.width / cur.preview.height, 0)
   const itemProportion = childItem.preview.width / childItem.preview.height
   return toPercent((itemProportion / countHeight) * 0.97)
