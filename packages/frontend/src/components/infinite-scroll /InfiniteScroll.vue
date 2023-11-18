@@ -1,9 +1,8 @@
 <!--
   自己封装的无限滚动加载新数据组件
 -->
-
 <template>
-  <el-scrollbar class="h-full w-full overflow-auto block" ref="cardBoxRef" noresize  @scroll="infiniteScroll">
+  <el-scrollbar class="h-full w-full overflow-auto block" ref="cardBoxRef" noresize @scroll="infiniteScroll">
     <div class="h-full w-full">
       <slot></slot>
     </div>
@@ -29,7 +28,7 @@ const props = defineProps({
   },
   distance: {
     type: Number,
-    default: 0
+    default: 20
   },
   lockTime: {
     type: Number,

@@ -65,8 +65,7 @@ const props = <any>defineProps({
   }
 })
 const {config} = props
-const PAGE_MATERIAL_ID = config.materialId    // 素材类别的根ID
-const PAGE_MATERIAL_TYPE = config.materialType
+const PAGE_MATERIAL_TYPE = config.type
 
 /*--------------------------------------------------------*/
 let allResourceData = []
@@ -91,7 +90,6 @@ const navigationInfo = config.navigationInfo
 onMounted(() => {
   /* 获取所有的列表数据 */
   apiGetResource({
-    id: PAGE_MATERIAL_ID,
     type: PAGE_MATERIAL_TYPE
   }).then(res => {
     if (!res.data) return

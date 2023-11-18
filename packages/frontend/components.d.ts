@@ -7,10 +7,9 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    AButton: typeof import('ant-design-vue/es')['Button']
     ACascader: typeof import('ant-design-vue/es')['Cascader']
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
-    AllDetail: typeof import('./src/components/aside/material/AllDetail.vue')['default']
+    AllImagesDetail: typeof import('./src/components/aside/images/AllImagesDetail.vue')['default']
     AllMaterialDetail: typeof import('./src/components/aside/material/AllMaterialDetail.vue')['default']
     AllTextDetail: typeof import('./src/components/aside/text/AllTextDetail.vue')['default']
     APageHeader: typeof import('ant-design-vue/es')['PageHeader']
@@ -29,25 +28,23 @@ declare module 'vue' {
     DividingLine: typeof import('./src/components/dividing-line/DividingLine.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
-    ElCascader: typeof import('element-plus/es')['ElCascader']
     ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    Images: typeof import('./src/components/aside/images/Images.vue')['default']
     InfiniteScroll: typeof import('./src/components/infinite-scroll /InfiniteScroll.vue')['default']
     Material: typeof import('./src/components/aside/material/Material.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']
-    SecondaryDetail: typeof import('./src/components/aside/material/SecondaryDetail.vue')['default']
+    SecondaryImagesDetail: typeof import('./src/components/aside/images/SecondaryImagesDetail.vue')['default']
     SecondaryMaterialDetail: typeof import('./src/components/aside/material/SecondaryMaterialDetail.vue')['default']
     SecondaryTextDetail: typeof import('./src/components/aside/text/SecondaryTextDetail.vue')['default']
     SliderNumber: typeof import('./src/components/slider-number/SliderNumber.vue')['default']
+    Test: typeof import('./src/components/aside/images/Test.vue')['default']
     Text: typeof import('./src/components/aside/text/Text.vue')['default']
     WText: typeof import('./src/components/w-text/WText.vue')['default']
     WTextDetail: typeof import('./src/components/w-text/WTextDetail.vue')['default']
-  }
-  export interface ComponentCustomProperties {
-    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
   }
 }

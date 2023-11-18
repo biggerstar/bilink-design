@@ -70,7 +70,7 @@ function loadNewRecordList() {
 function handleImageError(ev: Event) {
   const target = getElement4EventTarget(ev)
   if (target && target.nodeName.toLowerCase() === 'img') {
-    const parentNode = target.parentElement
+    const parentNode = target?.parentElement
     if (parentNode) parentNode.remove()
   }
 }

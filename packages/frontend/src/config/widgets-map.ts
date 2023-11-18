@@ -7,6 +7,7 @@ import WTextDetail from "@/components/w-text/WTextDetail.vue";
 import WText from "@/components/w-text/WText.vue";
 import Material from "@/components/aside/material/Material.vue";
 import Text from "@/components/aside/text/Text.vue";
+import Images from "@/components/aside/images/Images.vue";
 
 export const widgetsDetailMap = {
   'default': DefaultEditorDetail,
@@ -20,5 +21,6 @@ export const widgetsMap = {
 export const asideTagMap = {
   'material': Material,
   'text': Text,
+  'images': Images,
 }
 

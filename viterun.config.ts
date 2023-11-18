@@ -23,18 +23,17 @@ export default defineViteRunConfig(() => {
         buildGit: [
           ['frontend_build', 'frontend_plugins', 'tailwindcss', 'page']   // 编译部署到git的产物,在本地无法预览
         ],
-        preview: ['p10000'],
+        preview: [
+          ['p10000']
+        ],
         size: [
           ['frontend_build', 'frontend_plugins', 'tailwindcss', 'bundleAnalyzer']
         ]
       },
       'backend': {
-        dev: [
-          ['backend_build']
-        ],
-        build: [
-          ['backend_build']
-        ],
+        // dev: [
+        //   ['backend_build']
+        // ],
       }
     },
     plugins: {

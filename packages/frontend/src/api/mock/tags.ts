@@ -13,8 +13,7 @@ export default [
     name: '素材',
     icon: 'icon-sucai',
     comp: 'material',
-    materialId: "4828240",
-    materialType: 'icon',
+    type: 'icon',
     navigationInfo: [
       {
         text: '全部',
@@ -52,13 +51,13 @@ export default [
     name: '文字',
     icon: 'icon-wenzi',
     comp: 'text',
-    materialId: "4828240",
-    materialType: 'text',
+    type: 'text',
   },
   {
     icon: 'icon-shangchuantupian',
     name: '图片',
     comp: 'images',
+    type: 'images',
   },
   {
     name: '我的',

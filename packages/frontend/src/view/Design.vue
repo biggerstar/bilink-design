@@ -29,7 +29,7 @@
   </div>
   <div class="work-area">
     <!--  --------------------aside---------------------  -->
-    <div class="aside overflow-hidden">
+    <div class="aside">
       <div class="tool-tags h-full" v-if="pageConfig">
         <div v-for="(item,index) in pageConfig.asideTag" :key="index" @click="showTagPage(item.comp)">
           <div class="tag" :class="{activeTag:activeTagName && item.comp && activeTagName === item.comp }">
@@ -38,13 +38,13 @@
           </div>
         </div>
       </div>
-      <div class="widgets-panel" :style="{width: activeTagName ? '312px': '0'}">
-        <div class="relative w-full h-full">
-          <div class="aside-close-btn flex-col justify-center" v-show="activeTagName" @click="showTagPage()">
-            <img draggable="false" src="https://cdn.dancf.com/fe-assets/20221227/c1af0eecfff91f6a33bb285bebe2036b.svg"
-                 alt="">
-          </div>
-          <div style="min-width: 312px" class="w-full h-full overflow-hidden">
+      <div class="widgets-panel relative" :style="{width: activeTagName ? '312px': '0'}">
+        <div class="aside-close-btn flex-col justify-center" v-show="activeTagName" @click="showTagPage()">
+          <img draggable="false" src="https://cdn.dancf.com/fe-assets/20221227/c1af0eecfff91f6a33bb285bebe2036b.svg"
+               alt="">
+        </div>
+        <div class=" w-full h-full overflow-hidden">
+          <div style="width: 312px" class="w-full h-full ">
             <keep-alive>
               <component :is="currentAsideTagComp" :config="currentActiveAsideTagConfig"></component>
             </keep-alive>
@@ -132,16 +132,15 @@ const moreOperationList = [
 ]
 
 setTimeout(() => {
-  // console.log(pageConfig.value)
   // showTagPage('material')
-  showTagPage('text')
+  // showTagPage('text')
+  showTagPage('images')
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
 function showTagPage(name = '') {
-  // console.log(name)
-  activeTagName.value = activeTagName.value === name ? void 0 : name
-  currentAsideTagComp.value = name ? asideTagMap[name] : void 0
+  activeTagName.value = activeTagName.value !== name ? name : void 0
+  currentAsideTagComp.value = name ? asideTagMap[activeTagName.value] : void 0
   pageConfig.value
   && pageConfig.value.asideTag
   && (currentActiveAsideTagConfig.value = pageConfig.value.asideTag.find(item => item.comp === name))

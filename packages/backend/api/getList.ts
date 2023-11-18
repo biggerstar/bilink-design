@@ -11,7 +11,7 @@ export const router = express.Router();
  * */
 router.get('/getList', async function (req, res, next) {
   let {id, page_num = '1', page_size = '20'} = req.query
-  console.log(page_num, page_size, id)
+  // console.log(page_num, page_size, id)
   if (isString(id) && isString(page_num) && isString(page_size)) {
     // 找到该 id 的数据，判断是不是叶子节点,如果不是叶子节点
     const found = await ResourceTree.findByPk(id)

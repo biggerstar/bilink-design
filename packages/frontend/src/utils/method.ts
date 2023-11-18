@@ -37,7 +37,7 @@ export function parseWidget4DomChain(el: HTMLElement): HTMLElement | void {
   let target = el
   while (cont--) {
     if (isWidgets(target)) return target
-    target = <HTMLElement>(el.parentNode || el.parentElement)
+    target = <HTMLElement>(el?.parentNode || el?.parentElement)
     if (!target) break
   }
 }
