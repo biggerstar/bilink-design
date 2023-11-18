@@ -102,7 +102,8 @@ class EditorStore {
       }
       bodyStyle.setProperty(CSS_DEFINE["--canvas-scale"], String(scale))  // 设置当前尺寸，未设置 scale 或者 scale 为 null 自动设置最佳尺寸
     }
-    this.moveableManager?.moveable?.updateRect()
+    this.moveableManager?.moveable?.updateRect?.()
+    this.lineGuides?.updateGuidesStyle?.()
     deepmerge(this.currentProject.canvas, canvasInfo, options)
   }
 
