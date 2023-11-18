@@ -3,15 +3,17 @@ import {MaterialIds} from "../common/MaterialIds.js";
 import {crawlMaterialData} from "./main/crawl-material.js";
 import {init_table} from "../common/db/init-table.js";
 import {pref_table} from "./pref_table.js";
+import {crawl_all_fonts} from "./main/crawl-fonts-source.js";
 
 /*----------------------------初始化环境------------------------------------*/
 await init_table()
-await initMetaData()
+// await initMetaData()
 /*------------------------------爬取---------------------------------------*/
 // await crawlMaterialData(MaterialIds.iconRoot )  // 爬取svg图标素材数据
 // await crawlMaterialData(MaterialIds.textRoot)  // 爬取文字素材数据
 // await crawlMaterialData(MaterialIds.imagesRoot,29)  // 爬取图片素材数据
 // await crawlMaterialData(MaterialIds.templateRoot,29)  // 爬取模板素材数据
+// await crawl_all_fonts()
 
 /*-----------------------------数据清洗--------------------------------------*/
 

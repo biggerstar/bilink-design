@@ -8,7 +8,7 @@ export const router = express.Router();
 /**
  * type 获取类型 数据库 meta 表 中的数据，type 默认为 Meta 文件中的 MetaEnum 枚举类型
  * */
-router.get('/getResource', async function (req, res, next) {
+router.get('/resource', async function (req, res, next) {
   const {type, id} = req.query
   if (isString(id)) {
     //@ts-ignore

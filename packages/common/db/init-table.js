@@ -3,6 +3,7 @@ import ModelMeta from "./model/Meta.js";
 import ModelResourceTree from "./model/ResourceTree.js";
 import ModelMaterialMapping from "./model/ModelMaterialMapping.js";
 import ModelAllMaterial from "./model/ModelAllMaterial.js";
+import ModelFonts from "./model/Fonts.js";
 
 export async function init_table() {
   const isDev = process.env.ENV === 'development'
@@ -15,8 +16,9 @@ export async function init_table() {
   await ModelResourceTree.sync({force: isDev})
   await ModelMaterial.sync({force: isDev})
   await ModelMeta.sync({force: isDev})
-  await ModelMaterialMapping.sync({force: true})
-  await ModelAllMaterial.sync({force: true})
+  await ModelMaterialMapping.sync()
+  await ModelAllMaterial.sync()
+  await ModelFonts.sync()
 }
 
 

@@ -55,20 +55,18 @@
 
     <!--  --------------------main---------------------  -->
     <div id="main" class="main" ref="mainRef">
-      <DesignCanvas
-        v-if="currentProjectInfo && currentProjectInfo.canvas"
-        :config="currentProjectInfo.canvas"
-      >
+      <DesignCanvas v-if="currentTemplateLayoutInfo">
         <component
           class="widget-box-selection"
-          v-if="currentProjectInfo" :is="widgetsMap[item.type]"
-          v-for="item in currentProjectInfo.items"
-          :config="item">
+          v-show="currentTemplateLayoutInfo && widgetsMap[widgetConfig.type]"
+          v-for="widgetConfig in editorStore.getCurrentTemplateLayout().elements"
+          :is="widgetsMap[widgetConfig.type]"
+          :config="widgetConfig">
         </component>
       </DesignCanvas>
       <div id="main-bottom">
         <ScaleControl
-          v-if="currentProjectInfo && currentProjectInfo.canvas"
+          v-if="currentTemplateLayoutInfo"
           class="scale-control z-[500]"
           selector="#main"
         />
@@ -92,50 +90,27 @@ import ScaleControl from "@/components/scale-control/ScaleControl.vue";
 import {asideTagMap, widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {notification} from 'ant-design-vue';
 import {apiGetProjectInfo} from "@/api/getProjectInfo";
-import {apiGetAllFonts} from "@/api/getFontData";
-import {apiGetWidgetsDetailConfig} from "@/api/getWidgetsDetailConfig";
+import {apiGetFonts} from "@/api/getFonts";
 import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
 import {getWidgetsName} from "@/utils/method";
+import {CurrentTemplate} from "@type/layout";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagName = shallowRef<string>()
 const curDetailComp = shallowRef()  // 当前编辑区域点击小组件时对应的小组件配置页
-const currentProjectInfo = ref()   // 当前使用的工程文件
+const currentTemplateLayoutInfo = ref<CurrentTemplate>()   // 当前使用的工程文件
 const currentAsideTagComp = shallowRef()   // 当前左侧标签展开页使用的组件
 const currentActiveAsideTagConfig = shallowRef()   // 当前左侧标签展开页使用的配置
 
-const moreOperationList = [
-  {
-    text: '下载',
-    icon: 'icon-xiazaidaoru',
-    handler: () => {
-      // do something
-      // console.log('click')
-    },
-  },
-  {
-    text: '分享',
-    icon: 'icon-fenxiang',
-    handler: () => {
-      // do something
-    },
-  },
-  {
-    text: '敬请期待',
-    icon: 'icon-jingqingqidai',
-    handler: () => {
-      // do something
-    },
-  },
-]
+const moreOperationList = editorStore.pageConfig.header.moreOperation
 
 setTimeout(() => {
   // showTagPage('material')
   // showTagPage('text')
   // showTagPage('images')
-  showTagPage('template')
+  // showTagPage('template')
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
@@ -165,31 +140,24 @@ function listenClickWidgetsTarget() {
  * 载入工程配置成功后调用
  * */
 function loadEditorProjectSuccess() {
-  currentProjectInfo.value = editorStore.currentProject
+  currentTemplateLayoutInfo.value = editorStore.currentTemplate
   curDetailComp.value = getCurDetailComp()
-  if (editorStore.currentProject.canvas.guideline) setTimeout(() => editorStore.displayLineGuides(true), 100)
   setTimeout(() => {
     editorStore.moveableManager = <any>new MoveableManager()
     editorStore.moveableManager.mount(mainRef.value, defaultMoveableOptions)
   }, 100)
 }
 
-
 onMounted(async () => {
-  if (mainRef.value) {
-
-    mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
-  }
-
-  apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = res.data))
-  apiGetWidgetsDetailConfig().then(res => res.code === 200 && (editorStore.widgetsDetailConfig = res.data))
+  if (mainRef.value) mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
+  apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = editorStore.pageConfig = res.data))
   const getProjectInfo = apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data) || loadEditorProjectSuccess())
-  const getAllFonts = apiGetAllFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
-  Promise.all([getProjectInfo, getAllFonts]).then(() => {
-    const fontId = editorStore.currentProject?.canvas?.fontId
-    if (!fontId || !mainRef.value) return
-    editorStore.setFontFamily(<any>mainRef.value, fontId)
-  })
+  const getAllFonts = apiGetFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
+  // Promise.all([getProjectInfo, getAllFonts]).then(() => {
+  //   const fontId = editorStore.currentTemplate?.canvas?.fontId
+  //   if (!fontId || !mainRef.value) return
+  //   editorStore.setFontFamily(<any>mainRef.value, fontId)
+  // })
 })
 
 /*-----------------------------------header start-------------------------------------*/
@@ -202,7 +170,7 @@ const openNotification = () => {
 };
 
 function saveProject() {  /* 保存当前工程 */
-  sessionStorage.setItem('layout', JSON.stringify(editorStore.currentProject))
+  sessionStorage.setItem('layout', JSON.stringify(editorStore.currentTemplate))
   openNotification()
 }
 
