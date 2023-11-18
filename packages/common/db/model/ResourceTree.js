@@ -3,12 +3,12 @@ import sequelize from '../sequelize.js'
 
 const ModelResourceTree = sequelize.define('resource-tree', {
   id: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
     primaryKey: true
   },
   parentId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   data: {

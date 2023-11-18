@@ -134,7 +134,8 @@ const moreOperationList = [
 setTimeout(() => {
   // showTagPage('material')
   // showTagPage('text')
-  showTagPage('images')
+  // showTagPage('images')
+  showTagPage('template')
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */

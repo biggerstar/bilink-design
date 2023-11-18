@@ -7,11 +7,15 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AButton: typeof import('ant-design-vue/es')['Button']
     ACascader: typeof import('ant-design-vue/es')['Cascader']
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
     AllImagesDetail: typeof import('./src/components/aside/images/AllImagesDetail.vue')['default']
     AllMaterialDetail: typeof import('./src/components/aside/material/AllMaterialDetail.vue')['default']
+    AllTempate: typeof import('./src/components/aside/template/AllTempate.vue')['default']
+    AllTemplate: typeof import('./src/components/aside/template/AllTemplate.vue')['default']
     AllTextDetail: typeof import('./src/components/aside/text/AllTextDetail.vue')['default']
+    AModal: typeof import('ant-design-vue/es')['Modal']
     APageHeader: typeof import('ant-design-vue/es')['PageHeader']
     APopover: typeof import('ant-design-vue/es')['Popover']
     ASelect: typeof import('ant-design-vue/es')['Select']
@@ -42,6 +46,7 @@ declare module 'vue' {
     SecondaryMaterialDetail: typeof import('./src/components/aside/material/SecondaryMaterialDetail.vue')['default']
     SecondaryTextDetail: typeof import('./src/components/aside/text/SecondaryTextDetail.vue')['default']
     SliderNumber: typeof import('./src/components/slider-number/SliderNumber.vue')['default']
+    Template: typeof import('./src/components/aside/template/Template.vue')['default']
     Test: typeof import('./src/components/aside/images/Test.vue')['default']
     Text: typeof import('./src/components/aside/text/Text.vue')['default']
     WText: typeof import('./src/components/w-text/WText.vue')['default']

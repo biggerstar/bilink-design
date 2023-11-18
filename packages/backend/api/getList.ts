@@ -40,7 +40,7 @@ router.get('/getList', async function (req, res, next) {
       })
       return res.send({
         code: 200,
-        message: 'success',
+        message: '成功',
         data: result.map(item => item.dataValues.data)
       })
     }

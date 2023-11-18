@@ -33,8 +33,8 @@ onMounted(() => {
   editorStore.editorAreaTarget = editorArea.value
   editorStore.updateCanvasStyle({
     /* 外部无传入对应参数时的默认配置 */
-    width: 600,
-    height: 800,
+    width: 1200,
+    height: 2200,
     padding: 60,
     bgColor: '#FFF',
     ...props.config

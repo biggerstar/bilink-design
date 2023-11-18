@@ -55,11 +55,6 @@ button {
 button:hover {
 }
 
-button:focus,
-button:focus-visible {
-  background-color: #f9f9f9;
-}
-
 .card {
   padding: 2em;
 }
@@ -198,4 +193,3 @@ html, body, #app {
   --color-gray-200: #f1f2f4;
   --color-gray-100: #f6f7f9;
 }
-

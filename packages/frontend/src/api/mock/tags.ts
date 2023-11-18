@@ -8,6 +8,8 @@ export default [
     name: '模板',
     icon: 'icon-moban',
     comp: 'template',
+    type: 'template',
+    typeId: '4971426',
   },
   {
     name: '素材',

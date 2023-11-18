@@ -8,7 +8,7 @@ const size = 300
 let page = 0
 let complete = false
 
-export async function pref_table() {
+export async function pref_table(deleteSourceDB = false) {
   do {
     const res = await ModelMaterial.findAll({
       limit: 300, offset: size * page++
@@ -49,6 +49,7 @@ export async function pref_table() {
     })
 
   } while (!complete)
+  if (deleteSourceDB) await ModelMaterial.drop() // 删除源数据表
 }
 
 
