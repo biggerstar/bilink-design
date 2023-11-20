@@ -1,20 +1,26 @@
 <template>
   <div
     data-widget-type="widget"
-    data-widget-name='w-image'
+    data-widget-name='w-group'
     class="w-position not-user-select"
     ref="W_Widget"
   >
-    <div class="edit-widget-area w-full h-full" spellcheck="false">
-      <img class="w-full h-full" :src="props.config.url" :alt="props.config.title">
+    <div class="w-full h-full relative">
+      <component
+        v-show=" widgetsMap[widgetConfig.type]"
+        v-for="(widgetConfig,index) in elements"
+        :data-widget-in-group="true"
+        :is="widgetsMap[widgetConfig.type]"
+        :config="widgetConfig"
+        :key="`${index}${widgetConfig.uuid}`"
+      ></component>
     </div>
-    <slot></slot>
   </div>
 </template>
-
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
 import {createBaseCssAction} from "@/components/widgets/base-action";
+import {onMounted, ref} from "vue";
+import {widgetsMap} from "@/config/widgets-map";
 
 const props = <any>defineProps({
   config: {
@@ -22,9 +28,9 @@ const props = <any>defineProps({
     default: {}
   }
 })
+const elements = props.config.elements
 const W_Widget = ref()
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
-
 onMounted(async () => {
   if (!W_Widget.value) return
   baseCssAction.connect(W_Widget.value)
@@ -39,5 +45,12 @@ onMounted(async () => {
   cursor: move;
   left: 0;
   top: 0;
+}
+
+
+.edit-widget-area {
+  outline: none;
+  word-break: break-word;
+  margin: 0;
 }
 </style>

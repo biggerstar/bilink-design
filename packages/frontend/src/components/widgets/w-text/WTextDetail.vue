@@ -72,7 +72,7 @@
       </card>
       <hr class="hr-line">
       <card title="特效">
-        <div class="flex justify-between">
+        <div v-if="predefineColorList" class="flex justify-between">
           <span class="text-[0.9rem]">颜色</span>
           <el-color-picker v-model="textColor" @change="textColorChanged" show-alpha :predefine="predefineColorList"/>
         </div>
@@ -80,7 +80,7 @@
       <hr class="hr-line">
       <card title="基础">
         <SliderNumber
-          v-if="widgetOpacity"
+          v-if="isNumber(widgetOpacity)"
           class="w-full"
           :max="100"
           :min="0"
@@ -107,7 +107,6 @@ import ContentBox from "@/components/content-box/ContentBox.vue";
 import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
 import SliderNumber from "@/components/slider-number/SliderNumber.vue";
-import {predefineColorList} from "@/config/base";
 import {isNumber} from "is-what";
 
 const isShowFontsPage = ref(false)
@@ -122,6 +121,7 @@ const spaceInfoList = ref()
 const curSpaceInfo = ref()
 const textColor = ref()
 const widgetOpacity = ref()
+const predefineColorList = ref([])
 
 function showSelectFontPage() {
   isShowMainDetailPage.value = false
@@ -202,6 +202,7 @@ onMounted(() => {
   const currentOptions = toRaw(editorStore.getCurrentOptions() || {})
   const detailConfig = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
   const {align, textStyle, spaceInfo, fontsSizeList} = detailConfig
+  predefineColorList.value = editorStore.pageConfig.predefineColors
   textColor.value = currentOptions.color
   widgetOpacity.value = isNumber(currentOptions.opacity) ? currentOptions.opacity * 100 : 100
   alignList.value = align

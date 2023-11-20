@@ -10,12 +10,23 @@ import Moveable, {
   OnScaleEnd
 } from "moveable";
 import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
-import defaultConfig from "@/common/moveable/default-config";
 import {CssTransformApi, getWidgetsName, isWidgets, parseWidget4DomChain, toFixed} from "@/utils/method";
 import {editorStore} from "@/store/editor";
 import './moveable-style.css'
+import {
+  DESIGN_OPTIONS,
+  LINE_GUIDE_HORIZONTAL_SELECTOR,
+  LINE_GUIDE_VERTICAL_SELECTOR,
+  MOVEABLE_ALL_DIRECTION,
+  WIDGET_DATASET_NAME,
+  WIDGET_SELECTOR,
+  WIDGETS_NAMES
+} from "@/constant";
+import {LayoutWidget} from "@type/layout";
 
-
+/**
+ * 默认配置，具体比如 dragable,resizable,rotatable 等配置可通过后台进行指定
+ * */
 export const defaultMoveableOptions: MoveableOptions = {
   zoom: 0.8,
   throttleDrag: 0,
@@ -26,17 +37,18 @@ export const defaultMoveableOptions: MoveableOptions = {
   origin: false,
   snappable: true,
   rotationPosition: 'bottom',
-  elementGuidelines: ['div[data-type="widgets"]', 'scena-guides-horizontal', 'scena-guides-vertical'],
+  elementGuidelines: [WIDGET_SELECTOR, LINE_GUIDE_HORIZONTAL_SELECTOR, LINE_GUIDE_VERTICAL_SELECTOR],
   snapGridWidth: 10,
   snapGridHeight: 10,
   isDisplaySnapDigit: true,
+  defaultGroupOrigin: '0% 0%',
+  renderDirections: MOVEABLE_ALL_DIRECTION,
   // draggable: true,
   // clippable: false,
   // resizable: true,
   // scalable: false,
   // // keepRatio: true,
   // rotatable: true,
-  // renderDirections: ["n", "nw", "ne", "s", "se", "sw", "e", "w"],
 }
 
 
@@ -44,6 +56,7 @@ export class MoveableManager {
   public moveable: Moveable
   public container: HTMLElement
   public currentElement: HTMLElement | void   // 当前聚焦的元素
+  public currentGroupElement: HTMLElement | void   // 当前聚焦的元素
   public overElement: HTMLElement | void   //  当前鼠标指针停留位置的元素
   public resizeObserver: ResizeObserver | null
 
@@ -115,6 +128,9 @@ export class MoveableManager {
           height: toFixed(lastEvent.height, 3),
         })
       })
+      .on('dragGroup', () => {
+        console.log(222222222222222222)
+      })
 
 
     ;const eventHookList = this.eventHookList
@@ -141,28 +157,33 @@ export class MoveableManager {
     if (!elements) return
     const elList = !Array.isArray(elements) ? [elements] : elements
     const target = elList.filter((el: HTMLElement) => el && isWidgets(el))
-    target.forEach((el: any) => {
-      const widgetsName = getWidgetsName(el)
-      if (!widgetsName) return
-      if (widgetsName) {
-        const widgetsConfig = defaultConfig[widgetsName]
-        this.moveable.setState(widgetsConfig)
-      }
-    })
-    if (target.length) this.moveable.target = target
+    if (target.length) {
+      this.moveable.target = target
+      this.moveable.forceUpdate()
+    }
   }
 
   /**
    * 让dom链上的最近的小组件活跃
    * */
-  public activeWidgets(elements: HTMLElement | SVGElement): {
+  public activeWidgets(element: HTMLElement | SVGElement, opt: Partial<MoveableOptions> = {}): {
     name: string,
     el: HTMLElement
   } | void {
-    const widgetsEl = parseWidget4DomChain(<any>elements)
+    const widgetsEl = parseWidget4DomChain(<any>element)
     if (!widgetsEl) return
     const widgetsName = getWidgetsName(widgetsEl)
     if (!widgetsName) return
+    const widgetConfig: LayoutWidget = widgetsEl[DESIGN_OPTIONS] || {}
+    const options: Partial<MoveableOptions> = {}
+    if (widgetConfig.hasOwnProperty('dragable')) options.draggable = widgetConfig.dragable
+    if (widgetConfig.hasOwnProperty('rotatable')) options.rotatable = widgetConfig.rotatable
+    this.moveable.setState({
+      draggable: true,
+      hideDefaultLines: false,
+      ...options,
+      ...opt,
+    })
     this.active(widgetsEl)
     return {
       name: widgetsName,
@@ -173,16 +194,47 @@ export class MoveableManager {
   /**
    * 鼠标指正在经过某个小组件
    * */
-  public over(el: HTMLElement) {
-    this.overElement = el
+  public drag(el: HTMLElement) {
+    if (this.currentElement === el) return
+    const w_group_el = parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+    if (!w_group_el) return
+    const els = Array.from(el.querySelectorAll(WIDGET_SELECTOR))
+    if (!els.length) return
+
+    // console.log(els)
+
+    this.moveable.setState({
+      targetGroups: els
+    })
+
+    // this.activeWidgets(w_group_el, {
+    //   renderDirections: [],
+    //   rotatable: false
+    // })
   }
 
   /**
    * 聚焦某个小组件
    * */
-  public focus(el: HTMLElement) {
-    this.activeWidgets(el)
-    this.moveable.forceUpdate()
+  public mousedown(el: HTMLElement) {
+    if (el === this.currentElement) return
+    const w_group_el = parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+    if (!w_group_el) return
+    this.currentGroupElement = w_group_el
+
+    this.activeWidgets(w_group_el, {
+      renderDirections: [],
+      rotatable: false
+    })
+  }
+
+  /**
+   * 聚焦某个小组件
+   * */
+  public mouseup(el: HTMLElement) {
+    this.activeWidgets(el, {
+      renderDirections: MOVEABLE_ALL_DIRECTION
+    })
     this.currentElement = el
   }
 
@@ -195,6 +247,7 @@ export class MoveableManager {
     this.moveable.target = []
     this.resizeObserver && this.resizeObserver.disconnect()
     this.resizeObserver = null
+    this.currentGroupElement = null
   }
 }
 

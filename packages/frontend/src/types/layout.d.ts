@@ -1,50 +1,50 @@
-export type LayoutWidgets = {
-  "uuid": string,
-  "type": "image" | 'text' | 'svg',
-  "title": string,
-  "opacity": number,
-  "padding": [number, number, number, number],
-  "width": number,
-  "height": number,
-  "left": number,
-  "top": number,
-  "transform": {
-    "a": number,
-    "b": number,
-    "c": number,
-    "d": number,
-    "tx": number,
-    "ty": number
+export type LayoutWidget = {
+  uuid: string,
+  type: 'image' | 'text' | 'svg',
+  title: string,
+  opacity: number,
+  padding: [number, number, number, number],
+  width: number,
+  height: number,
+  left: number,
+  top: number,
+  transform: {
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    tx: number,
+    ty: number
   },
-  "boxShadow": null,
-  "dragable": boolean,
-  "rotatable": boolean,
-  "editable": boolean,
-  "frozen": boolean,
-  "hidden": boolean,
-  "lock": boolean,
-  "borderRadius": number,
-  "filter": {
-    "contrast": number,
-    "sharpness": number,
-    "hueRotate": number,
-    "saturate": number,
-    "brightness": number,
-    "gaussianBlur": number,
-    "temperature": number,
-    "tint": number
+  boxShadow: null,
+  dragable: boolean,
+  rotatable: boolean,
+  editable: boolean,
+  frozen: boolean,
+  hidden: boolean,
+  lock: boolean,
+  borderRadius: number,
+  filter: {
+    contrast: number,
+    sharpness: number,
+    hueRotate: number,
+    saturate: number,
+    brightness: number,
+    gaussianBlur: number,
+    temperature: number,
+    tint: number
   },
-  "watermarkEnable": boolean,
-  "groupable": boolean,
-  "backgroundColor": unknown,
-  "backgroundEffect": unknown,
-  "border": null,
-  "blendMode": string,
+  watermarkEnable: boolean,
+  groupable: boolean,
+  backgroundColor: unknown,
+  backgroundEffect: unknown,
+  border: null,
+  blendMode: string,
   url: string;
-  "imageUrl": string,
-  "naturalWidth": number,
-  "naturalHeight": number,
-  "quality": 80,
+  imageUrl: string,
+  naturalWidth: number,
+  naturalHeight: number,
+  quality: 80,
 }
 
 export type LayoutConfig = {
@@ -60,12 +60,13 @@ export type LayoutConfig = {
     image: any
   },
   backgroundColor: string,
-  elements: LayoutWidgets[]
+  backgroundImage: string,
+  elements: LayoutWidget[]
 }
 
 export type LayoutConfigs = LayoutConfig[]
 
-export type CurrentTemplate =  {
+export type CurrentTemplate = {
   /* 当前使用的模板信息 */
   // global: object,
   /** 小组件信息集合 */
@@ -81,10 +82,12 @@ export type PageConfig = {
   scaleSizeList: number[],
   /** 组件详情面板配置信息 */
   widgetsDetail: Record<any, any>
-  header:{
-    moreOperation:Array<{
-      text:string,
-      icon:string
+  /** 颜色选择器预设颜色 */
+  predefineColors: string[]
+  header: {
+    moreOperation: Array<{
+      text: string,
+      icon: string
     }>
   }
 }

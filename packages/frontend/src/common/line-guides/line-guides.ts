@@ -83,8 +83,8 @@ export class LineGuides {
     const {guidesTop, guidesLeft} = this
     if (guidesTop && guidesLeft) {
       const scale = editorStore.getCurScaleValue()
-      guidesTop.unit = Math.max(1, Math.floor(1 / scale)) * 50
-      guidesLeft.unit = Math.max(1, Math.floor(1 / scale)) * 50
+      guidesTop.unit = Math.max(1, Math.ceil(1 / scale)) * 50
+      guidesLeft.unit = Math.max(1, Math.ceil(1 / scale)) * 50
       guidesTop.range = [0, width / scale]
       guidesLeft.range = [0, height / scale]
       guidesTop.zoom = scale

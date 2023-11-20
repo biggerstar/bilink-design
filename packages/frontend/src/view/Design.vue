@@ -14,7 +14,7 @@
                   class="w-14 h-14 rounded-lg cursor-pointer"
                   v-for="(item,index) in moreOperationList"
                   :key="index + item.text">
-                  <ContentBox @click="item.handler">
+                  <ContentBox>
                     <div class="iconfont" :class="item.icon"></div>
                   </ContentBox>
                   <div class="text-center mt-1">{{ item.text }}</div>
@@ -57,11 +57,12 @@
     <div id="main" class="main" ref="mainRef">
       <DesignCanvas v-if="currentTemplateLayoutInfo">
         <component
-          class="widget-box-selection"
           v-show="currentTemplateLayoutInfo && widgetsMap[widgetConfig.type]"
-          v-for="widgetConfig in editorStore.getCurrentTemplateLayout().elements"
+          v-for="(widgetConfig,index) in editorStore.getCurrentTemplateLayout().elements"
           :is="widgetsMap[widgetConfig.type]"
-          :config="widgetConfig">
+          :config="widgetConfig"
+          :key="`${index}${widgetConfig.uuid}`"
+        >
         </component>
       </DesignCanvas>
       <div id="main-bottom">
@@ -74,7 +75,7 @@
     </div>
 
     <div class="widgets-detail">
-      <div v-if="curDetailComp">
+      <div v-if="curDetailComp && editorStore.currentTemplate">
         <component :is="curDetailComp"></component>
       </div>
     </div>
@@ -95,6 +96,7 @@ import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
 import {getWidgetsName} from "@/utils/method";
 import {CurrentTemplate} from "@type/layout";
+import {defaultSelectOptions, SelectoManager} from "@/common/selecto/selecto";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
@@ -103,8 +105,7 @@ const curDetailComp = shallowRef()  // 当前编辑区域点击小组件时对�
 const currentTemplateLayoutInfo = ref<CurrentTemplate>()   // 当前使用的工程文件
 const currentAsideTagComp = shallowRef()   // 当前左侧标签展开页使用的组件
 const currentActiveAsideTagConfig = shallowRef()   // 当前左侧标签展开页使用的配置
-
-const moreOperationList = editorStore.pageConfig.header.moreOperation
+const moreOperationList = ref()
 
 setTimeout(() => {
   // showTagPage('material')
@@ -127,7 +128,7 @@ function getCurDetailComp(widgetsName: string | void = 'default') {
   return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
-function listenClickWidgetsTarget() {
+function listenMouseDownEvent() {
   let widgetName
   const widgetEl = editorStore.moveableManager.currentWidget
   if (widgetEl) widgetName = getWidgetsName(widgetEl)
@@ -136,20 +137,33 @@ function listenClickWidgetsTarget() {
   nextTick(() => curDetailComp.value = detailComp)
 }
 
+function listenMouseupEvent() {
+  const selectoManager = editorStore.selectoManager
+  if (selectoManager && selectoManager.selected.length) {
+    if (selectoManager.selected.length > 1) curDetailComp.value = getCurDetailComp('w-group')  // 如果进行组件多选，则右侧弹出组件组配置页
+  }
+}
+
 /**
  * 载入工程配置成功后调用
  * */
 function loadEditorProjectSuccess() {
   currentTemplateLayoutInfo.value = editorStore.currentTemplate
   curDetailComp.value = getCurDetailComp()
+  moreOperationList.value = editorStore.pageConfig.header.moreOperation
   setTimeout(() => {
     editorStore.moveableManager = <any>new MoveableManager()
     editorStore.moveableManager.mount(mainRef.value, defaultMoveableOptions)
+    editorStore.selectoManager = <any>new SelectoManager()
+    editorStore.selectoManager.mount(mainRef.value, defaultSelectOptions)
   }, 100)
 }
 
 onMounted(async () => {
-  if (mainRef.value) mainRef.value!.addEventListener('mousedown', listenClickWidgetsTarget)
+  if (mainRef.value) {
+    mainRef.value!.addEventListener('mousedown', listenMouseDownEvent)
+    mainRef.value!.addEventListener('mouseup', listenMouseupEvent)
+  }
   apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = editorStore.pageConfig = res.data))
   const getProjectInfo = apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data) || loadEditorProjectSuccess())
   const getAllFonts = apiGetFonts().then(res => res.code === 200 && (editorStore.allFont = res.data))
@@ -177,7 +191,10 @@ function saveProject() {  /* 保存当前工程 */
 onUnmounted(() => {
   editorStore.moveableManager && editorStore.moveableManager.destroy()
   editorStore.lineGuides && editorStore.lineGuides.destroy()
-  mainRef.value && mainRef.value!.removeEventListener('click', listenClickWidgetsTarget)
+  if (mainRef.value) {
+    mainRef.value!.removeEventListener('mousedown', listenMouseDownEvent)
+    mainRef.value!.removeEventListener('mouseup', listenMouseupEvent)
+  }
 })
 
 </script>

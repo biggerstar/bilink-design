@@ -51,6 +51,7 @@ onMounted(() => {
 
 #editor-area-box {
   position: relative;
+  background-color: #FFFFFF;
   width: calc(var(--canvas-width) * var(--canvas-scale));
   height: calc(var(--canvas-height) * var(--canvas-scale));
   //overflow: hidden;
@@ -72,10 +73,12 @@ onMounted(() => {
 
 #editor-area {
   position: relative;
-  background: #FFFFFF;
+  background-color: transparent;
   width: var(--canvas-width);
   height: var(--canvas-height);
   transform-origin: left top;
   transform: scale(var(--canvas-scale));
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 </style>

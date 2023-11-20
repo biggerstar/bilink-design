@@ -161,6 +161,64 @@ export default {
       "300",
       "400",
       "500",
-    ]
+    ],
+  },
+  [WIDGETS_NAMES.W_GROUP]:{
+    align: [
+      {
+        icon: 'icon-zuoduiqi-',
+        tip: '左对齐',
+        status: true,
+        style: {
+          textAlign: 'left',
+          textAlignLast: 'auto'
+        }
+      },
+      {
+        icon: 'icon-juzhongduiqi-',
+        tip: '水平居中对齐',
+        status: false,
+        style: {
+          textAlign: 'center',
+          textAlignLast: 'auto'
+        }
+      },
+      {
+        icon: 'icon-youduiqi-',
+        tip: '右对齐',
+        status: false,
+        style: {
+          textAlign: 'right',
+          textAlignLast: 'auto'
+        }
+      },
+      {
+        icon: 'icon-dingduiqi-',
+        tip: '上对齐',
+        status: false,
+        style: {
+          textAlign: 'justify',
+          textAlignLast: 'auto'
+        }
+      },
+      {
+        icon: 'icon-chuizhijuzhong-',
+        tip: '垂直居中对齐',
+        status: false,
+        style: {
+          textAlign: 'justify',
+          textAlignLast: 'justify'
+        }
+      },
+      {
+        icon: 'icon-diduiqi-',
+        tip: '下对齐',
+        status: false,
+        style: {
+          textAlign: 'justify',
+          textAlignLast: 'justify'
+        }
+      },
+    ],
   }
 }

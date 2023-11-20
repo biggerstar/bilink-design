@@ -56,6 +56,9 @@ dependencies:
   pinia:
     specifier: ^2.1.7
     version: 2.1.7(typescript@5.2.2)(vue@3.3.8)
+  selecto:
+    specifier: ^1.26.1
+    version: 1.26.1
   sequelize:
     specifier: ^6.35.0
     version: 6.35.0(mysql2@3.6.3)(pg-hstore@2.3.4)
@@ -3780,7 +3783,7 @@ packages:
   /react-selecto@1.26.0:
     resolution: {integrity: sha512-aBTZEYA68uE+o8TytNjTb2GpIn4oKEv0U4LIow3cspJQlF/PdAnBwkq9UuiKVuFluu5kfLQ7Keu3S2Tihlmw0g==}
     dependencies:
-      selecto: 1.26.0
+      selecto: 1.26.1
     dev: false
 
   /read-cache@1.0.0:
@@ -3968,8 +3971,8 @@ packages:
     resolution: {integrity: sha512-4AsO/FrViE/iDNEPaAQlb77tf0csuq27EsVpy6ett584EcRTp6pTDLoGWVxCD77y5iU5FauOvhsI4o1APwPoSQ==}
     dev: true
 
-  /selecto@1.26.0:
-    resolution: {integrity: sha512-cEFKdv5rmkF6pf2OScQJllaNp4UJy/FvviB40ZaMSHrQCxC72X/Q6uhzW1tlb2RE+0danvUNJTs64cI9VXtUyg==}
+  /selecto@1.26.1:
+    resolution: {integrity: sha512-4nqvJ9snUHLUYpzm4MAe+3lVpMT68h0gOWqSsEiY9rvLyVGPk0BxVZDBaoxI5jGrdulUVaC5b2z6OSfxy+nkNQ==}
     dependencies:
       '@daybrush/utils': 1.13.0
       '@egjs/children-differ': 1.0.1

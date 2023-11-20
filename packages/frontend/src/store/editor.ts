@@ -7,6 +7,8 @@ import {isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
 import {CurrentTemplate, LayoutConfig, PageConfig} from "@/types/layout";
 import {apiGetFonts} from "@/api/getFonts";
+import {SelectoManager} from "@/common/selecto/selecto";
+import {isNil} from "lodash-es";
 
 /**
  * 设计页面(/design) 的store
@@ -15,6 +17,7 @@ import {apiGetFonts} from "@/api/getFonts";
 class EditorStore {
   /** moveable 管理器 */
   public moveableManager: MoveableManager
+  public selectoManager: SelectoManager
   public lineGuides: LineGuides
   /** 所有字体 */
   allFont: object[]
@@ -25,6 +28,7 @@ class EditorStore {
     asideTag: [],
     scaleSizeList: [],
     widgetsDetail: {},
+    predefineColors: [],
     header: {
       moreOperation: []
     }
@@ -60,6 +64,7 @@ class EditorStore {
     /* 通过activeOptions引用更新在 currentTemplate.items 中的配置  */
     deepmerge(this.getCurrentOptions(), activeInfo, options)
     this.moveableManager?.moveable?.updateRect()
+    this.lineGuides?.updateGuidesStyle?.()
     if (effectDom) currentWidget[DESIGN_SET_STATE](activeInfo)
   }
 
@@ -92,14 +97,13 @@ class EditorStore {
     if (!this.currentTemplate) return
     if (!this.designCanvasTarget || !this.editorAreaTarget) throw new Error('designCanvas 未挂载')
     const canvasInfo: LayoutConfig = <any>canvasInfoOptions
-    let {width, height, background} = canvasInfo
+    let {width, height, backgroundColor, backgroundImage} = canvasInfo
     const bodyStyle = document.body.style
     const has = (key: keyof LayoutConfig) => Reflect.has(canvasInfo, key)
     has('width') && bodyStyle.setProperty(CSS_DEFINE["--canvas-width"], `${width}px`)
     has('height') && bodyStyle.setProperty(CSS_DEFINE["--canvas-height"], `${height}px`)
-    has('background') && (this.editorAreaTarget.style.backgroundColor = background.color)
-    // has('fontId') && (this.setFontFamily(this.designCanvasTarget, fontId))
-
+    has('backgroundColor') && (this.editorAreaTarget.style.backgroundColor = isNil(backgroundColor) ? '#FFF' : backgroundColor)
+    has('backgroundImage') && (this.editorAreaTarget.style.backgroundImage = `url(${backgroundImage})`)
     this.moveableManager?.moveable?.updateRect?.()
     this.lineGuides?.updateGuidesStyle?.()
     deepmerge(this.currentTemplate.layouts, canvasInfo, options)
@@ -121,7 +125,7 @@ class EditorStore {
     return this.allFont.find(item => item.name === fontName)
   }
 
-  /** 为指定元素设置字体  */
+  /** 为指定元素自动设置字体，如果本地没有将自动远程获取载入  */
   public async setFontFamily(el: HTMLElement, fontName: string): Promise<any> {
     let fontData = this.getFont4FontName(fontName)
     if (!fontData) {

@@ -1,6 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {isFunction, isObject} from "is-what";
+import {WIDGET_DATASET_NAME, WIDGET_SELECTOR, WIDGETS_NAMES} from "@/constant";
 
 /**
  * 某种鼠标响应事件时，计算鼠标指针在在目标元素内的百分比位置
@@ -19,7 +20,7 @@ export function getMouseInElementPercent(event: MouseEvent, fromElement: HTMLEle
 }
 
 export function isWidgets(el: HTMLElement) {
-  return el.dataset['type'] === 'widgets'
+  return el.dataset['widgetType'] === 'widget'
 }
 
 /**
@@ -30,17 +31,45 @@ export function isWidgets(el: HTMLElement) {
 export function getWidgetsName(el: HTMLElement, parseChain: boolean = false): string | void {
   if (!el) return
   if (parseChain) el = <any>parseWidget4DomChain(el)
-  if (el && isWidgets(el)) return el.dataset['name']
+  if (el && isWidgets(el)) return el.dataset['widgetName']
 }
 
-export function parseWidget4DomChain(el: HTMLElement): HTMLElement | void {
+/**
+ * 解析dom链上的组件
+ * @param el 目标元素
+ * @param handleValidate 手动验证是否找到
+ * */
+export function parseWidget4DomChain(el: HTMLElement, handleValidate?: (target: HTMLElement) => boolean): HTMLElement | void {
   if (!el) return
-  let cont = 500
+  let cont = 300
   let target = el
-  while (cont--) {
-    if (isWidgets(target)) return target
-    target = <HTMLElement>(el?.parentNode || el?.parentElement)
+  while (cont-- && target) {
+    if (isFunction(handleValidate)) {  // 如果手动解析，则进入，不能和 handleValidate(target) 同一行验证，否则可能会执行到else if
+      if (handleValidate(target) === true) return target
+    } else if (isWidgets(target)) return target
+    target = <HTMLElement>(target?.parentElement)
     if (!target) break
+  }
+}
+
+export function parseGroupWidget4DomChain(el: HTMLElement) {
+  return parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+}
+
+export function parseWidgetsInfo4DomChain(el: HTMLElement):
+  {
+    rootWidgetElement: HTMLElement | void;
+    isGroup: boolean;
+    child: HTMLElement[]
+  } {
+  if (!el) return
+  const groupEl = parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+  const rootElement = groupEl ? groupEl : parseWidget4DomChain(el)
+  const child: HTMLElement[] = rootElement ? Array.from(rootElement.querySelectorAll(WIDGET_SELECTOR)) : []
+  return {
+    child: child,
+    rootWidgetElement: rootElement,
+    isGroup: !!groupEl,
   }
 }
 

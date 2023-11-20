@@ -30,6 +30,7 @@
     "moveable": "^0.52.0",
     "moveable-helper": "^0.4.0",
     "pinia": "^2.1.7",
+    "selecto": "^1.26.1",
     "sequelize": "^6.35.0",
     "uuid": "^9.0.1",
     "vue": "^3.3.8",

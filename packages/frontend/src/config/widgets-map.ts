@@ -10,14 +10,23 @@ import Text from "@/components/aside/text/Text.vue";
 import Images from "@/components/aside/images/Images.vue";
 import Template from "@/components/aside/template/Template.vue";
 import WImage from "@/components/widgets/w-image/WImage.vue";
+import WImageDetail from "@/components/widgets/w-image/WImageDetail.vue";
+import WGroupDetail from "@/components/widgets/w-group/WGroupDetail.vue";
+import WGroup from "@/components/widgets/w-group/WGroup.vue";
 
 export const widgetsDetailMap = {
   'default': DefaultEditorDetail,
   'w-text': WTextDetail,
+  'w-image': WImageDetail,
+  'w-group': WGroupDetail,
 }
 export const widgetsMap = {
+  'group': WGroup,
   'text': WText,
   'image': WImage,
+  /* TODO 开发额外组件功能的 detail 配置页 */
+  'mask': WImage,
+  'ninePatch': WImage,
 }
 
 export const asideTagMap = {

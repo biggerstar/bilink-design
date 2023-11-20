@@ -26,27 +26,35 @@
     </card>
     <hr class="hr-line">
 
-    <card title="背景色" class="not-user-select">
+    <card v-if="predefineColorList" title="背景色" class="not-user-select">
       <template #header>
-        <el-color-picker v-model="canvasInfo.background.color" show-alpha :predefine="predefineColorList"/>
+        <el-color-picker v-model="curBgColor" show-alpha :predefine="predefineColorList"/>
       </template>
     </card>
   </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch} from 'vue';
+import {onMounted, ref, toRaw, watch} from 'vue';
 import Card from "@/components/card/Card.vue";
 import {editorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'
 import 'element-plus/es/components/color-picker/style/index.mjs'
-import {predefineColorList} from "@/config/base";
 import {LayoutConfig} from "@type/layout";
 
 const isShowResizeCanvas = ref(false)
+
+let predefineColorList = ref()
 const canvasInfo = ref<LayoutConfig>()
+const curBgColor = ref('#FFF')
+
 onMounted(() => {
-  canvasInfo.value = editorStore.currentTemplate.layouts[0]
+  canvasInfo.value = toRaw(editorStore.currentTemplate.layouts[0])
+  predefineColorList.value = editorStore.pageConfig.predefineColors
+
+})
+watch(curBgColor, () => {
+  editorStore.updateCanvasStyle({backgroundColor: curBgColor.value})
 })
 watch([canvasInfo], () => {
   editorStore.updateCanvasStyle(canvasInfo.value)

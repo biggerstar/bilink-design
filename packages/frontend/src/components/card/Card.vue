@@ -17,8 +17,13 @@ const props = defineProps({
   title: {
     type: String,
     default: '',
-  }
+  },
+  fontSize: {
+    type: String,
+    default: '1rem',
+  },
 })
+const {fontSize} = props
 </script>
 
 <style scoped>
@@ -28,7 +33,7 @@ const props = defineProps({
   align-items: center;
   font-weight: bolder;
   text-align: center;
-  font-size: 1rem;
+  font-size: v-bind(fontSize);
   padding-bottom: 10px;
 }
 </style>

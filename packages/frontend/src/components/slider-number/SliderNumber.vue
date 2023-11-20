@@ -3,14 +3,14 @@
     <slot class="w-1/5 mr-1" name="icon"></slot>
     <a-slider
       color="#2154F4"
-      class="w-3/5 ml-4"
+      class="w-[60%] ml-4"
       v-model:value="curValue"
       :min="props.min"
       :max="props.max"
       :step="props.step"
     />
     <a-input-number
-      class="w-1/4 ml-2"
+      class="w-[30%] ml-1"
       :controls="false"
       v-model:value="curValue"
       :min="props.min"

@@ -6,7 +6,6 @@ export async function apiGetProjectInfo() {
   // fetch(url)
   let layoutData = LayoutInfo
   const res = sessionStorage.getItem('layout')
-  res.toString();
   // if (res) layoutData = JSON.parse(res)
 
   return {

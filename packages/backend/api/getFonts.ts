@@ -25,7 +25,7 @@ router.get('/fonts', async (req, res) => {
     }
   }
 
-  console.log(name)
+  // console.log(name)
   if (isString(name)) {
     name = decodeURIComponent(name.trim())
     //@ts-ignore
