@@ -1,7 +1,7 @@
 import Moveable, {getElementInfo} from "moveable";
 import Selecto, {OnDragStart, OnSelect, SelectoOptions} from 'selecto'
 import {editorStore} from "@/store/editor";
-import {MOVEABLE_SCALE_DIRECTION, WIDGET_SELECTOR} from "@/constant";
+import {DESIGN_OPTIONS, MOVEABLE_SCALE_DIRECTION, WIDGET_DATASET_IN_GROUP, WIDGET_SELECTOR} from "@/constant";
 import {parseWidget4DomChain} from "@/utils/method";
 
 export const defaultSelectOptions = {
@@ -51,6 +51,7 @@ export class SelectoManager {
     selecto.on('select', (ev: OnSelect) => {
       if (ev.added.length) this.selected = [...new Set(this.selected.concat(ev.added))]
       if (ev.removed.length) this.selected = this.selected.filter(item => !ev.removed.includes(item))
+      this.selected = this.selected.filter(node => node[DESIGN_OPTIONS] && node.dataset[WIDGET_DATASET_IN_GROUP] !== 'true')  // 过滤在成组中的组件
       this.moveable.setState({
         hideDefaultLines: true,
         target: this.selected,

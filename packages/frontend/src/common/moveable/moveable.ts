@@ -7,7 +7,7 @@ import Moveable, {
   OnRotate,
   OnRotateEnd,
   OnScale,
-  OnScaleEnd
+  OnScaleEnd,
 } from "moveable";
 import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
 import {
@@ -59,11 +59,13 @@ export const defaultMoveableOptions: MoveableOptions = {
 
 export class MoveableManager {
   public moveable: Moveable
+  public groupMoveable: Moveable   // 只用于框选组
   public container: HTMLElement
   public currentElement: HTMLElement | void   // 当前聚焦的元素
   public currentGroupElement: HTMLElement | void   // 当前聚焦的元素
   public overElement: HTMLElement | void   //  当前鼠标指针停留位置的元素
   public resizeObserver: ResizeObserver | null
+  public _status: 'down' | 'move' | 'up' | 'none' = 'none'
 
   public get currentWidget(): HTMLElement | void {   // 获取当前活跃的组件
     return parseWidget4DomChain(<any>this.currentElement || this.overElement)
@@ -90,7 +92,9 @@ export class MoveableManager {
     if (!container) container = document.body
     this.container = container
     const moveable = new Moveable(container, moveableOptions);
+    const GroupMoveable = new Moveable(container, moveableOptions);
     this.moveable = moveable
+    this.groupMoveable = GroupMoveable
 
     /** 将 transform 字符串转换成适合组件的配置的对象 */
     function parseTransform(transform: string) {
@@ -133,10 +137,6 @@ export class MoveableManager {
           height: toFixed(lastEvent.height, 3),
         })
       })
-      .on('dragGroup', () => {
-        console.log(222222222222222222)
-      })
-
 
     ;const eventHookList = this.eventHookList
     eventHookList.forEach((item) => {
@@ -177,7 +177,6 @@ export class MoveableManager {
     if (widgetConfig.hasOwnProperty('dragable')) options.draggable = widgetConfig.dragable
     if (widgetConfig.hasOwnProperty('rotatable')) options.rotatable = widgetConfig.rotatable
     this.moveable.setState({
-      hideDefaultLines: false,
       ...options,
       ...opt,
     })
@@ -209,47 +208,65 @@ export class MoveableManager {
     if (el === this.currentElement) return
     const widgetsInfo = parseWidgetsInfo4DomChain(el)
     if (!widgetsInfo.rootWidgetElement) return
-    if (widgetsInfo.isGroup) this.currentGroupElement = widgetsInfo.rootWidgetElement
-    let options: MoveableOptions = {}
-    if (widgetsInfo.isGroup
-      && widgetsInfo.child.includes(<any>parseWidget4DomChain(el))
-      && !editorStore.allowInGroupMovement) {
-      options = {
-        renderDirections: [],
+    const widgetsEl = parseWidget4DomChain(el)
+
+    this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
+    let activeTarget = widgetsInfo.rootWidgetElement
+    if (editorStore.allowInGroupMovement && widgetsEl) activeTarget = widgetsEl
+    if (widgetsInfo.isGroup) {
+      this.moveable.setState({
         rotatable: false,
-        draggable: false,
         resizable: false,
-        scalable: false,
-        hideChildMoveableDefaultLines: true
-      }
+        scalable: false
+      })
+    } else {
+      this.moveable.setState({
+        hideDefaultLines: false,
+      })
     }
-    this.setWidgetState(widgetsInfo.rootWidgetElement, options)
-    this.activeWidgets(el)
+    this.activeWidgets(activeTarget)
+    this._status = 'down'
   }
 
   public mousemove(el: HTMLElement) {
-    if(editorStore.allowInGroupMovement){
-
-    }
+    this._status = 'move'
   }
 
   /**
    * 聚焦某个小组件
    * */
   public mouseup(el: HTMLElement) {
+    const widgetsInfo = parseWidgetsInfo4DomChain(el)
+    const widgetsEl = parseWidget4DomChain(el)
+
+    if (widgetsInfo.isGroup && this.currentGroupElement) {
+      this.setWidgetState(this.currentGroupElement, {
+        hideDefaultLines: true,
+        scalable: true,
+        renderDirections: MOVEABLE_ALL_DIRECTION
+      })
+    } else {
+      widgetsEl && this.setWidgetState(widgetsEl, {
+        renderDirections: MOVEABLE_ALL_DIRECTION
+      })
+    }
     this.currentElement = el
+    this._status = 'up'
   }
 
   /**
    * 失活
    * */
   public deActive() {
+    this._status = 'none'
     this.currentElement = void 0
     this.overElement = void 0
     this.moveable.target = []
     this.resizeObserver && this.resizeObserver.disconnect()
     this.resizeObserver = null
     this.currentGroupElement = null
+    this.groupMoveable.target = []
+    editorStore.allowInGroupMovement = false
   }
 }
 

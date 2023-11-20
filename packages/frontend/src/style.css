@@ -160,7 +160,7 @@ html, body, #app {
   align-items: center
 }
 
-.widget-box-selection, .widget-group-box-selection {
+.widget-box-selection, .widget-group-box-selection, .widget-box-selection-keep {
   position: relative;
   box-sizing: border-box;
 }
@@ -170,6 +170,16 @@ html, body, #app {
 }
 
 .widget-box-selection:hover::before {
+  content: '';
+  position: absolute;
+  width: calc(100% - var(--widget-box-selection-line-weight));
+  height: calc(100% - var(--widget-box-selection-line-weight));
+  left: 0;
+  top: 0;
+  border: var(--widget-box-selection-color) solid var(--widget-box-selection-line-weight);
+}
+
+.widget-box-selection-keep::before {
   content: '';
   position: absolute;
   width: calc(100% - var(--widget-box-selection-line-weight));
