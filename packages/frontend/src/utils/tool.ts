@@ -1,4 +1,4 @@
-export function getElement4EventTarget(ev: Event): HTMLElement | null {
+export function getElement4EventTarget(ev: MouseEvent | TouchEvent): HTMLElement {
   return <HTMLElement>(ev.target || ev['srcElement'])
 }
 

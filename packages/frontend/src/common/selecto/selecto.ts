@@ -61,9 +61,10 @@ export class SelectoManager {
       .on('selectEnd', () => {
         if (this.selected.length <= 1) return this.selected = []   // 如果未选择或者只选择一个忽略
         this.moveable.setState({   // 如果选择了多个，则显示组外框和四个scale角及旋转按钮
+          target: this.selected,
           hideDefaultLines: false,
           renderDirections: MOVEABLE_SCALE_DIRECTION,
-          rotatable: true
+          rotatable: true,
         })
       })
   }

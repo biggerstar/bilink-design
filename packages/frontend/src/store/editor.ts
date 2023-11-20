@@ -36,6 +36,8 @@ class EditorStore {
 
   public currentTemplate: CurrentTemplate
 
+  public allowInGroupMovement: boolean = true
+
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
     const currentWidget = editorStore.moveableManager.currentWidget

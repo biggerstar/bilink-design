@@ -28,9 +28,10 @@ export default function createNativeEventHookList() {
         if (!overEl) return;
         const moveableManager = editorStore.moveableManager
         if (ev.buttons !== 0) {
-          moveableManager.drag(overEl)
+          // moveableManager.drag(overEl)
           setDirection(<any>moveableManager.moveable, overEl)  /*  鼠标未按下才自动跳框 */
         }
+        moveableManager.mousemove(overEl)
         const targetInfo = parseWidgetsInfo4DomChain(overEl)
         if (
           targetInfo.rootWidgetElement
@@ -53,6 +54,7 @@ export default function createNativeEventHookList() {
           if (upEl.classList.contains('moveable-control')) return   // 如果点击的是 moveable 调整控制按钮则直接返回不会进行失活
           moveableManager.deActive()
         }
+
         const elements = editorStore.editorAreaBoxTarget.querySelectorAll(WIDGET_SELECTOR)
         elements.forEach(element => {
           element.classList.remove(WIDGET_GROUP_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR)

@@ -9,9 +9,9 @@ import {DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
 export function createBaseCssAction() {
   let element
   const setWidgetsStyle: (name: keyof CSSStyleDeclaration, val: string) => void = createSetWidgetsStyle(() => element)
+  const cssTransformApi = new CssTransformApi()
 
   function updateTransform(name, value) {
-    const cssTransformApi = new CssTransformApi()
     cssTransformApi.load(element!.style.transform).change(name, value)
     setWidgetsStyle("transform", cssTransformApi.transform)
   }
@@ -48,8 +48,14 @@ export function createBaseCssAction() {
       updateTransform('matrix', Object.values(transform).join(','))
     },
     opacity: (val) => setWidgetsStyle("opacity", `${val}`),
-    left: (val) => updateTransform('translateX', `${val}px`),
-    top: (val) => updateTransform('translateY', `${val}px`),
+    left: (X) => {
+      const Y = cssTransformApi.get('translate')?.[1]
+      updateTransform('translate', `${X}px,${Y || 0}`)
+    },
+    top: (Y) => {
+      const X = cssTransformApi.get('translate')?.[0]
+      updateTransform('translate', `${X || 0},${Y}px`)
+    },
   }
 
   return {
@@ -58,7 +64,10 @@ export function createBaseCssAction() {
       return element
     },
     /** 链接到dom节点 */
-    connect: (el: HTMLElement) => element = el,
+    connect: (el: HTMLElement) => {
+      element = el
+      cssTransformApi.load(el!.style.transform)
+    },
     /**
      * 创建小组件配置映射处理函数
      * 返回一个函数为setState用于触发 actionMap 传入的处理函数
