@@ -8,7 +8,19 @@ export const CSS_DEFINE = {
 
 export const DESIGN_OPTIONS = '__design_options__'
 export const DESIGN_SET_STATE = '__design_set_state__'
+export const MOVEABLE_ALL_DIRECTION = ["n", "nw", "ne", "s", "se", "sw", "e", "w"]
+export const MOVEABLE_SCALE_DIRECTION = ["nw", "ne", "se", "sw"]
+export const MOVEABLE_RESIZE_DIRECTION = ["n", "s", "e", "w"]
+export const WIDGET_SELECTOR = 'div[data-widget-type="widget"]'
+export const WIDGET_DATASET_TYPE = 'widgetType'
+export const WIDGET_DATASET_NAME = 'widgetName'
+export const LINE_GUIDE_HORIZONTAL_SELECTOR = 'scena-guides-horizontal'
+export const LINE_GUIDE_VERTICAL_SELECTOR = 'scena-guides-vertical'
+export const WIDGET_SELECTION_SELECTOR = 'widget-box-selection'
+export const WIDGET_GROUP_SELECTION_SELECTOR = 'widget-group-box-selection'
 
 export const WIDGETS_NAMES = {
-  W_TEXT: 'w-text'
+  W_TEXT: 'w-text',
+  W_IMAGE: 'w-image',
+  W_GROUP: 'w-group',
 }
