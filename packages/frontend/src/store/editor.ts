@@ -1,11 +1,11 @@
 import {MoveableManager} from "@/common/moveable/moveable";
 import {CSS_DEFINE, DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
-import {toRaw} from "vue";
+import {reactive, toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
 import {loadFont} from "@/utils/method";
 import {isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
-import {CurrentTemplate, LayoutConfig, PageConfig} from "@/types/layout";
+import {CurrentTemplate, LayoutConfig, LayoutWidget, PageConfig} from "@/types/layout";
 import {apiGetFonts} from "@/api/getFonts";
 import {SelectoManager} from "@/common/selecto/selecto";
 import {isNil} from "lodash-es";
@@ -36,7 +36,7 @@ class EditorStore {
 
   public currentTemplate: CurrentTemplate
 
-  public allowInGroupMovement: boolean = false
+  public allowInGroupMovement: boolean
 
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
@@ -45,20 +45,23 @@ class EditorStore {
     return currentWidget[DESIGN_OPTIONS]
   }
 
-  public getCurrentTemplateLayout(): LayoutConfig {
-    return this.currentTemplate.layouts[0]
+  public currentTemplateIndex = 0
+
+  public getCurrentTemplateLayout(index): LayoutConfig {
+    return this.currentTemplate.layouts[this.currentTemplateIndex]
   }
 
   /** 载入当前要编辑的工程配置信息 */
   public loadEditorProject(projectInfo) {
-    this.currentTemplate = projectInfo
+    this.currentTemplate = reactive(projectInfo)
+    this.currentTemplateIndex = 0
+    this.allowInGroupMovement = false
   }
 
   /** 设置当前正在活跃的小组件配置,会自动更新源currentProject.items中的配置,是否直接覆盖整个对象(值)
    * safe 安全合并，在源对象上若没有的不会被合并, 默认 false
    * effectDom 本次设置的值是否对应到dom并影响dom效果 ， 默认 true
    * */
-
   public updateActiveWidgetsState<T extends Record<any, any>>(activeInfo: T, options: { safe?: boolean, effectDom?: boolean } = {}): void {
     const {effectDom = true} = options
     const currentWidget = editorStore.moveableManager.currentWidget
@@ -148,13 +151,6 @@ class EditorStore {
     el.style.fontSize = isNumber(size) ? `${size}px` : size
   }
 
-  /** 为指定元素设置大小和字体  */
-  public setFont(el: HTMLElement, options: { id?: string, size?: string }) {
-    const {id, size} = options
-    if (id) this.setFontFamily(el, id)
-    if (size) this.setFontSize(el, size)
-  }
-
   /** 获取某个组件详情页的配置信息  */
   public getWidgetsDetailConfig(w_name: string): any {
     return this.pageConfig.widgetsDetail?.[w_name]
@@ -170,6 +166,26 @@ class EditorStore {
       this.lineGuides && this.lineGuides.destroy()
       this.lineGuides = void 0
     }
+  }
+
+  public addNewWidget(newWidgetConfig: LayoutWidget) {
+    // console.log(this.currentTemplate);
+    this.getCurrentTemplateLayout(this.currentTemplateIndex).elements.push(newWidgetConfig)
+    const children = Array.from(this.editorAreaTarget.children)
+    const newElement = children.find((node: HTMLElement) => {
+      // console.log(node.dataset['uuid'])
+      return node.dataset['uuid'] && node.dataset['uuid'] === newWidgetConfig.uuid
+    })
+    const remove_uuids = newWidgetConfig.elements.map(config => config.uuid)
+    // console.log(remove_uuids)
+    children.forEach((node: HTMLElement) => {
+      const uuid = node.dataset['uuid']
+      if (!uuid) return
+      if (remove_uuids.includes(uuid)) node.remove()
+    })
+
+    console.log(newElement)
+    // this.moveableManager.moveable.target
   }
 }
 

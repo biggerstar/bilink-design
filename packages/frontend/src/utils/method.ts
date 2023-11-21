@@ -1,7 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {isFunction, isObject, isString} from "is-what";
-import {WIDGET_DATASET_NAME, WIDGET_DATASET_TYPE, WIDGET_SELECTOR, WIDGETS_NAMES} from "@/constant";
+import {
+  WIDGET_DATASET_IN_GROUP,
+  WIDGET_DATASET_NAME,
+  WIDGET_DATASET_TYPE,
+  WIDGET_SELECTOR,
+  WIDGETS_NAMES
+} from "@/constant";
 
 /**
  * 某种鼠标响应事件时，计算鼠标指针在在目标元素内的百分比位置
@@ -60,14 +66,29 @@ export function parseGroupWidget4DomChain(el: HTMLElement) {
   return parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
 }
 
-export function parseWidgetsInfo4DomChain(el: HTMLElement):
+export function inGroup(target: HTMLElement) {
+  return target.dataset[WIDGET_DATASET_IN_GROUP] === 'true'
+}
+
+export function isGroup(target: HTMLElement) {
+  return parseWidgetsInfo4DomChain(target).isGroup
+}
+
+/**
+ * outermost 解析到最外层,因为存在组套组的情况
+ * */
+export function parseWidgetsInfo4DomChain(el: HTMLElement, outermost: boolean = false):
   {
     rootWidgetElement: HTMLElement | void;
     isGroup: boolean;
     child: HTMLElement[]
   } {
   if (!el) return
-  const groupEl = parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+  const groupEl = parseWidget4DomChain(el, (target) => {
+    let outerGroup = true
+    if (outermost) outerGroup = !inGroup(target)
+    return target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP && outerGroup
+  })
   const rootElement = groupEl ? groupEl : parseWidget4DomChain(el)
   const child: HTMLElement[] = rootElement ? Array.from(rootElement.querySelectorAll(WIDGET_SELECTOR)) : []
   return {
@@ -199,4 +220,15 @@ export function genCascaderTree(sourceData: object[]) {
       }
     }
   })
+}
+
+/** 生成指定步长的数组 */
+export function generateStepNumberArray(start, end, step) {
+  const result = [];
+  if (step === 0)   throw new Error('步长不能为零')
+  const increment = start < end ? 1 : -1;
+  for (let i = start; increment * i <= increment * end; i += step) {
+    result.push(i);
+  }
+  return result;
 }

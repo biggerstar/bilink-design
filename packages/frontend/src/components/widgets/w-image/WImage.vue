@@ -1,12 +1,13 @@
 <template>
   <div
+    :data-uuid="props.config.uuid"
     data-widget-type="widget"
     data-widget-name='w-image'
     class="w-position not-user-select"
     ref="W_Widget"
   >
     <div class="edit-widget-area w-full h-full" spellcheck="false">
-      <img class="w-full h-full" :src="props.config.url" :alt="props.config.title">
+      <img class="w-full h-full" draggable="false" :src="props.config.url" :alt="props.config.title">
     </div>
     <slot></slot>
   </div>

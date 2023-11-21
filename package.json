@@ -21,6 +21,7 @@
     "@egjs/vue3-infinitegrid": "^4.10.1",
     "@scena/guides": "^0.29.2",
     "@types/cors": "^2.8.16",
+    "@types/uuid": "^9.0.7",
     "ant-design-vue": "~4.0.6",
     "axios": "^1.6.2",
     "default-passive-events": "^2.0.0",

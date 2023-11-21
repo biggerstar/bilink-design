@@ -1,5 +1,7 @@
 import Guides, {GuidesOptions} from "@scena/guides";
 import {editorStore} from "@/store/editor";
+import {generateStepNumberArray} from "@/utils/method";
+import {MoveableOptions} from "moveable";
 
 type NewGuidesOptions = Partial<GuidesOptions> & { style: CSSStyleDeclaration }
 
@@ -98,6 +100,12 @@ export class LineGuides {
         guidesLeft.scrollGuides(-(offsetLeft - this.lineWeightLeft) / scale)
         guidesTop.forceUpdate()
         guidesLeft.forceUpdate()
+        const guides: Partial<MoveableOptions> = {
+          verticalGuidelines: generateStepNumberArray(0, width, Math.ceil(guidesTop.unit * guidesTop.zoom)),
+          horizontalGuidelines: generateStepNumberArray(0, height, Math.ceil(guidesLeft.unit * guidesLeft.zoom))
+        }
+        console.log(guides)
+        editorStore.moveableManager && editorStore.moveableManager.moveable.setState(guides)
       })
     }
   }

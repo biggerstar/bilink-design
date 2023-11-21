@@ -1,11 +1,12 @@
 <template>
   <div
+    :data-uuid="props.config.uuid"
     data-widget-type="widget"
     data-widget-name='w-group'
-    class="w-position not-user-select"
+    class="w-position not-user-select w-full h-full"
     ref="W_Widget"
   >
-    <div class="group-box w-auto h-auto relative" ref="groupBox">
+    <div class="group-box w-full h-full relative" ref="groupBox">
       <component
         v-show=" widgetsMap[widgetConfig.type]"
         v-for="(widgetConfig,index) in elements"

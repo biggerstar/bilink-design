@@ -3,10 +3,10 @@
 -->
 <template>
   <div
-    :data-uuid="uuid"
+    :data-uuid="props.config['uuid']"
     data-widget-type="widget"
     data-widget-name='w-text'
-    class="w-widget w-position not-user-select"
+    class="w-widget w-position not-user-select  w-full h-full"
     ref="W_Widget"
     :class="{
       editing:editing
@@ -15,7 +15,7 @@
     @blur="blurText"
   >
     <!--    <canvas ref="canvasRef"></canvas>-->
-    <div class="edit-widget-area w-full h-full" v-html="textContent" spellcheck="false"></div>
+    <div class="edit-widget-area " v-html="textContent" spellcheck="false"></div>
     <slot></slot>
   </div>
 </template>
@@ -30,7 +30,6 @@ import {createBaseCssAction} from "@/components/widgets/base-action";
 
 const W_Widget = shallowRef<HTMLElement>()
 const textContent = ref()
-const uuid = ref()
 const editing = ref(false)
 const props = defineProps({
   config: {
@@ -113,7 +112,9 @@ function blurText() {
 .edit-widget-area {
   outline: none;
   word-break: break-word;
+  white-space: nowrap;
   margin: 0;
+  padding: 0;
 }
 
 .editing {

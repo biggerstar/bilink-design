@@ -164,11 +164,9 @@ html, body, #app {
   position: relative;
   box-sizing: border-box;
 }
-
-.widget-box-selection:hover, .widget-group-box-selection:hover {
-  z-index: 1;
-}
-
+/*.widget-group-box-selection{*/
+/*  z-index: 8;*/
+/*}*/
 .widget-box-selection:hover::before {
   content: '';
   position: absolute;

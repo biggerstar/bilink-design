@@ -13,6 +13,7 @@ import createNativeEventHookList from "@/common/moveable/native-event-hook-list"
 import {
   CssTransformApi,
   getWidgetsName,
+  inGroup,
   isWidget,
   parseWidget4DomChain,
   parseWidgetsInfo4DomChain,
@@ -21,6 +22,7 @@ import {
 import {editorStore} from "@/store/editor";
 import './moveable-style.css'
 import {
+  DESIGN_AREA_BOUNDARY_SELECTOR,
   DESIGN_OPTIONS,
   LINE_GUIDE_HORIZONTAL_SELECTOR,
   LINE_GUIDE_VERTICAL_SELECTOR,
@@ -28,6 +30,13 @@ import {
   WIDGET_SELECTOR
 } from "@/constant";
 import {LayoutWidget} from "@type/layout";
+
+const guideLines = [
+  WIDGET_SELECTOR,
+  LINE_GUIDE_HORIZONTAL_SELECTOR,
+  LINE_GUIDE_VERTICAL_SELECTOR,
+  DESIGN_AREA_BOUNDARY_SELECTOR,
+]
 
 /**
  * 默认配置，具体比如 dragable,resizable,rotatable 等配置可通过后台进行指定
@@ -40,11 +49,16 @@ export const defaultMoveableOptions: MoveableOptions = {
   throttleRotate: 0,
   pinchable: true,
   origin: false,
-  snappable: true,
   rotationPosition: 'bottom',
-  elementGuidelines: [WIDGET_SELECTOR, LINE_GUIDE_HORIZONTAL_SELECTOR, LINE_GUIDE_VERTICAL_SELECTOR],
-  snapGridWidth: 10,
-  snapGridHeight: 10,
+  elementGuidelines: guideLines,
+  bounds: {
+    position: 'client',
+  },
+  snappable: true,
+  snapGridAll: true,
+  snapGridWidth: 6,
+  snapGridHeight: 6,
+  snapDistFormat: (v) => `${v}px`,
   isDisplaySnapDigit: true,
   defaultGroupOrigin: '0% 0%',
   renderDirections: MOVEABLE_ALL_DIRECTION,
@@ -63,16 +77,11 @@ export class MoveableManager {
   public container: HTMLElement
   public currentElement: HTMLElement | void   // 当前聚焦的元素
   public currentGroupElement: HTMLElement | void   // 当前聚焦的元素
-  public overElement: HTMLElement | void   //  当前鼠标指针停留位置的元素
   public resizeObserver: ResizeObserver | null
-  public _status: 'down' | 'move' | 'up' | 'none' = 'none'
+  public __temp__: Record<any, any> = {}
 
   public get currentWidget(): HTMLElement | void {   // 获取当前活跃的组件
-    return parseWidget4DomChain(<any>this.currentElement || this.overElement)
-  }
-
-  public get overWidgets(): HTMLElement | void {   // 获取当前鼠标位置下的组件
-    return parseWidget4DomChain(<any>this.overElement)
+    return parseWidget4DomChain(<any>this.currentElement)
   }
 
   private __running: boolean
@@ -176,6 +185,7 @@ export class MoveableManager {
     const options: Partial<MoveableOptions> = {}
     if (widgetConfig.hasOwnProperty('dragable')) options.draggable = widgetConfig.dragable
     if (widgetConfig.hasOwnProperty('rotatable')) options.rotatable = widgetConfig.rotatable
+    // console.log(options,widgetsEl)
     this.moveable.setState({
       ...options,
       ...opt,
@@ -185,7 +195,7 @@ export class MoveableManager {
   /**
    * 让dom链上的最近的小组件活跃
    * */
-  public activeWidgets(element: HTMLElement | SVGElement): {
+  public activeWidgets(element: HTMLElement | Element | SVGElement): {
     name: string,
     el: HTMLElement
   } | void {
@@ -200,73 +210,113 @@ export class MoveableManager {
     }
   }
 
+  /**
+   * 找到鼠标位置下不管第几层面积最小的组
+   * */
+  public getMinAreaWidgetForMousePoint(x: number, y: number): HTMLElement {
+    const mousePointElements = <any>document.elementsFromPoint(x, y)
+    const mousePointWidgets = mousePointElements.filter(isWidget)
+    const mousePointMinAreaWidgets = mousePointWidgets.sort((n1: HTMLElement, n2: HTMLElement) => {
+      // 找到鼠标位置下不管第几层面积最小的组件，因为大组件可点击的地方多，这样能保证不管覆盖层级如何都能选择到所有的组件
+      return (n1.clientWidth * n1.clientHeight) - (n2.clientWidth * n2.clientHeight)
+    })
+    return mousePointMinAreaWidgets[0]
+  }
 
   /**
    * 点击某个小组件
    * */
-  public mousedown(el: HTMLElement) {
-    if (el === this.currentElement) return
-    const widgetsInfo = parseWidgetsInfo4DomChain(el)
-    if (!widgetsInfo.rootWidgetElement) return
+  public mousedown(el: HTMLElement, ev: MouseEvent) {
     const widgetsEl = parseWidget4DomChain(el)
-
+    if (!widgetsEl) return
+    let activeElement = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+    const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
+    if (!widgetsInfo.rootWidgetElement) return
+    if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 如果点击的是组，则让组进行活跃，用于支持整个组即时移动
     this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
-    let activeTarget = widgetsInfo.rootWidgetElement
-    if (editorStore.allowInGroupMovement && widgetsEl) activeTarget = widgetsEl
-    if (widgetsInfo.isGroup) {
+    /*---------------------------------默认状态------------------------------------------*/
+    this.moveable.setState({  // 先定义状态，最终状态由鼠标抬起后决定( mouseup, click )
+      draggable: true,
+      resizable: false,
+      scalable: false,
+      rotatable: false,
+      renderDirections: [],
+    })
+    /*-----------------------------在组内且不允许组内移动----------------------------------*/
+    if (inGroup(activeElement) && !editorStore.allowInGroupMovement) {
       this.moveable.setState({
-        rotatable: false,
-        resizable: false,
-        scalable: false
-      })
-    } else {
-      this.moveable.setState({
-        hideDefaultLines: false,
+        draggable: false,
       })
     }
-    this.activeWidgets(activeTarget)
-    this._status = 'down'
+    if (editorStore.allowInGroupMovement) {   // 如果允许组内移动,则聚焦小组件且设置服务器传回的操控配置
+      activeElement = widgetsEl
+      this.setWidgetState(widgetsEl)
+      this.moveable.setState({    // 本应该让所有的组件以服务器为准，这里默认宣布允许组内拖动
+        draggable: true,
+      })
+    }
+
+    // console.log(activeElement)
+    Object.defineProperties(ev, {
+      target: {
+        get: () => activeElement
+      }
+    })
+    this.active(activeElement)
+    this.moveable.dragStart(ev)
   }
 
-  public mousemove(el: HTMLElement) {
-    this._status = 'move'
+  public mouseup(el: HTMLElement) {
+    const widgetsEl = parseWidget4DomChain(el)
+    const inOuterByGroup = widgetsEl && !inGroup(widgetsEl) && !editorStore.allowInGroupMovement  // 是否是在最外层的合并组,鼠标只要抬起就为组件或者合并组的外框加上操控按钮和框选线
+    if (inOuterByGroup || editorStore.allowInGroupMovement) {
+      this.moveable.setState({
+        draggable: true,
+        hideDefaultLines: false,
+        renderDirections: MOVEABLE_ALL_DIRECTION
+      })
+    }
   }
 
   /**
    * 聚焦某个小组件
    * */
-  public mouseup(el: HTMLElement) {
-    const widgetsInfo = parseWidgetsInfo4DomChain(el)
+  public click(el: HTMLElement, ev: MouseEvent) {
     const widgetsEl = parseWidget4DomChain(el)
-
-    if (widgetsInfo.isGroup && this.currentGroupElement) {
-      this.setWidgetState(this.currentGroupElement, {
-        hideDefaultLines: true,
-        scalable: true,
-        renderDirections: MOVEABLE_ALL_DIRECTION
-      })
-    } else {
-      widgetsEl && this.setWidgetState(widgetsEl, {
-        renderDirections: MOVEABLE_ALL_DIRECTION
-      })
+    let activeElement = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)  // 获得抬起时的鼠标点下面积最小的组件并进行活跃
+    const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
+    if (!widgetsInfo.rootWidgetElement || !widgetsEl) return
+    if (widgetsInfo.isGroup) {   // 处理合并组
+      activeElement = widgetsInfo.rootWidgetElement   // 如果是组且禁止组内移动，则活跃整个组，其他地方会通过classList框选点击到那一个的小组件
+      if (editorStore.allowInGroupMovement || !inGroup(widgetsInfo.rootWidgetElement)) {   // 如果组不在另一个组内(嵌套组)，表示当前组在最外层，则允许直接进行活跃可调整
+        this.moveable.setState({
+          hideDefaultLines: true,
+          rotatable: true,
+          renderDirections: MOVEABLE_ALL_DIRECTION
+        })
+      } else {
+        this.moveable.setState({
+          hideDefaultLines: true,
+          rotatable: false,
+          renderDirections: []
+        })
+      }
+    } else {   // 处理点击到纯组件
+      this.setWidgetState(widgetsEl)  // 如果是组件，则直接应用组件服务器传来的操控配置，比如 draggable, rotatable
     }
-    this.currentElement = el
-    this._status = 'up'
+    this.activeWidgets(activeElement)
+    this.currentElement = activeElement
   }
 
   /**
    * 失活
    * */
   public deActive() {
-    this._status = 'none'
     this.currentElement = void 0
-    this.overElement = void 0
     this.moveable.target = []
     this.resizeObserver && this.resizeObserver.disconnect()
     this.resizeObserver = null
     this.currentGroupElement = null
     this.groupMoveable.target = []
-    editorStore.allowInGroupMovement = false
   }
 }
-

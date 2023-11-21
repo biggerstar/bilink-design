@@ -1,6 +1,6 @@
 export type LayoutWidget = {
   uuid: string,
-  type: 'image' | 'text' | 'svg',
+  type: 'image' | 'text' | 'svg' | 'group',
   title: string,
   opacity: number,
   padding: [number, number, number, number],
@@ -16,6 +16,7 @@ export type LayoutWidget = {
     tx: number,
     ty: number
   },
+  elements: LayoutWidget[]
   boxShadow: null,
   dragable: boolean,
   rotatable: boolean,
