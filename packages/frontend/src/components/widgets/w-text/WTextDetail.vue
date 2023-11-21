@@ -202,6 +202,7 @@ onMounted(() => {
   const currentOptions = toRaw(editorStore.getCurrentOptions() || {})
   const detailConfig = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
   const {align, textStyle, spaceInfo, fontsSizeList} = detailConfig
+  curFont.value = editorStore.getFont4FontName(currentOptions.fontFamily)
   predefineColorList.value = editorStore.pageConfig.predefineColors
   textColor.value = currentOptions.color
   widgetOpacity.value = isNumber(currentOptions.opacity) ? currentOptions.opacity * 100 : 100

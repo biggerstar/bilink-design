@@ -1,5 +1,5 @@
 <template>
-  <div class="button h-[40px] ">
+  <div class="button h-[40px] text-[0.9rem]">
     <div class="fill-box  flex justify-center items-center">
       <slot></slot>
     </div>
@@ -14,7 +14,7 @@
   background-color: var(--color-gray-200);
   word-break: break-word;
   border-radius: 8px;
-  font-weight: 400;
+  font-weight: 450;
   cursor: pointer;
   transition: color 0.2s;
   overflow: hidden;

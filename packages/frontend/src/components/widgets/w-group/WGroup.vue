@@ -6,7 +6,7 @@
     class="w-position not-user-select"
     ref="W_Widget"
   >
-    <div class="group-box w-full h-full relative" ref="groupBox">
+    <div class="group-box relative" ref="groupBox">
       <component
         v-show=" widgetsMap[widgetConfig.type]"
         v-for="(widgetConfig,index) in elements"

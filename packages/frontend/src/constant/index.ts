@@ -22,9 +22,11 @@ export const LINE_GUIDE_VERTICAL_SELECTOR = '.scena-guides-vertical'
 export const WIDGET_SELECTION_SELECTOR = 'widget-box-selection'
 export const WIDGET_SELECTION_SELECTOR_KEEP = 'widget-box-selection-keep'
 export const WIDGET_GROUP_SELECTION_SELECTOR = 'widget-group-box-selection'
+export const WIDGET_GROUP_SELECTION_SEPARATE = 'widget-box-selection-separate'
 
 export const WIDGETS_NAMES = {
   W_TEXT: 'w-text',
   W_IMAGE: 'w-image',
   W_GROUP: 'w-group',
+  W_SELECTED_GROUP: 'w-selected-group',
 }

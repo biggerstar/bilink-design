@@ -116,11 +116,11 @@ export async function loadFont(fontInfo: { url: string, family: string, name?: s
 /**
  * 创建一个设置dom节点样式的接口
  * */
-export function createSetWidgetsStyle(getElCb: () => HTMLElement | unknown): (name: keyof CSSStyleDeclaration, val: string) => void {
+export function createSetWidgetsStyle(getElCb: () => HTMLElement | unknown): (name: keyof CSSStyleDeclaration, val: string, el?: HTMLElement) => void {
   if (!isFunction(getElCb)) console.error('getElCb 不是一个函数')
-  return function (name, val) {
-    const el = getElCb()
-    if (el) el.style[name] = val
+  return function (name, val, tempEl) {
+    const finallyEl = tempEl || getElCb()
+    if (finallyEl) finallyEl.style[name] = val
   }
 }
 

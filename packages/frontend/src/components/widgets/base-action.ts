@@ -8,7 +8,7 @@ import {DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
  *  */
 export function createBaseCssAction() {
   let element
-  const setWidgetsStyle: (name: keyof CSSStyleDeclaration, val: string) => void = createSetWidgetsStyle(() => element)
+  const setWidgetsStyle: (name: keyof CSSStyleDeclaration, val: string, el?: HTMLElement) => void = createSetWidgetsStyle(() => element)
   const cssTransformApi = new CssTransformApi()
 
   function updateTransform(name, value) {
@@ -16,8 +16,8 @@ export function createBaseCssAction() {
     setWidgetsStyle("transform", cssTransformApi.transform)
   }
 
-  function updateStyle(name: keyof CSSStyleDeclaration, value: string) {
-    setWidgetsStyle(name, value)
+  function updateStyle(name: keyof CSSStyleDeclaration, value: string, el?: HTMLElement) {
+    setWidgetsStyle(name, value, el)
   }
 
   function updateBoxSize() {

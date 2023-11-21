@@ -6,7 +6,7 @@
     class="w-position not-user-select"
     ref="W_Widget"
   >
-    <div class="edit-widget-area w-full h-full" spellcheck="false">
+    <div class="edit-widget-area " spellcheck="false">
       <img class="w-full h-full" draggable="false" :src="props.config.url" :alt="props.config.title">
     </div>
     <slot></slot>

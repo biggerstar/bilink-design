@@ -6,7 +6,7 @@
     :data-uuid="props.config['uuid']"
     data-widget-type="widget"
     data-widget-name='w-text'
-    class="w-widget w-position not-user-select"
+    class="w-widget w-position not-user-select w-auto h-auto"
     ref="W_Widget"
     :class="{
       editing:editing
@@ -15,7 +15,10 @@
     @blur="blurText"
   >
     <!--    <canvas ref="canvasRef"></canvas>-->
-    <div class="edit-widget-area w-full h-full" v-html="textContent" spellcheck="false"></div>
+    <a-spin :spinning="showSpin">
+      <div class="edit-widget-area" ref="textRef" v-html="textContent" spellcheck="false">
+      </div>
+    </a-spin>
     <slot></slot>
   </div>
 </template>
@@ -29,8 +32,10 @@ import {selectAllText4Element} from "@/utils/method";
 import {createBaseCssAction} from "@/components/widgets/base-action";
 
 const W_Widget = shallowRef<HTMLElement>()
+const textRef = shallowRef<HTMLElement>()
 const textContent = ref()
 const editing = ref(false)
+const showSpin = ref(true)
 const props = defineProps({
   config: {
     type: Object,
@@ -39,18 +44,18 @@ const props = defineProps({
 })
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
 baseCssAction.expand({  // 对传入状态的处理函数
-  color: (val) => baseCssAction.updateStyle('color', val || 'transparent'),
+  color: (val) => baseCssAction.updateStyle('color', val || 'transparent', textRef.value),
   // rotate: (deg) => {
   //   baseCssAction.updateTransform('rotate', `${deg}deg`)
   // },
-  fontFamily: (fontName) => editorStore.setFontFamily(<any>W_Widget.value, fontName),
-  fontSize: (size) => editorStore.setFontSize(<any>W_Widget.value, size),
+  fontFamily: (fontName) => editorStore.setFontFamily(fontName, <any>textRef.value).finally(() => showSpin.value = false),
+  fontSize: (size) => editorStore.setFontSize(<any>textRef.value, size),
   lineHeight: (val = '1') => {
-    baseCssAction.updateStyle("lineHeight", val)
+    baseCssAction.updateStyle("lineHeight", val, textRef.value)
     baseCssAction.updateBoxSize()
   },
   letterSpacing: (val) => {
-    baseCssAction.updateStyle("letterSpacing", `${val}px`)
+    baseCssAction.updateStyle("letterSpacing", `${val}px`, textRef.value)
     baseCssAction.updateBoxSize()
   },
   content: (text) => textContent.value = text.replace(/\n/g, '<br/>'),
@@ -63,14 +68,14 @@ baseCssAction.expand({  // 对传入状态的处理函数
     if (!isObject(found.style)) return
     for (const name in found.style) {
       const value = found.style[name]
-      if (value && name) baseCssAction.updateStyle(<any>name, value)
+      if (value && name) baseCssAction.updateStyle(<any>name, value, textRef.value)
     }
   },
-  fontWeight: (val) => baseCssAction.updateStyle('fontWeight', val ? val : 'normal'),
-  fontStyle: (val) => baseCssAction.updateStyle('fontStyle', (!val || !isString(val)) ? 'normal' : val),
-  writingMode: (val) => baseCssAction.updateStyle('writingMode', !val ? 'horizontal-tb' : val),
-  textDecoration: (val) => baseCssAction.updateStyle('textDecoration', !val ? 'none' : val),
-  imageUrl: (val) => baseCssAction.updateStyle('backgroundImage', `url(${val})`),
+  fontWeight: (val) => baseCssAction.updateStyle('fontWeight', val ? val : 'normal', textRef.value),
+  fontStyle: (val) => baseCssAction.updateStyle('fontStyle', (!val || !isString(val)) ? 'normal' : val, textRef.value),
+  writingMode: (val) => baseCssAction.updateStyle('writingMode', !val ? 'horizontal-tb' : val, textRef.value),
+  textDecoration: (val) => baseCssAction.updateStyle('textDecoration', !val ? 'none' : val, textRef.value),
+  imageUrl: (val) => baseCssAction.updateStyle('backgroundImage', `url(${val})`, textRef.value),
 })
 
 onMounted(async () => {

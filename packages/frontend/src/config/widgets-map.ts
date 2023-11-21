@@ -18,7 +18,7 @@ export const widgetsDetailMap = {
   'default': DefaultEditorDetail,
   'w-text': WTextDetail,
   'w-image': WImageDetail,
-  'w-group': WGroupDetail,
+  'w-selected-group': WGroupDetail,
 }
 export const widgetsMap = {
   'group': WGroup,

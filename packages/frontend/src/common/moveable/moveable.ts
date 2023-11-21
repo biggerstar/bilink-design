@@ -228,12 +228,12 @@ export class MoveableManager {
    * 点击某个小组件
    * */
   public mousedown(el: HTMLElement, ev: MouseEvent) {
-    const widgetsEl = parseWidget4DomChain(el)
-    if (!widgetsEl) return
+    if (editorStore.isSeparating) return
     let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
     let activeElement /* 最终要活跃的组件变量名 */ = minAreaWidget
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
-    if (!widgetsInfo.rootWidgetElement) return
+    if (!widgetsInfo || !widgetsInfo.rootWidgetElement) return
+    this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
     this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
     /*---------------------------------默认状态------------------------------------------*/
     if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
@@ -254,6 +254,9 @@ export class MoveableManager {
       this.moveable.setState({    // 本应该让所有的组件以服务器为准，这里默认宣布允许组内拖动
         draggable: true,
       })
+    }
+    if (editorStore.isSeparating) {  // 如果正在分离中，拖动时不能拖动内部，直接将活跃的movable目标定义成其所在组
+      activeElement = widgetsInfo.rootWidgetElement
     }
 
     // console.log(activeElement)
@@ -283,10 +286,9 @@ export class MoveableManager {
    * */
   public click(el: HTMLElement, ev: MouseEvent) {
     const widgetsEl = parseWidget4DomChain(el)
-    const minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)  // 获得抬起时的鼠标点下面积最小的组件并进行活跃
-    let activeElement = minAreaWidget
+    let activeElement = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)  // 获得抬起时的鼠标点下面积最小的组件并进行活跃
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
-    if (!widgetsInfo.rootWidgetElement || !widgetsEl) return
+    if (!widgetsInfo || !widgetsInfo.rootWidgetElement || !widgetsEl) return
     if (widgetsInfo.isGroup) {   // 处理合并组
       activeElement = widgetsInfo.rootWidgetElement   // 如果是组且禁止组内移动，则活跃整个组，其他地方会通过classList框选点击到那一个的小组件
       if (editorStore.allowInGroupMovement || !inGroup(widgetsInfo.rootWidgetElement)) {   // 如果组不在另一个组内(嵌套组)，表示当前组在最外层，则允许直接进行活跃可调整
@@ -306,7 +308,6 @@ export class MoveableManager {
       this.setWidgetState(widgetsEl)  // 如果是组件，则直接应用组件服务器传来的操控配置，比如 draggable, rotatable
     }
     this.activeWidgets(activeElement)
-    this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
   }
 
   /**

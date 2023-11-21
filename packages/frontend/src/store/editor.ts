@@ -1,9 +1,18 @@
 import {MoveableManager} from "@/common/moveable/moveable";
-import {CSS_DEFINE, DESIGN_GROUP_UPDATE_RECT, DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
-import {reactive, toRaw} from "vue";
+import {
+  CSS_DEFINE,
+  DESIGN_GROUP_UPDATE_RECT,
+  DESIGN_OPTIONS,
+  DESIGN_SET_STATE,
+  WIDGET_GROUP_SELECTION_SELECTOR,
+  WIDGET_GROUP_SELECTION_SEPARATE,
+  WIDGET_SELECTION_SELECTOR_KEEP,
+  WIDGET_SELECTOR
+} from "@/constant";
+import {nextTick, reactive, toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
 import {CssTransformApi, loadFont, parseWidget4DomChain} from "@/utils/method";
-import {isNumber} from "is-what";
+import {isFunction, isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
 import {CurrentTemplate, LayoutConfig, LayoutWidget, PageConfig} from "@/types/layout";
 import {apiGetFonts} from "@/api/getFonts";
@@ -21,8 +30,8 @@ class EditorStore {
   public selectoManager: SelectoManager
   public lineGuides: LineGuides
   /** 所有字体 */
-  allFont: object[]
-  public
+  public allFont: object[] = []
+
   /** 当前正在编辑的工程文件 */
   public pageConfig: PageConfig = {
     brand: '',
@@ -34,11 +43,16 @@ class EditorStore {
       moreOperation: []
     }
   }
-
+  public __temp__ = {
+    stop: void 0,    // 停止监听点击组外事件的函数
+  }
   public currentTemplate: CurrentTemplate
 
   /** 是否允许当前聚焦的合并组进行组件内移动 */
   public allowInGroupMovement: boolean
+
+  /** 是否正在执行分离过程 */
+  public isSeparating: boolean
 
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
@@ -50,7 +64,7 @@ class EditorStore {
   public currentTemplateIndex = 0
 
   /** 获取当前使用的模板，一套设计工程可能包含多个模板作为模板组 */
-  public getCurrentTemplateLayout(index): LayoutConfig {
+  public getCurrentTemplateLayout(): LayoutConfig {
     return this.currentTemplate.layouts[this.currentTemplateIndex]
   }
 
@@ -134,23 +148,27 @@ class EditorStore {
   }
 
   /** 为指定元素自动设置字体，如果本地没有将自动远程获取载入  */
-  public async setFontFamily(el: HTMLElement, fontName: string): Promise<any> {
+  public async setFontFamily(fontName: string, el?: HTMLElement): Promise<any> {
     let fontData = this.getFont4FontName(fontName)
     if (!fontData) {
       const res = await apiGetFonts({name: fontName})
-      if (res && res.data && res.data.length) fontData = res.data[0]
+      if (res && res.data && res.data.length) {
+        fontData = res.data[0]
+        this.allFont.push(fontData)
+      }
     }
 
-    loadFont({
+    return loadFont({
       url: fontData.content.woff,
       family: fontData.content.family,
     }).then(() => {
-      el.style.fontFamily = fontData.content.family
+      if (el) el.style.fontFamily = fontData.content.family
     })
   }
 
   /** 为指定元素设置大小  */
   public setFontSize(el: HTMLElement, size: string | number) {
+    if (!el) return
     el.style.fontSize = isNumber(size) ? `${size}px` : size
   }
 
@@ -171,31 +189,67 @@ class EditorStore {
     }
   }
 
+  public removeSeparatingBorder() {
+    Array.from(this.editorAreaTarget.getElementsByClassName(WIDGET_GROUP_SELECTION_SEPARATE)).forEach(node => {
+      node.classList.remove(WIDGET_GROUP_SELECTION_SEPARATE)
+    })
+    Array.from(this.editorAreaTarget.getElementsByClassName(WIDGET_SELECTION_SELECTOR_KEEP)).forEach(node => {
+      node.classList.remove(WIDGET_SELECTION_SELECTOR_KEEP)
+    })
+  }
+
+  public getAllWidget(): HTMLElement[] {
+    return <HTMLElement[]>Array.from(this.editorAreaTarget.querySelectorAll(WIDGET_SELECTOR))
+
+  }
+
   /**
    * 将当前被选择的组件进行合并组, 创建一个 w-group 并将所有的小组件作为该组的子组件
    * */
   public mergeGroup() {
+    this.removeSeparatingBorder()
+    if (this.isSeparating) { // 如果正在执行分离中，此时进行成组的话因为子组件还未从源组真正分离出去
+      this.isSeparating = false
+      this.allowInGroupMovement = false
+      return
+    }
+    /* --------------------下面则是通过 selecto 进行选择后的合并过程 ------------------------------*/
     const childrenOptions = editorStore.selectoManager.selected.map(node => node[DESIGN_OPTIONS])
     if (!childrenOptions.length) return
     const newWidgetConfig = {
       uuid: uuid4(),
       type: 'group',
-      elements: childrenOptions
+      elements: childrenOptions,
     }
-    this.getCurrentTemplateLayout(this.currentTemplateIndex).elements.push(<LayoutWidget>newWidgetConfig)
-    const children = <HTMLElement[]>Array.from(this.editorAreaTarget.children)  // 只会操控首层的组件进行成组
-    const newElement = children.find((node: HTMLElement) => {
-      // console.log(node.dataset['uuid'])
-      return node.dataset['uuid'] && node.dataset['uuid'] === newWidgetConfig.uuid
-    })
+
+    this.getCurrentTemplateLayout().elements.push(<LayoutWidget>newWidgetConfig)
+    const allWidgets = this.getAllWidget() // 只会操控首层的组件进行成组
     const remove_uuids = newWidgetConfig.elements.map(config => config.uuid)
     // console.log(remove_uuids)
-    children.forEach((node: HTMLElement) => {
+
+    allWidgets.forEach((node: HTMLElement) => {
       const uuid = node.dataset['uuid']
       if (!uuid) return
       if (remove_uuids.includes(uuid)) node.remove()
     })
-    this.moveableManager.moveable.target = newElement
+
+    nextTick(() => {
+      const allWidgets = this.getAllWidget()
+      const newGroupElement = allWidgets.find((node: HTMLElement) => node.dataset['uuid'] && node.dataset['uuid'] === newWidgetConfig.uuid)
+      console.log(newGroupElement)
+      if (!newGroupElement) return
+      const cssTransformApi = new CssTransformApi()
+      cssTransformApi.load(newGroupElement.style.transform)
+      const pos = cssTransformApi.get('translate')
+      if (pos) {
+        const [groupX = 0, groupY = 0] = pos
+        childrenOptions.forEach(newConfig => {
+          newConfig.left -= parseFloat(String(groupX))
+          newConfig.top -= parseFloat(String(groupY))
+        })
+      }
+      this.moveableManager.moveable.target = newGroupElement
+    }).then()
   }
 
   /**
@@ -204,50 +258,80 @@ class EditorStore {
   public separationGroup() {
     const currentGroupElement = editorStore.moveableManager.currentGroupElement
     if (!currentGroupElement) return
-    const cssTransformApi = new CssTransformApi()
-    cssTransformApi.load(currentGroupElement.style.transform)
-    const [groupX = 0, groupY = 0] = cssTransformApi.get('translate')  // 获取组在当前画布中位置，解散后子组件需要在自身偏移基础上添加上当所在组在画布中的距离
+    this.isSeparating = true
     const groupConfig: LayoutWidget = currentGroupElement[DESIGN_OPTIONS]
-    const elements = groupConfig.elements || []
-    const vueModelElementWidgetConfig = this.getCurrentTemplateLayout(this.currentTemplateIndex).elements
-    const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === groupConfig)
-    vueModelElementWidgetConfig.splice(curGroupIndex, 1)
-    elements.forEach(newConfig => {
-      newConfig.left += parseFloat(String(groupX))
-      newConfig.top += parseFloat(String(groupY))
-      vueModelElementWidgetConfig.push(newConfig)
+    const clipElements = toRaw(groupConfig.elements) || []
+    const uuidList = clipElements.map(item => item.uuid)
+    const allWidgets: HTMLElement[] = <any>this.editorAreaTarget.querySelectorAll(WIDGET_SELECTOR)
+    const newWidgetElementList: HTMLElement[] = Array.from(allWidgets).filter(node => uuidList.includes(node.dataset['uuid']))
+    newWidgetElementList.forEach(node => node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE))
+    currentGroupElement.classList.add(WIDGET_GROUP_SELECTION_SELECTOR)
+    this.selectoManager.selected = newWidgetElementList
+
+    this.autoMonitoringGroupMovement(() => {   // 只有等到点击分离组后的外部才真正进行分离
+      this.selectoManager.selected = []    // 必须在前面，否则 selectoManager.on('selectEnd') 会将所有选择框选
+      if (!this.isSeparating) return this.removeSeparatingBorder()
+      const latestGroupElement = editorStore.moveableManager.currentGroupElement
+      if (!latestGroupElement) return
+      const cssTransformApi = new CssTransformApi()
+      cssTransformApi.load(latestGroupElement.style.transform)
+      const [groupX = 0, groupY = 0] = cssTransformApi.get('translate')  // 获取组在当前画布中位置，解散后子组件需要在自身偏移基础上添加上当所在组在画布中的距离
+      const currentLayouts = this.getCurrentTemplateLayout()
+      const vueModelElementWidgetConfig = currentLayouts.elements
+      const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === groupConfig)
+      vueModelElementWidgetConfig.splice(curGroupIndex, 1)
+      nextTick(() => {
+        clipElements.forEach(newConfig => {
+          newConfig.left += parseFloat(String(groupX))
+          newConfig.top += parseFloat(String(groupY))
+          vueModelElementWidgetConfig.push(newConfig)
+        })
+      }).then()
     })
   }
 
   /**
    * 启动自动监听当前组内移动是否点击了组外的地方, 如果点击到外部则将自动停止监听并关闭组件内移动
    * */
-  public autoMonitoringGroupMovement() {
+  public autoMonitoringGroupMovement(callback?: Function): () => void {
+    isFunction(this.__temp__.stop) && this.__temp__.stop()  // 添加监听前先停止上一个监听
     if (!this.designCanvasTarget || this.allowInGroupMovement) return
     const self = this
     const currentGroupElement = editorStore.moveableManager.currentGroupElement
     if (!currentGroupElement) return
+    let isStop = false
 
     /**
      * 当正在进行组内移动操作时，监听是否点击了组外的地方，如果点击了将会停止组内移动操作
+     * @return Function 返回一个停止监听函数
      * */
     function monitoringClickGroupOuter(ev: MouseEvent) {
+      if (isStop) return
       const target = self.moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
       const foundGroupForTarget = parseWidget4DomChain(target, (node) => currentGroupElement === node)
       if (!foundGroupForTarget) {
+        if (isFunction(callback)) callback()
         self.allowInGroupMovement = false
-        self.designCanvasTarget.removeEventListener("mousedown", monitoringClickGroupOuter, false)
-        self.designCanvasTarget.removeEventListener("mouseup", updateRect, false)
+        self.isSeparating = false
+        self.__temp__.stop = void 0
+        stop()
       }
     }
 
-    function updateRect() {
-      currentGroupElement && currentGroupElement[DESIGN_GROUP_UPDATE_RECT]?.()  // 自动调整group尺寸包裹所有子组件
+    function stop() {
+      isStop = true
+      self.designCanvasTarget.removeEventListener("mousedown", monitoringClickGroupOuter, false)
+      self.designCanvasTarget.removeEventListener("mouseup", updateRect, false)
     }
+
+    const updateRect = () => currentGroupElement && currentGroupElement[DESIGN_GROUP_UPDATE_RECT]?.()  // 自动调整group尺寸包裹所有子组件
 
     this.designCanvasTarget.addEventListener("mousedown", monitoringClickGroupOuter)
     this.designCanvasTarget.addEventListener("mouseup", updateRect)
+    /*------------------------------------------------------------------------------------------------*/
     this.allowInGroupMovement = true
+    this.__temp__.stop = stop
+    return stop
   }
 }
 

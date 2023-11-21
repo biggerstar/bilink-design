@@ -76,6 +76,14 @@
 
     <div class="widgets-detail">
       <div v-if="curDetailComp && editorStore.currentTemplate">
+        <div v-if="showGroupControl">
+          <div
+            class="btn-group w-[232px] mt-[40px] mb-[20px] m-auto font-black text-[0.9rem] cursor-pointer not-user-select">
+            <WGroupControl/>
+          </div>
+          <hr class="hr-line"/>
+        </div>
+
         <component :is="curDetailComp"></component>
       </div>
     </div>
@@ -94,11 +102,10 @@ import {apiGetProjectInfo} from "@/api/getProjectInfo";
 import {apiGetFonts} from "@/api/getFonts";
 import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
-import {getWidgetsName, parseWidget4DomChain, parseWidgetsInfo4DomChain} from "@/utils/method";
+import {getWidgetsName} from "@/utils/method";
 import {CurrentTemplate} from "@type/layout";
 import {defaultSelectOptions, SelectoManager} from "@/common/selecto/selecto";
 import {WIDGETS_NAMES} from "@/constant";
-import {getElement4EventTarget} from "@/utils/tool";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
@@ -108,6 +115,7 @@ const currentTemplateLayoutInfo = ref<CurrentTemplate>()   // 当前使用的工
 const currentAsideTagComp = shallowRef()   // 当前左侧标签展开页使用的组件
 const currentActiveAsideTagConfig = shallowRef()   // 当前左侧标签展开页使用的配置
 const moreOperationList = ref()
+const showGroupControl = ref(false)
 
 setTimeout(() => {
   // showTagPage('material')
@@ -130,24 +138,16 @@ function getCurDetailComp(widgetsName: string | void = 'default') {
   return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
-function listenMouseDownEvent(ev) {
-  const widgetsInfo = parseWidgetsInfo4DomChain(<any>parseWidget4DomChain(getElement4EventTarget(ev)))
-  let widgetName
-  if (widgetsInfo) {
-    widgetName = widgetsInfo.isGroup ? WIDGETS_NAMES.W_GROUP : getWidgetsName(<any>widgetsInfo.rootWidgetElement)
-    console.log(widgetName)
-  }
+function listenMouseDownEvent(ev: MouseEvent) {
+  const widgetEl = editorStore.moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+  if (!widgetEl) return
+  const widgetName = getWidgetsName(<any>widgetEl)
   const detailComp = getCurDetailComp(widgetName)
   curDetailComp.value = null
+  showGroupControl.value = !!editorStore.moveableManager.currentGroupElement
   nextTick(() => curDetailComp.value = detailComp)
 }
 
-function listenMouseupEvent() {
-  const selectoManager = editorStore.selectoManager
-  if (selectoManager && selectoManager.selected.length) {
-    if (selectoManager.selected.length > 1) curDetailComp.value = getCurDetailComp(WIDGETS_NAMES.W_GROUP)  // 如果进行组件多选，则右侧弹出组件组配置页
-  }
-}
 
 /**
  * 载入工程配置成功后调用
@@ -161,13 +161,19 @@ function loadEditorProjectSuccess() {
     editorStore.moveableManager.mount(mainRef.value, defaultMoveableOptions)
     editorStore.selectoManager = <any>new SelectoManager()
     editorStore.selectoManager.mount(mainRef.value, defaultSelectOptions)
+    editorStore.selectoManager.selecto.on("selectEnd", () => {
+      const selectoManager = editorStore.selectoManager
+      if (selectoManager && selectoManager.selected.length > 1) {
+        curDetailComp.value = getCurDetailComp(WIDGETS_NAMES.W_SELECTED_GROUP)  // 如果进行组件多选，则右侧弹出组件组配置页
+        showGroupControl.value = true
+      }
+    })
   }, 100)
 }
 
 onMounted(async () => {
   if (mainRef.value) {
     mainRef.value!.addEventListener('mousedown', listenMouseDownEvent)
-    mainRef.value!.addEventListener('mouseup', listenMouseupEvent)
   }
   apiGetPageConfig().then(res => res.code === 200 && (pageConfig.value = editorStore.pageConfig = res.data))
   const getProjectInfo = apiGetProjectInfo().then(res => res.code === 200 && editorStore.loadEditorProject(res.data) || loadEditorProjectSuccess())
@@ -198,7 +204,6 @@ onUnmounted(() => {
   editorStore.lineGuides && editorStore.lineGuides.destroy()
   if (mainRef.value) {
     mainRef.value!.removeEventListener('mousedown', listenMouseDownEvent)
-    mainRef.value!.removeEventListener('mouseup', listenMouseupEvent)
   }
 })
 
