@@ -3,7 +3,7 @@
     :data-uuid="props.config.uuid"
     data-widget-type="widget"
     data-widget-name='w-group'
-    class="w-position not-user-select w-full h-full"
+    class="w-position not-user-select"
     ref="W_Widget"
   >
     <div class="group-box w-full h-full relative" ref="groupBox">
@@ -25,7 +25,7 @@ import {widgetsMap} from "@/config/widgets-map";
 import {editorStore} from "@/store/editor";
 import {CssTransformApi, parseWidget4DomChain} from "@/utils/method";
 import {getElement4EventTarget} from "@/utils/tool";
-import {DESIGN_SET_STATE} from "@/constant";
+import {DESIGN_GROUP_UPDATE_RECT, DESIGN_SET_STATE} from "@/constant";
 import {isFunction} from "is-what";
 
 const props = <any>defineProps({
@@ -104,19 +104,6 @@ function listenMouseDown() {
   childrenPosition = loadAllChildrenPosition()
 }
 
-function computedOffset(info) {
-  const {clientWidth: containerClientWidth, clientHeight: containerClientHeight} = W_Widget.value
-  const {clientWidth, clientHeight} = info.node
-  let x = 0, y = 0
-  if (info.x <= 0) x = info.x
-  else if (info.x + clientWidth > containerClientWidth) x = info.x + clientWidth - containerClientWidth
-  if (info.y <= 0) y = info.y
-  else if (info.y + clientHeight > containerClientHeight) y = info.y + clientHeight - containerClientHeight
-  return {
-    x,
-    y
-  }
-}
 
 function listenMouseup(ev: MouseEvent) {
   if (!groupBox.value) return
@@ -132,6 +119,7 @@ onMounted(async () => {
   baseCssAction.connect(W_Widget.value)
   baseCssAction.setState(props.config)
   baseCssAction.patchConfigToElement(props.config)
+  W_Widget.value[DESIGN_GROUP_UPDATE_RECT] = autoSetWGroupSizeAndOffsetPosition   // 重新调整组尺寸以包裹所有子组件
   W_Widget.value.addEventListener('mousedown', listenMouseDown)
   W_Widget.value.addEventListener('mouseup', listenMouseup)
 })

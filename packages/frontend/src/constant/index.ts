@@ -8,6 +8,7 @@ export const CSS_DEFINE = {
 
 export const DESIGN_OPTIONS = '__design_options__'
 export const DESIGN_SET_STATE = '__design_set_state__'
+export const DESIGN_GROUP_UPDATE_RECT = '__design_group_update_rect__'
 export const MOVEABLE_ALL_DIRECTION = ["n", "nw", "ne", "s", "se", "sw", "e", "w"]
 export const MOVEABLE_SCALE_DIRECTION = ["nw", "ne", "se", "sw"]
 export const MOVEABLE_RESIZE_DIRECTION = ["n", "s", "e", "w"]

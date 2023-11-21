@@ -6,7 +6,7 @@
     :data-uuid="props.config['uuid']"
     data-widget-type="widget"
     data-widget-name='w-text'
-    class="w-widget w-position not-user-select  w-full h-full"
+    class="w-widget w-position not-user-select"
     ref="W_Widget"
     :class="{
       editing:editing
@@ -15,7 +15,7 @@
     @blur="blurText"
   >
     <!--    <canvas ref="canvasRef"></canvas>-->
-    <div class="edit-widget-area " v-html="textContent" spellcheck="false"></div>
+    <div class="edit-widget-area w-full h-full" v-html="textContent" spellcheck="false"></div>
     <slot></slot>
   </div>
 </template>

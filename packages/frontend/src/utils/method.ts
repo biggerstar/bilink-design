@@ -168,7 +168,7 @@ export class CssTransformApi {
   }
 
   /** 获取某个函数名的值 */
-  get(name): Array<any> | void {
+  get(name: 'translate' | 'rotate' | 'translateX' | 'translateY' | 'matrix' | 'scale' | string): Array<any> | void {
     const reg = new RegExp(`${name}\\(([^)]*)\\)`)
     const matchData = this.transform.match(reg)
     if (!matchData || !matchData[1]) return
@@ -225,7 +225,7 @@ export function genCascaderTree(sourceData: object[]) {
 /** 生成指定步长的数组 */
 export function generateStepNumberArray(start, end, step) {
   const result = [];
-  if (step === 0)   throw new Error('步长不能为零')
+  if (step === 0) throw new Error('步长不能为零')
   const increment = start < end ? 1 : -1;
   for (let i = start; increment * i <= increment * end; i += step) {
     result.push(i);

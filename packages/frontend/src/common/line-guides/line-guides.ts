@@ -104,7 +104,7 @@ export class LineGuides {
           verticalGuidelines: generateStepNumberArray(0, width, Math.ceil(guidesTop.unit * guidesTop.zoom)),
           horizontalGuidelines: generateStepNumberArray(0, height, Math.ceil(guidesLeft.unit * guidesLeft.zoom))
         }
-        console.log(guides)
+        // console.log(guides)
         editorStore.moveableManager && editorStore.moveableManager.moveable.setState(guides)
       })
     }

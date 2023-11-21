@@ -21,8 +21,8 @@
         <div>尺寸</div>
         <div>{{ `${canvasInfo.width} x ${canvasInfo.height} px` }}</div>
       </div>
-      <div class="reset-canvas-btn" v-if="!isShowResizeCanvas" @click='isShowResizeCanvas=true'>调整尺寸</div>
-      <div class="reset-canvas-btn" v-else @click='isShowResizeCanvas=false'>完成</div>
+      <Button class="mt-[15px]" v-if="!isShowResizeCanvas" @click='isShowResizeCanvas=true'>调整尺寸</Button>
+      <Button class="mt-[15px]" v-else @click='isShowResizeCanvas=false'>完成</Button>
     </card>
     <hr class="hr-line">
 
@@ -65,20 +65,6 @@ watch([canvasInfo], () => {
 </script>
 
 <style scoped>
-.reset-canvas-btn {
-  background-color: var(--color-gray-300);
-  width: 90%;
-  font-weight: 400;
-  padding: 10px;
-  margin: 16px auto auto;
-  border-radius: 10px;
-  font-size: .9rem;
-  cursor: pointer;
-}
-
-.reset-canvas-btn:hover {
-  background-color: var(--color-gray-400);
-}
 
 .canvas-size-info {
   display: flex;

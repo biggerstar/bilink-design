@@ -1,14 +1,15 @@
 import {MoveableManager} from "@/common/moveable/moveable";
-import {CSS_DEFINE, DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
+import {CSS_DEFINE, DESIGN_GROUP_UPDATE_RECT, DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
 import {reactive, toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
-import {loadFont} from "@/utils/method";
+import {CssTransformApi, loadFont, parseWidget4DomChain} from "@/utils/method";
 import {isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
 import {CurrentTemplate, LayoutConfig, LayoutWidget, PageConfig} from "@/types/layout";
 import {apiGetFonts} from "@/api/getFonts";
 import {SelectoManager} from "@/common/selecto/selecto";
 import {isNil} from "lodash-es";
+import {v4 as uuid4} from "uuid";
 
 /**
  * 设计页面(/design) 的store
@@ -36,6 +37,7 @@ class EditorStore {
 
   public currentTemplate: CurrentTemplate
 
+  /** 是否允许当前聚焦的合并组进行组件内移动 */
   public allowInGroupMovement: boolean
 
   /** 获取当前活跃小组件的配置信息 */
@@ -47,6 +49,7 @@ class EditorStore {
 
   public currentTemplateIndex = 0
 
+  /** 获取当前使用的模板，一套设计工程可能包含多个模板作为模板组 */
   public getCurrentTemplateLayout(index): LayoutConfig {
     return this.currentTemplate.layouts[this.currentTemplateIndex]
   }
@@ -168,10 +171,19 @@ class EditorStore {
     }
   }
 
-  public addNewWidget(newWidgetConfig: LayoutWidget) {
-    // console.log(this.currentTemplate);
-    this.getCurrentTemplateLayout(this.currentTemplateIndex).elements.push(newWidgetConfig)
-    const children = Array.from(this.editorAreaTarget.children)
+  /**
+   * 将当前被选择的组件进行合并组, 创建一个 w-group 并将所有的小组件作为该组的子组件
+   * */
+  public mergeGroup() {
+    const childrenOptions = editorStore.selectoManager.selected.map(node => node[DESIGN_OPTIONS])
+    if (!childrenOptions.length) return
+    const newWidgetConfig = {
+      uuid: uuid4(),
+      type: 'group',
+      elements: childrenOptions
+    }
+    this.getCurrentTemplateLayout(this.currentTemplateIndex).elements.push(<LayoutWidget>newWidgetConfig)
+    const children = <HTMLElement[]>Array.from(this.editorAreaTarget.children)  // 只会操控首层的组件进行成组
     const newElement = children.find((node: HTMLElement) => {
       // console.log(node.dataset['uuid'])
       return node.dataset['uuid'] && node.dataset['uuid'] === newWidgetConfig.uuid
@@ -183,9 +195,59 @@ class EditorStore {
       if (!uuid) return
       if (remove_uuids.includes(uuid)) node.remove()
     })
+    this.moveableManager.moveable.target = newElement
+  }
 
-    console.log(newElement)
-    // this.moveableManager.moveable.target
+  /**
+   * 将当前活跃的合并组分离成组件分散放置到首层画板上
+   * */
+  public separationGroup() {
+    const currentGroupElement = editorStore.moveableManager.currentGroupElement
+    if (!currentGroupElement) return
+    const cssTransformApi = new CssTransformApi()
+    cssTransformApi.load(currentGroupElement.style.transform)
+    const [groupX = 0, groupY = 0] = cssTransformApi.get('translate')  // 获取组在当前画布中位置，解散后子组件需要在自身偏移基础上添加上当所在组在画布中的距离
+    const groupConfig: LayoutWidget = currentGroupElement[DESIGN_OPTIONS]
+    const elements = groupConfig.elements || []
+    const vueModelElementWidgetConfig = this.getCurrentTemplateLayout(this.currentTemplateIndex).elements
+    const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === groupConfig)
+    vueModelElementWidgetConfig.splice(curGroupIndex, 1)
+    elements.forEach(newConfig => {
+      newConfig.left += parseFloat(String(groupX))
+      newConfig.top += parseFloat(String(groupY))
+      vueModelElementWidgetConfig.push(newConfig)
+    })
+  }
+
+  /**
+   * 启动自动监听当前组内移动是否点击了组外的地方, 如果点击到外部则将自动停止监听并关闭组件内移动
+   * */
+  public autoMonitoringGroupMovement() {
+    if (!this.designCanvasTarget || this.allowInGroupMovement) return
+    const self = this
+    const currentGroupElement = editorStore.moveableManager.currentGroupElement
+    if (!currentGroupElement) return
+
+    /**
+     * 当正在进行组内移动操作时，监听是否点击了组外的地方，如果点击了将会停止组内移动操作
+     * */
+    function monitoringClickGroupOuter(ev: MouseEvent) {
+      const target = self.moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+      const foundGroupForTarget = parseWidget4DomChain(target, (node) => currentGroupElement === node)
+      if (!foundGroupForTarget) {
+        self.allowInGroupMovement = false
+        self.designCanvasTarget.removeEventListener("mousedown", monitoringClickGroupOuter, false)
+        self.designCanvasTarget.removeEventListener("mouseup", updateRect, false)
+      }
+    }
+
+    function updateRect() {
+      currentGroupElement && currentGroupElement[DESIGN_GROUP_UPDATE_RECT]?.()  // 自动调整group尺寸包裹所有子组件
+    }
+
+    this.designCanvasTarget.addEventListener("mousedown", monitoringClickGroupOuter)
+    this.designCanvasTarget.addEventListener("mouseup", updateRect)
+    this.allowInGroupMovement = true
   }
 }
 

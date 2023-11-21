@@ -94,9 +94,11 @@ import {apiGetProjectInfo} from "@/api/getProjectInfo";
 import {apiGetFonts} from "@/api/getFonts";
 import {apiGetPageConfig} from "@/api/getPageConfig";
 import ContentBox from '@/components/content-box/ContentBox.vue'
-import {getWidgetsName} from "@/utils/method";
+import {getWidgetsName, parseWidget4DomChain, parseWidgetsInfo4DomChain} from "@/utils/method";
 import {CurrentTemplate} from "@type/layout";
 import {defaultSelectOptions, SelectoManager} from "@/common/selecto/selecto";
+import {WIDGETS_NAMES} from "@/constant";
+import {getElement4EventTarget} from "@/utils/tool";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
@@ -128,10 +130,13 @@ function getCurDetailComp(widgetsName: string | void = 'default') {
   return widgetsDetailMap[widgetsName] || widgetsDetailMap['default']
 }
 
-function listenMouseDownEvent() {
+function listenMouseDownEvent(ev) {
+  const widgetsInfo = parseWidgetsInfo4DomChain(<any>parseWidget4DomChain(getElement4EventTarget(ev)))
   let widgetName
-  const widgetEl = editorStore.moveableManager.currentWidget
-  if (widgetEl) widgetName = getWidgetsName(widgetEl)
+  if (widgetsInfo) {
+    widgetName = widgetsInfo.isGroup ? WIDGETS_NAMES.W_GROUP : getWidgetsName(<any>widgetsInfo.rootWidgetElement)
+    console.log(widgetName)
+  }
   const detailComp = getCurDetailComp(widgetName)
   curDetailComp.value = null
   nextTick(() => curDetailComp.value = detailComp)
@@ -140,7 +145,7 @@ function listenMouseDownEvent() {
 function listenMouseupEvent() {
   const selectoManager = editorStore.selectoManager
   if (selectoManager && selectoManager.selected.length) {
-    if (selectoManager.selected.length > 1) curDetailComp.value = getCurDetailComp('w-group')  // 如果进行组件多选，则右侧弹出组件组配置页
+    if (selectoManager.selected.length > 1) curDetailComp.value = getCurDetailComp(WIDGETS_NAMES.W_GROUP)  // 如果进行组件多选，则右侧弹出组件组配置页
   }
 }
 

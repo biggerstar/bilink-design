@@ -15,15 +15,16 @@ import {
  * @param ev  鼠标位置下触发的ev
  * */
 function updateSelection(ev: MouseEvent) {
-  const targetEl = getElement4EventTarget(ev)
-  if (!targetEl) return
   const moveableManager = editorStore.moveableManager
   const activeElement = moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
   // console.log('activeElement', activeElement)
+  /*------------------------------移除当前所有框选--------------------------------------------*/
   const elements = editorStore.editorAreaBoxTarget.querySelectorAll(WIDGET_SELECTOR)
   elements.forEach(element => {
     element.classList.remove(WIDGET_GROUP_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR_KEEP)
   })
+  // console.log(moveableManager.currentGroupElement,moveableManager.currentWidget,activeElement)
+  /*-------------------------重新为三种不同目标(group，小组件, hover)添加框选------------------------------*/
   if (moveableManager.currentGroupElement) moveableManager.currentGroupElement.classList.add(WIDGET_GROUP_SELECTION_SELECTOR)
   if (moveableManager.currentWidget) moveableManager.currentWidget.classList.add(WIDGET_SELECTION_SELECTOR_KEEP)
   if (activeElement) activeElement.classList.add(WIDGET_SELECTION_SELECTOR_KEEP)
@@ -51,7 +52,7 @@ export default function createNativeEventHookList() {
       call: throttle((ev: MouseEvent) => {
         const overEl = getElement4EventTarget(ev)
         if (!overEl) return;
-        const moveableManager = editorStore.moveableManager
+        // const moveableManager = editorStore.moveableManager
         // if (ev.buttons !== 0) moveableManager.mousemove(overEl)
         updateSelection(ev)
       }, 260),

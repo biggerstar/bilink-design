@@ -220,6 +220,7 @@ export class MoveableManager {
       // 找到鼠标位置下不管第几层面积最小的组件，因为大组件可点击的地方多，这样能保证不管覆盖层级如何都能选择到所有的组件
       return (n1.clientWidth * n1.clientHeight) - (n2.clientWidth * n2.clientHeight)
     })
+    // console.log(mousePointMinAreaWidgets)
     return mousePointMinAreaWidgets[0]
   }
 
@@ -229,12 +230,13 @@ export class MoveableManager {
   public mousedown(el: HTMLElement, ev: MouseEvent) {
     const widgetsEl = parseWidget4DomChain(el)
     if (!widgetsEl) return
-    let activeElement = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+    let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+    let activeElement /* 最终要活跃的组件变量名 */ = minAreaWidget
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
     if (!widgetsInfo.rootWidgetElement) return
-    if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 如果点击的是组，则让组进行活跃，用于支持整个组即时移动
     this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
     /*---------------------------------默认状态------------------------------------------*/
+    if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
     this.moveable.setState({  // 先定义状态，最终状态由鼠标抬起后决定( mouseup, click )
       draggable: true,
       resizable: false,
@@ -244,13 +246,11 @@ export class MoveableManager {
     })
     /*-----------------------------在组内且不允许组内移动----------------------------------*/
     if (inGroup(activeElement) && !editorStore.allowInGroupMovement) {
-      this.moveable.setState({
-        draggable: false,
-      })
+      this.moveable.setState({draggable: false})
     }
     if (editorStore.allowInGroupMovement) {   // 如果允许组内移动,则聚焦小组件且设置服务器传回的操控配置
-      activeElement = widgetsEl
-      this.setWidgetState(widgetsEl)
+      activeElement = minAreaWidget
+      this.setWidgetState(minAreaWidget)
       this.moveable.setState({    // 本应该让所有的组件以服务器为准，这里默认宣布允许组内拖动
         draggable: true,
       })
@@ -283,7 +283,8 @@ export class MoveableManager {
    * */
   public click(el: HTMLElement, ev: MouseEvent) {
     const widgetsEl = parseWidget4DomChain(el)
-    let activeElement = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)  // 获得抬起时的鼠标点下面积最小的组件并进行活跃
+    const minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)  // 获得抬起时的鼠标点下面积最小的组件并进行活跃
+    let activeElement = minAreaWidget
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
     if (!widgetsInfo.rootWidgetElement || !widgetsEl) return
     if (widgetsInfo.isGroup) {   // 处理合并组
@@ -305,7 +306,7 @@ export class MoveableManager {
       this.setWidgetState(widgetsEl)  // 如果是组件，则直接应用组件服务器传来的操控配置，比如 draggable, rotatable
     }
     this.activeWidgets(activeElement)
-    this.currentElement = activeElement
+    this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
   }
 
   /**
