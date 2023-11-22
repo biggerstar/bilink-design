@@ -236,9 +236,11 @@ export function genCascaderTree(sourceData: object[]) {
 export function generateStepNumberArray(start: number, end: number, step: number) {
   if (!isNumber(step) || !isNumber(start) || !isNumber(end)) return []
   const result = []
-  const increment = start < end ? 1 : -1;
-  for (let i = start; increment * i <= increment * end; i += step) {
-    result.push(i);
+  let cur = start
+  let cont = 200  // 防御性编程
+  while (cur < end && cont--) {
+    result.push(cur);
+    cur += step
   }
   return result
 }

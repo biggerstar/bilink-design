@@ -13,6 +13,7 @@ import WImage from "@/components/widgets/w-image/WImage.vue";
 import WImageDetail from "@/components/widgets/w-image/WImageDetail.vue";
 import WGroupDetail from "@/components/widgets/w-group/WGroupDetail.vue";
 import WGroup from "@/components/widgets/w-group/WGroup.vue";
+import WSvg from "@/components/widgets/w-svg/WSvg.vue";
 
 export const widgetsDetailMap = {
   'default': DefaultEditorDetail,
@@ -26,7 +27,7 @@ export const widgetsMap = {
   'effectText': WText,
   'threeText': WText,
   'image': WImage,
-  'svg': WImage,
+  'svg': WSvg,
   /* TODO 开发额外组件功能的 detail 配置页 */
   'mask': WImage,
   'ninePatch': WImage,

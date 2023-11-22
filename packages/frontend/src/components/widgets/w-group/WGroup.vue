@@ -51,6 +51,7 @@ function autoSetWGroupSizeAndOffsetPosition() {
   pos = pos.map(parseFloat)
 
   const newChildrenPosition = loadAllChildrenPosition()
+  // console.log(newChildrenPosition)
   const {clientWidth, clientHeight} = W_Widget.value
   const minX = Math.min.apply(null, newChildrenPosition.map(info => info.x))
   const maxX = Math.max.apply(null, newChildrenPosition.map(info => info.x + info.w))
@@ -85,7 +86,9 @@ function loadAllChildrenPosition(): { node: HTMLElement; x: number; y: number, w
   const childs: HTMLElement[] = <any>Array.from(groupBox.value.children)
   return childs.map((node) => {
     cssTransformApi.load(node.style.transform)
-    const [x, y] = cssTransformApi.get('translate')
+    const pos = cssTransformApi.get('translate')
+    if (!pos) return
+    const [x, y] = pos
     const translateX = parseFloat(x)
     const translateY = parseFloat(y)
     return {
@@ -122,7 +125,7 @@ onMounted(async () => {
   W_Widget.value[DESIGN_GROUP_UPDATE_RECT] = autoSetWGroupSizeAndOffsetPosition   // 重新调整组尺寸以包裹所有子组件
   W_Widget.value.addEventListener('mousedown', listenMouseDown)
   W_Widget.value.addEventListener('mouseup', listenMouseup)
-  setTimeout(() => autoSetWGroupSizeAndOffsetPosition())
+  setTimeout(() => autoSetWGroupSizeAndOffsetPosition(),200)
 })
 onUnmounted(() => {
 

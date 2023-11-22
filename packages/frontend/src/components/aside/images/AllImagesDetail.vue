@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import {ref, watch} from "vue";
-import {apigetWidgets} from "@/api/getWidgets";
+import {apiGetWidgets} from "@/api/getWidgets";
 import {toPercent} from "@/utils/tool";
 import {editorStore} from "@/store/editor";
 
@@ -118,7 +118,7 @@ async function getNextDataList(nextHttpList) {
 
 /** 获取某个分类的列表数据 */
 async function getNextDataByAllPage(parentItem, opt = {}) {
-  const res = await apigetWidgets({
+  const res = await apiGetWidgets({
     id: parentItem.id,
     page_num: 1,
     page_size: 2,

@@ -10,7 +10,7 @@ import {DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
  *  */
 export function createBaseCssAction() {
   let element
-  const setWidgetsStyle: (name: keyof CSSStyleDeclaration, val: string, el?: HTMLElement) => void = createSetWidgetsStyle(() => element)
+  const setWidgetsStyle: (name: keyof CSSStyleDeclaration, val: string, el?: Element) => void = createSetWidgetsStyle(() => element)
   const cssTransformApi = new CssTransformApi()
 
   function updateTransform(name, value) {
@@ -18,7 +18,7 @@ export function createBaseCssAction() {
     setWidgetsStyle("transform", cssTransformApi.transform)
   }
 
-  function updateStyle(name: keyof CSSStyleDeclaration, value: string, el?: HTMLElement) {
+  function updateStyle(name: keyof CSSStyleDeclaration, value: string, el?: Element) {
     setWidgetsStyle(name, value, el)
   }
 
@@ -44,7 +44,10 @@ export function createBaseCssAction() {
     style: (styleObj: Partial<CSSStyleDeclaration>) => Object.keys(styleObj).forEach(name => element && (element.style[name] = styleObj[name])),
     width: (val) => setWidgetsStyle("width", val ? `${val}px` : 'auto'),
     height: (val) => setWidgetsStyle("height", val ? `${val}px` : 'auto'),
+    // colors: (colors) => colors.length && setWidgetsStyle('fill', colors[0]) && setWidgetsStyle('stroke', colors[1]),
     backgroundColor: (val) => setWidgetsStyle('backgroundColor', val || 'transparent'),
+    backgroundRepeat: (val) => setWidgetsStyle('backgroundRepeat', val || 'no-repeat'),
+    blendMode: (val) => setWidgetsStyle('backgroundBlendMode', val),
     transform: (transform) => {
       // console.log(Object.values(transform).join(','))
       updateTransform('matrix', Object.values(transform).join(','))

@@ -206,6 +206,7 @@ html, body, #app {
   left: 0;
   top: 0;
   border: var(--widget-box-selection-color) dotted var(--widget-box-selection-line-weight);
+  z-index: 300;
 }
 
 .widget-box-selection:active::before {

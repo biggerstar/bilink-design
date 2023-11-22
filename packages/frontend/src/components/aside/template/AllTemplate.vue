@@ -67,7 +67,7 @@
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
-import {apigetWidgets} from "@/api/getWidgets";
+import {apiGetWidgets} from "@/api/getWidgets";
 import {JustifiedInfiniteGrid} from "@egjs/vue3-infinitegrid";
 import {QuestionCircleFilled} from '@ant-design/icons-vue';
 import {editorStore} from "@/store/editor";
@@ -107,7 +107,7 @@ watch(props, () => {
 function loadNewRecordList() {
   if (!curUseId.value || isLoading.value || pageEnd) return
   isLoading.value = true
-  apigetWidgets({
+  apiGetWidgets({
     id: curUseId.value,
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,

@@ -359,7 +359,7 @@ class EditorStore {
     if (opt.autoSize) {
       material.width = Math.min(currentLayout.width / 2, material.preview.width)
       material.height = Math.min(currentLayout.height / 2, material.preview.height)
-    } else {
+    } else if (material.preview) {
       material.width = material.preview.width
       material.height = material.preview.height
     }
@@ -379,7 +379,7 @@ class EditorStore {
       uuid: uuid4(),
       title: material.title,
       type: material.type,
-      url: material.preview.url,
+      url: material.preview?.url,
       dragable: true,
       rotatable: true,
       width: Math.min(300 / this.getCurScaleValue(), material.width),
@@ -391,6 +391,21 @@ class EditorStore {
     currentLayout.elements.push(<any>newWidgetConfig)
   }
 
+  public async addMaterial4Id(id: string | number) {
+    const res = await apiGetDetail({id})
+    // console.log(res)
+    if (res && res.data?.model) {
+      const currentLayout = this.getCurrentTemplateLayout()
+      const material = res.data?.model
+      const sizeInfo = {
+        width: material.width,
+        height: material.height,
+      }
+      material.left = currentLayout.width / 2 - sizeInfo.width / 2
+      material.top = currentLayout.height / 2 - sizeInfo.height / 2
+      currentLayout.elements.push(<any>res.data.model)
+    }
+  }
 }
 
 export const editorStore = new EditorStore()

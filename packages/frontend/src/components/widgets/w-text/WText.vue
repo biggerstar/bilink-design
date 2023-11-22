@@ -15,8 +15,23 @@
     @blur="blurText"
   >
     <!--    <canvas ref="canvasRef"></canvas>-->
-    <a-spin :spinning="showSpin">
-      <div class="edit-widget-area" ref="textRef" v-html="textContent" spellcheck="false">
+    <a-spin :spinning="showSpin" size="large">
+      <div v-if="textContents" style="text-align: start; " ref="contentsRef">
+        <span
+          v-for="(item,index) in textContents"
+          :key="index"
+          v-html="filterText(item.content)"
+          :style="{
+            color:item.color,
+            fontFamily:item.fontFamily,
+            fontSize:`${item.fontSize}px`,
+            fontStyle:item.fontStyle,
+            fontWeight:item.fontWeight,
+            textDecoration:item.textDecoration,
+          }"
+        > </span>
+      </div>
+      <div v-else class="edit-widget-area" ref="textRef" v-html="textContent" spellcheck="false">
       </div>
     </a-spin>
     <slot></slot>
@@ -33,7 +48,9 @@ import {createBaseCssAction} from "@/components/widgets/base-action";
 
 const W_Widget = shallowRef<HTMLElement>()
 const textRef = shallowRef<HTMLElement>()
+const contentsRef = shallowRef<HTMLElement>()
 const textContent = ref()
+const textContents = ref()
 const editing = ref(false)
 const showSpin = ref(true)
 const props = defineProps({
@@ -42,6 +59,11 @@ const props = defineProps({
     default: {}
   }
 })
+
+function filterText(text: string) {
+  return text.replaceAll('\n', '<br/>').replaceAll('\r', '<br/>')
+}
+
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
 baseCssAction.expand({  // 对传入状态的处理函数
   color: (val) => baseCssAction.updateStyle('color', val || 'transparent', textRef.value),
@@ -58,7 +80,8 @@ baseCssAction.expand({  // 对传入状态的处理函数
     baseCssAction.updateStyle("letterSpacing", `${val}px`, textRef.value)
     baseCssAction.updateBoxSize()
   },
-  content: (text) => textContent.value = text.replace(/\n/g, '<br/>'),
+  content: (text) => textContent.value = filterText(text),
+  contents: (textList) => textContents.value = textList,
   textAlign: (name: string) => {
     const config = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
     if (!config) return
@@ -83,6 +106,12 @@ onMounted(async () => {
   baseCssAction.connect(W_Widget.value)
   baseCssAction.setState(props.config)
   baseCssAction.patchConfigToElement(props.config)
+  setTimeout(() => {
+    if (contentsRef.value) {
+      textRef.value = contentsRef.value
+      baseCssAction.setState(props.config)
+    }
+  })
 })
 
 function dbClickW_Widget() {

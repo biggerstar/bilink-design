@@ -10,8 +10,19 @@ export const router = express.Router();
  * API query支持的参数: id, page_num, page_size
  * */
 router.get('/widgets', async function (req, res) {
-  let {id, page_num = '1', page_size = '20'} = req.query
+  let {id, wid, page_num = '1', page_size = '20'} = req.query
   // console.log(page_num, page_size, id)
+  if(isString(wid)){
+    const foundWidget =  await ModelAllMaterial.findByPk(wid)
+    if(foundWidget){
+      return  res.send({
+        code: 200,
+        message: '成功',
+        data: foundWidget.dataValues.data
+      })
+    }
+  }
+
   if (isString(id) && isString(page_num) && isString(page_size)) {
     // 找到该 id 的数据，判断是不是叶子节点,如果不是叶子节点
     const found = await ResourceTree.findByPk(id)

@@ -2,7 +2,7 @@
   <div class="text-box" v-if="showHeaderTagBox">
     <div class="add-text-btn">
       <div class="w-[280px] h-[40px] m-auto mt-[10px] mb-[10px] text-[0.9rem] font-bold cursor-pointer">
-        <content-box class="w-full h-full">
+        <content-box class="w-full h-full" @click="editorStore.addMaterial4Id('384297')">
           <div>添加文字</div>
         </content-box>
       </div>
@@ -31,6 +31,7 @@ import {apiGetResource} from "@/api/getResource";
 import {onMounted, shallowRef} from "vue";
 import {getChildrenByDepth} from "@/utils/tool";
 import AllTextDetail from "@/components/aside/text/AllTextDetail.vue";
+import {editorStore} from "@/store/editor";
 
 const props = <any>defineProps({
   config: {
