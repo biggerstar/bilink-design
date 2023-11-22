@@ -32,6 +32,8 @@
                 :data-size-w="childItem.preview.width"
                 :data-size-h="childItem.preview.height"
                 :alt="childItem.name"
+                @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
+                @click="()=>editorStore.addMaterial(childItem)"
               >
             </div>
           </div>
@@ -46,6 +48,7 @@
 import {ref, watch} from "vue";
 import {apigetWidgets} from "@/api/getWidgets";
 import {toPercent} from "@/utils/tool";
+import {editorStore} from "@/store/editor";
 
 const props = defineProps({
   loadNewData: {   // 只要变化就读取新数据，不够优雅，后面通过mitt 或者 将该组件单独 作为展示组件 来做

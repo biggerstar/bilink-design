@@ -7,7 +7,7 @@
     ref="W_Widget"
   >
     <div class="edit-widget-area " spellcheck="false">
-      <img class="w-full h-full" draggable="false" :src="props.config.url" :alt="props.config.title">
+      <img class="w-full h-full" ref="imgRef" draggable="false" :src="props.config.url" :alt="props.config.title">
     </div>
     <slot></slot>
   </div>
@@ -23,7 +23,8 @@ const props = <any>defineProps({
     default: {}
   }
 })
-const W_Widget = ref()
+const W_Widget = ref<HTMLElement>()
+const imgRef = ref<HTMLElement>()
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
 
 onMounted(async () => {

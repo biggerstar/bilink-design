@@ -216,6 +216,12 @@ html, body, #app {
   border: none;
 }
 
+.dragging-material{
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+}
+
 :root {
   --canvas-padding: 60px;
   --widget-box-selection-line-weight: 0.25rem;

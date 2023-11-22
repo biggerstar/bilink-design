@@ -22,14 +22,16 @@
               class="icon-item w-[60px] h-[60px] items-center mt-[4px] mb-[4px] overflow-hidden cursor-pointer"
               v-for="(childItem, index) in item.children" :key="index.toString() + 'child' + childItem?.name"
               :data-material-id="childItem.id"
+              @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
+              @click="()=>editorStore.addMaterial(childItem)"
             >
               <img
                 draggable="true"
-                style="background-repeat: no-repeat; background-size: cover"
-                width="56"
-                height="56"
+                style="background-repeat: no-repeat; background-size: cover;max-width: 56px;max-height: 56px"
                 :src="childItem.preview.url"
                 :alt="childItem.name"
+                @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
+                @click="()=>editorStore.addMaterial(childItem)"
               >
             </div>
           </div>
@@ -43,6 +45,7 @@
 <script setup lang="ts">
 import {ref, watch} from "vue";
 import {apigetWidgets} from "@/api/getWidgets";
+import {editorStore} from "@/store/editor";
 
 const resourceData = ref()
 let curLoadIndex = 0

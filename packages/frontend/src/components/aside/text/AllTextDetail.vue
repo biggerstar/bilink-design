@@ -29,6 +29,8 @@
                 height="80"
                 :src="childItem.preview.url"
                 :alt="childItem.name"
+                @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
+                @click="()=>editorStore.addMaterial(childItem)"
               >
             </div>
           </div>
@@ -42,6 +44,7 @@
 <script setup lang="ts">
 import {ref, watch} from "vue";
 import {apigetWidgets} from "@/api/getWidgets";
+import {editorStore} from "@/store/editor";
 
 const props = defineProps({
   loadNewData: {   // 只要变化就读取新数据，不够优雅，后面通过mitt 或者 将该组件单独 作为展示组件 来做

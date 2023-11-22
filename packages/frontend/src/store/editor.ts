@@ -14,12 +14,13 @@ import {deepmerge} from "@biggerstar/deepmerge";
 import {CssTransformApi, loadFont, parseWidget4DomChain} from "@/utils/method";
 import {isFunction, isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
-import {CurrentTemplate, LayoutConfig, LayoutWidget, PageConfig} from "@/types/layout";
+import {CurrentTemplate, LayoutConfig, LayoutWidget, Material, PageConfig} from "@/types/layout";
 import {apiGetFonts} from "@/api/getFonts";
 import {SelectoManager} from "@/common/selecto/selecto";
 import {isNil} from "lodash-es";
 import {v4 as uuid4} from "uuid";
 import {Emitter} from 'mitt'
+import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
 
 /**
  * 设计页面(/design) 的store
@@ -29,6 +30,7 @@ class EditorStore {
   /** moveable 管理器 */
   public moveableManager: MoveableManager
   public selectoManager: SelectoManager
+  public dragWidgetManager: DragWidgetManager
   public lineGuides: LineGuides
   public bus: Emitter<any>
   /** 所有字体 */
@@ -55,6 +57,12 @@ class EditorStore {
 
   /** 是否正在执行分离过程 */
   public isSeparating: boolean
+
+  public currentDraggingMaterial: Material | null = null
+
+  public dragMaterial(item: Material = null) {
+    this.currentDraggingMaterial = item
+  }
 
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
@@ -334,6 +342,35 @@ class EditorStore {
     this.__temp__.stop = stop
     return stop
   }
+
+  public async addMaterial(material: Partial<Material & LayoutWidget>) {
+    // const materialDetail = await apiGetDetail({id: material.id})
+    // console.log(materialDetail)
+    const currentLayout = this.getCurrentTemplateLayout()
+    if (!material.left || !material.top) {  // 没指定位置直接添加到中心
+      const previewInfo = material.preview
+      material.left = currentLayout.width / 2 - previewInfo.width / 2
+      material.top = currentLayout.height / 2 - previewInfo.height / 2
+    }
+
+    console.log(material)
+    // console.log(currentLayout)
+
+    const newWidgetConfig: Partial<LayoutWidget> = {
+      uuid: uuid4(),
+      title: material.title,
+      type: material.type,
+      url: material.preview.url,
+      dragable: true,
+      rotatable: true,
+      left: material.left,
+      top: material.top,
+      width: Math.min(material.preview.width,currentLayout.width * 0.8),
+      height: Math.min(material.preview.height,currentLayout.height * 0.8),
+    }
+    currentLayout.elements.push(<any>newWidgetConfig)
+  }
+
 }
 
 export const editorStore = new EditorStore()

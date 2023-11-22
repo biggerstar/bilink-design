@@ -11,7 +11,7 @@
         @change="opacityChanged"
       >
         <template #icon>
-          <span class="text-[0.9rem] w-1/3 min-w-[60px]"> 不透明度</span>
+          <span class="text-[0.9rem] w-1/3 min-w-[60px]">不透明度</span>
         </template>
       </SliderNumber>
     </card>

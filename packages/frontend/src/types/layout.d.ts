@@ -92,3 +92,57 @@ export type PageConfig = {
     }>
   }
 }
+
+export type Material = {
+  id: number,
+  ext: {
+    dist_id: string,
+    dist_code: string,
+    base_score: number,
+    material_location: number
+  },
+  type: string,
+  price: number,
+  title: string,
+  format: string,
+  is_new: number,
+  status: number,
+  item_id: number,
+  preview: {
+    hex: string,
+    url: string,
+    width: number,
+    height: number,
+    extends: any[],
+    gif_url: string,
+    duration: number,
+    webpage_url: string
+  },
+  group_id: number,
+  mask_num: number,
+  group_ids: any [],
+  item_price: number,
+  updated_at: number,
+  description: string,
+  payment_tag: string,
+  rules_count: number,
+  is_recommended: number,
+  user_over_role: number,
+  distribution_id: number,
+  authorization_id: any[],
+  composite_preview: {
+    hex: string,
+    url: string,
+    width: number,
+    height: number
+  },
+  content_updated_at: number,
+  design_category_id: number,
+  channel_category_id: number,
+  design_category_ids: any[],
+  user_over_role_list: any[],
+  channel_category_ids: any[],
+  industry_category_id: number,
+  industry_category_ids: any[]
+}
+

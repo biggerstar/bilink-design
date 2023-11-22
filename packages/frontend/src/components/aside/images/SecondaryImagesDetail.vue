@@ -17,6 +17,8 @@
             :alt="childItem.title"
             data-grid-maintained-target="true"
             @error="handleImageError($event)"
+            @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
+            @click="()=>editorStore.addMaterial(childItem)"
           />
         </div>
       </justified-infinite-grid>
@@ -29,6 +31,7 @@ import {computed, onMounted, ref, watch} from 'vue'
 import {apigetWidgets} from "@/api/getWidgets";
 import {JustifiedInfiniteGrid} from "@egjs/vue3-infinitegrid";
 import {handleImageError} from '@/utils/method'
+import {editorStore} from "@/store/editor";
 
 const props = defineProps({
   id: {

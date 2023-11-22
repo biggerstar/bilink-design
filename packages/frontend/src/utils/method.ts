@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {isFunction, isObject, isString} from "is-what";
+import {isFunction, isNumber, isObject, isString} from "is-what";
 import {
   WIDGET_DATASET_IN_GROUP,
   WIDGET_DATASET_NAME,
@@ -234,11 +234,11 @@ export function genCascaderTree(sourceData: object[]) {
 
 /** 生成指定步长的数组 */
 export function generateStepNumberArray(start: number, end: number, step: number) {
-  if (!step) return []
-  const result = [];
+  if (!isNumber(step) || !isNumber(start) || !isNumber(end)) return []
+  const result = []
   const increment = start < end ? 1 : -1;
   for (let i = start; increment * i <= increment * end; i += step) {
     result.push(i);
   }
-  return result;
+  return result
 }

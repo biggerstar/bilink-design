@@ -1,6 +1,6 @@
 <template>
   <!--  --------------------header---------------------  -->
-  <div class="header min-w-[240px]">
+  <div class="header not-user-select min-w-[240px]">
     <div class="header-left" v-if="pageConfig">{{ pageConfig.brand }}</div>
     <div class="header-right">
       <el-button-group>
@@ -27,7 +27,7 @@
       </el-button-group>
     </div>
   </div>
-  <div class="work-area">
+  <div class="work-area not-user-select">
     <!--  --------------------aside---------------------  -->
     <div class="aside">
       <div class="tool-tags h-full" v-if="pageConfig">
@@ -123,6 +123,7 @@ import {getWidgetsName} from "@/utils/method";
 import {defaultSelectOptions, SelectoManager} from "@/common/selecto/selecto";
 import {WIDGETS_NAMES} from "@/constant";
 import {apiGetDetail} from "@/api/getDetail";
+import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
@@ -146,7 +147,7 @@ setTimeout(() => {
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
-function showTagPage(name: string | 'template' | 'text' | 'images' | 'material' = '') {
+function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material') {
   activeTagName.value = activeTagName.value !== name ? name : void 0
   currentAsideTagComp.value = name ? asideTagMap[activeTagName.value] : void 0
   pageConfig.value
@@ -208,6 +209,14 @@ function loadEditorTemplate(templateData: { id: string, data: Record<any, any> }
           showGroupControl.value = true
         }
       })
+    }
+    if (!editorStore.dragWidgetManager) {
+      editorStore.dragWidgetManager = new DragWidgetManager()
+      editorStore.dragWidgetManager.start()
+      editorStore.dragWidgetManager.bus.on("drop", (material) => {
+        editorStore.addMaterial(material)
+      })
+      showTagPage('material')
     }
   }, 100)
 }

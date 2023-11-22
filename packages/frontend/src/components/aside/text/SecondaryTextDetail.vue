@@ -4,14 +4,16 @@
     <div class="flex justify-center flex-wrap p-[10px] mb-16">
       <div
         class="icon-detail-item w-[88px] h-[88px] overflow-hidden mr-auto cursor-pointer flex justify-center items-center"
-        v-for="(item,index) in materialDetail" :key="item.id + index.toString()">
+        v-for="(childItem,index) in materialDetail" :key="childItem.id + index.toString()">
         <img
           draggable="true"
           style="background-repeat: no-repeat; background-size: cover"
           width="78"
           height="78"
-          :src="item.preview.url" :alt="item.title"
+          :src="childItem.preview.url" :alt="childItem.title"
           @error="handleImageError($event)"
+          @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
+          @click="()=>editorStore.addMaterial(childItem)"
         >
       </div>
     </div>
@@ -22,6 +24,7 @@
 import {computed, onMounted, ref, watch} from 'vue'
 import {apigetWidgets} from "@/api/getWidgets";
 import {getElement4EventTarget} from "@/utils/tool";
+import {editorStore} from "@/store/editor";
 
 const props = defineProps({
   id: {
