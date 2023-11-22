@@ -122,6 +122,7 @@ onMounted(async () => {
   W_Widget.value[DESIGN_GROUP_UPDATE_RECT] = autoSetWGroupSizeAndOffsetPosition   // 重新调整组尺寸以包裹所有子组件
   W_Widget.value.addEventListener('mousedown', listenMouseDown)
   W_Widget.value.addEventListener('mouseup', listenMouseup)
+  setTimeout(() => autoSetWGroupSizeAndOffsetPosition())
 })
 onUnmounted(() => {
 

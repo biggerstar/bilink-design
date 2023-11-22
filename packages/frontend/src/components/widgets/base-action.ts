@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {createSetWidgetsStyle, CssTransformApi} from "@/utils/method";
 import {isFunction} from "is-what";
 import {editorStore} from "@/store/editor";
@@ -49,7 +51,7 @@ export function createBaseCssAction() {
     },
     opacity: (val) => setWidgetsStyle("opacity", `${val}`),
     left: (X) => {
-      const Y = cssTransformApi.get('translate')?.[1]
+      const Y = cssTransformApi.get('translate')?.[1] // left设置时 获取Y,只改变X
       updateTransform('translate', `${X}px,${Y || 0}`)
     },
     top: (Y) => {

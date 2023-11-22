@@ -214,9 +214,9 @@ function loadEditorTemplate(templateData: { id: string, data: Record<any, any> }
       editorStore.dragWidgetManager = new DragWidgetManager()
       editorStore.dragWidgetManager.start()
       editorStore.dragWidgetManager.bus.on("drop", (material) => {
-        editorStore.addMaterial(material)
+        editorStore.addMaterial(<any>material)
       })
-      showTagPage('material')
+      showTagPage('text')
     }
   }, 100)
 }

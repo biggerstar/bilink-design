@@ -13,12 +13,12 @@
           <img
             class="w-full h-full rounded-lg bg-no-repeat"
             style="border: #eae8e8 solid 1px;object-fit: cover; background-size: cover;"
-            :src="`${childItem.preview.url}?x-oss-process=image/resize,w_${Math.max(60,Math.round(childItem.preview.width /6))}`"
+            :src="`${childItem.preview.url}?x-oss-process=image/resize,w_${Math.max(270,Math.round(childItem.preview.width /6))}`"
             :alt="childItem.title"
             data-grid-maintained-target="true"
             @error="handleImageError($event)"
             @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
-            @click="()=>editorStore.addMaterial(childItem)"
+            @click="()=>editorStore.addMaterial(childItem,{autoSize:true})"
           />
         </div>
       </justified-infinite-grid>

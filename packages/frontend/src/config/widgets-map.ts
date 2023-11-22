@@ -23,6 +23,8 @@ export const widgetsDetailMap = {
 export const widgetsMap = {
   'group': WGroup,
   'text': WText,
+  'effectText': WText,
+  'threeText': WText,
   'image': WImage,
   'svg': WImage,
   /* TODO 开发额外组件功能的 detail 配置页 */

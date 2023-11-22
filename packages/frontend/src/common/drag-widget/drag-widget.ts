@@ -31,10 +31,13 @@ export class DragWidgetManager {
       if (!draggingTarget || !dragSourceTargetRect) return
       const currentDraggingMaterial = editorStore.currentDraggingMaterial
       if (!currentDraggingMaterial) return
+      const dragRect = draggingTarget.getBoundingClientRect()
+
       let scale = (ev.clientX - dragOffsetInTarget.left) / dragSourceTargetRect.left
       draggingTarget.style.left = `${ev.clientX - dragOffsetInTarget.left}px`
       draggingTarget.style.top = `${ev.clientY - dragOffsetInTarget.top}px`
       draggingTarget.style.opacity = '1'
+      if (dragRect.width > 300 || dragRect.height > 300) return
       draggingTarget.style.transform = `scale(${Math.max(1, Math.min(scale ** 2, 5))})`
     }
 
@@ -78,6 +81,8 @@ export class DragWidgetManager {
       draggingTarget.style.opacity = '0'
       document.body.appendChild(draggingTarget)
       const rect = sourceTarget.getBoundingClientRect()
+      draggingTarget.style.width = `${rect.width}px`
+      draggingTarget.style.height = `${rect.height}px`
       dragSourceTargetRect = rect
       dragOffsetInTarget = {
         left: ev.clientX - rect.left,

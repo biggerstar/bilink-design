@@ -28,12 +28,12 @@
                 draggable="true"
                 class=" w-full h-full"
                 style="background-repeat: no-repeat; background-size: cover;"
-                :src="`${childItem.preview.url }?x-oss-process=image/resize,w_${Math.max(60,Math.round(childItem.preview.width /6))}`"
+                :src="`${childItem.preview.url }?x-oss-process=image/resize,w_${Math.max(270,Math.round(childItem.preview.width /6))}`"
                 :data-size-w="childItem.preview.width"
                 :data-size-h="childItem.preview.height"
                 :alt="childItem.name"
                 @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
-                @click="()=>editorStore.addMaterial(childItem)"
+                @click="()=>  editorStore.addMaterial(childItem,{autoSize:true})"
               >
             </div>
           </div>

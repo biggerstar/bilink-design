@@ -21,6 +21,7 @@ import {isNil} from "lodash-es";
 import {v4 as uuid4} from "uuid";
 import {Emitter} from 'mitt'
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
+import {apiGetDetail} from "@/api/getDetail";
 
 /**
  * 设计页面(/design) 的store
@@ -343,18 +344,36 @@ class EditorStore {
     return stop
   }
 
-  public async addMaterial(material: Partial<Material & LayoutWidget>) {
-    // const materialDetail = await apiGetDetail({id: material.id})
+  public async addMaterial(material: Partial<Material & LayoutWidget>, opt: { autoSize?: boolean } = {}) {
     // console.log(materialDetail)
+    const options = {}
     const currentLayout = this.getCurrentTemplateLayout()
-    if (!material.left || !material.top) {  // 没指定位置直接添加到中心
-      const previewInfo = material.preview
-      material.left = currentLayout.width / 2 - previewInfo.width / 2
-      material.top = currentLayout.height / 2 - previewInfo.height / 2
+    if (material.type === 'text') {
+      const materialDetail = await apiGetDetail({id: material.id})
+      if (materialDetail && materialDetail.data) {
+        Object.assign(options, materialDetail.data.model, {backgroundColor: materialDetail.data.layout?.backgroundColor})
+      }
+      // console.log(materialDetail)
     }
-
-    console.log(material)
+    /*-----------------------------------------------------------------------------*/
+    if (opt.autoSize) {
+      material.width = Math.min(currentLayout.width / 2, material.preview.width)
+      material.height = Math.min(currentLayout.height / 2, material.preview.height)
+    } else {
+      material.width = material.preview.width
+      material.height = material.preview.height
+    }
+    if (!material.left || !material.top) {  // 没指定位置直接添加到中心
+      const sizeInfo = {
+        width: material.width,
+        height: material.height,
+      }
+      material.left = currentLayout.width / 2 - sizeInfo.width / 2
+      material.top = currentLayout.height / 2 - sizeInfo.height / 2
+    }
+    /*-----------------------------------------------------------------------------*/
     // console.log(currentLayout)
+    // console.log(material)
 
     const newWidgetConfig: Partial<LayoutWidget> = {
       uuid: uuid4(),
@@ -363,10 +382,11 @@ class EditorStore {
       url: material.preview.url,
       dragable: true,
       rotatable: true,
+      width: Math.min(300 / this.getCurScaleValue(), material.width),
+      height: material.height,
+      ...options,
       left: material.left,
       top: material.top,
-      width: Math.min(material.preview.width,currentLayout.width * 0.8),
-      height: Math.min(material.preview.height,currentLayout.height * 0.8),
     }
     currentLayout.elements.push(<any>newWidgetConfig)
   }

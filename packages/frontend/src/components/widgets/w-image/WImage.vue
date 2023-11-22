@@ -6,8 +6,9 @@
     class="w-position not-user-select"
     ref="W_Widget"
   >
-    <div class="edit-widget-area " spellcheck="false">
-      <img class="w-full h-full" ref="imgRef" draggable="false" :src="props.config.url" :alt="props.config.title">
+    <div class="edit-widget-area" spellcheck="false">
+      <img class="w-full h-auto" ref="imgRef" @load="loading=false" draggable="false" :src="props.config.url"
+           :alt="props.config.title">
     </div>
     <slot></slot>
   </div>
@@ -25,7 +26,12 @@ const props = <any>defineProps({
 })
 const W_Widget = ref<HTMLElement>()
 const imgRef = ref<HTMLElement>()
+const loading = ref<boolean>(true)
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
+baseCssAction.expand({
+  height: () => null, /* image的高让其按照宽度自适应，无需主动设置 */
+  colors: (colors) => colors.length && baseCssAction.updateStyle('color', colors[0])
+})
 
 onMounted(async () => {
   if (!W_Widget.value) return
