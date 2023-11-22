@@ -3,6 +3,7 @@ import Selecto, {OnDragStart, OnSelect, SelectoOptions} from 'selecto'
 import {editorStore} from "@/store/editor";
 import {MOVEABLE_SCALE_DIRECTION, WIDGET_SELECTOR} from "@/constant";
 import {parseWidget4DomChain} from "@/utils/method";
+import './selecto-style.css'
 
 export const defaultSelectOptions = {
   getElementRect: getElementInfo,
@@ -38,7 +39,6 @@ export class SelectoManager {
     if (!container) container = document.body
     this.container = container
     selectOptions.container = container
-    selectOptions.keyContainer = container
 
     const selecto = new Selecto(selectOptions)
     this.selecto = selecto
@@ -75,6 +75,4 @@ export class SelectoManager {
     this.selecto && this.selecto.destroy()
   }
 }
-
-
 

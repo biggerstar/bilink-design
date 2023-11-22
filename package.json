@@ -28,6 +28,7 @@
     "element-plus": "^2.4.2",
     "is-what": "^4.1.16",
     "lodash-es": "^4.17.21",
+    "mitt": "^3.0.1",
     "moveable": "^0.52.0",
     "moveable-helper": "^0.4.0",
     "pinia": "^2.1.7",

@@ -39,10 +39,11 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {toPercent} from "@/utils/tool";
 import {editorStore} from "@/store/editor";
 import {toFixed} from "@/utils/method";
+import {throttle} from "lodash-es";
 
 const props = defineProps({
   selector: {  // 将该工具绑定到某个el元素中
@@ -136,7 +137,12 @@ function subtraction(ev: Event) {
   editorStore.updateCanvasScale(newScaleVal)
 }
 
+const resizeOb = new ResizeObserver(throttle(() => {
+  editorStore.updateCanvasScale()
+  scaleValue.value = toPercent(editorStore.getCurScaleValue())
+}, 200))
 onMounted(() => {
+  editorStore.mainTarget && resizeOb.observe(editorStore.mainTarget)
   scaleValue.value = toPercent(editorStore.getCurScaleValue())
   const selector: string = <string>props.selector
   let dom = document.querySelector(selector) || document.body
@@ -154,7 +160,7 @@ onMounted(() => {
     }
   }, {passive: false})
 })
-
+onUnmounted(() => resizeOb.disconnect())
 
 </script>
 

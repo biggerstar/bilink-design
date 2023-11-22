@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import {ref, watch} from "vue";
-import {apiGetList} from "@/api/getList";
+import {apigetWidgets} from "@/api/getWidgets";
 
 const resourceData = ref()
 let curLoadIndex = 0
@@ -104,7 +104,7 @@ async function getNextDataList(nextHttpList) {
 
 /** 获取某个分类的列表数据 */
 async function getNextDataByAllPage(parentItem, opt = {}) {
-  const res = await apiGetList({
+  const res = await apigetWidgets({
     id: parentItem.id,
     page_num: 1,
     page_size: 8,

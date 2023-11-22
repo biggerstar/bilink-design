@@ -21,8 +21,8 @@
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
-import {apiGetList} from "@/api/getList";
-import {getElement4EventTarget} from "@/utils/tool";
+import {apigetWidgets} from "@/api/getWidgets";
+import {handleImageError} from '@/utils/method'
 
 const props = defineProps({
   id: {
@@ -53,7 +53,7 @@ watch(props, () => {
 function loadNewRecordList() {
   if (!curUseId.value || isLoading.value || pageEnd) return
   isLoading.value = true
-  apiGetList({
+  apigetWidgets({
     id: curUseId.value,
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,
@@ -67,14 +67,6 @@ function loadNewRecordList() {
   })
 }
 
-/** 图片加载失败从dom中移除掉 */
-function handleImageError(ev) {
-  const target = getElement4EventTarget(ev)
-  if (target && target.nodeName.toLowerCase() === 'img') {
-    const parentNode = target?.parentElement
-    if (parentNode) parentNode.remove()
-  }
-}
 
 </script>
 

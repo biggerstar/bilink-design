@@ -24,6 +24,7 @@ export const widgetsMap = {
   'group': WGroup,
   'text': WText,
   'image': WImage,
+  'svg': WImage,
   /* TODO 开发额外组件功能的 detail 配置页 */
   'mask': WImage,
   'ninePatch': WImage,

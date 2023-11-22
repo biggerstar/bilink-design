@@ -46,6 +46,7 @@
         <div
           class="overflow-hidden cursor-pointer"
           v-for="(childItem,index) in materialDetail"
+          @click="loadNewPoster(childItem)"
           :key="childItem.title + index.toString()"
         >
           <img
@@ -56,7 +57,7 @@
             :src="`${childItem.preview.url}`"
             :alt="childItem.title"
             data-grid-maintained-target="true"
-            @error="handleImageError"
+            @error="handleImageError($event)"
           />
         </div>
       </justified-infinite-grid>
@@ -66,10 +67,12 @@
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
-import {apiGetList} from "@/api/getList";
-import {getElement4EventTarget} from "@/utils/tool";
+import {apigetWidgets} from "@/api/getWidgets";
 import {JustifiedInfiniteGrid} from "@egjs/vue3-infinitegrid";
 import {QuestionCircleFilled} from '@ant-design/icons-vue';
+import {editorStore} from "@/store/editor";
+import {apiGetDetail} from "@/api/getDetail";
+import {handleImageError} from '@/utils/method'
 
 const props = defineProps({
   id: {
@@ -82,6 +85,8 @@ const props = defineProps({
 const MATERIAL_PAGE_SIZE = 40   // 每次请求个数
 const isLoading = ref(false)
 const openModal = ref(false)
+const selectedTemplate = ref()
+const selectedPosterId = ref()
 const materialDetail = ref([])
 let curFetchPage = 1   // 记录当前加载的页数
 let beforeId
@@ -102,7 +107,7 @@ watch(props, () => {
 function loadNewRecordList() {
   if (!curUseId.value || isLoading.value || pageEnd) return
   isLoading.value = true
-  apiGetList({
+  apigetWidgets({
     id: curUseId.value,
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,
@@ -112,24 +117,35 @@ function loadNewRecordList() {
     if (res.code !== 200) return
     materialDetail.value = materialDetail.value.concat(res.data)
   }).finally(() => {
-    setTimeout(() => isLoading.value = false, 100)
+    setTimeout(() => isLoading.value = false, 800)
   })
 }
 
-/** 图片加载失败从dom中移除掉 */
-function handleImageError(ev) {
-  const target = getElement4EventTarget(ev)
-  if (target && target.nodeName.toLowerCase() === 'img') {
-    const parentNode = target?.parentElement
-    if (parentNode) parentNode.remove()
+
+async function loadNewPoster(childItem) {
+  const posterId = childItem?.id
+  if (!posterId) return
+  const res = await apiGetDetail({
+    id: posterId
+  })
+  if (res && res.code === 200) {
+    openModal.value = true
+    selectedTemplate.value = res.data
+    selectedPosterId.value = posterId
   }
 }
 
 function addToNewProject() {
-  openModal.value = false
+  replaceProject()
+  // TODO  添加成新页面而不是直接替换
+
 }
 
-function replaceProject() {
+async function replaceProject() {
+  selectedTemplate.value && editorStore.bus.emit('loadTemplate', {
+    id: selectedPosterId.value,
+    data: selectedTemplate.value
+  })
   openModal.value = false
 }
 
@@ -138,3 +154,8 @@ function replaceProject() {
 
 <style scoped>
 </style>
+
+
+
+
+

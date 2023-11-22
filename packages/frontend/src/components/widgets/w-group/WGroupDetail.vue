@@ -1,5 +1,4 @@
 <template>
-  <hr class="hr-line">
   <card title="对齐" font-size="0.9rem">
     <content-box class="text-edit-style-setting-item w-full button-h-40px flex-1">
       <CheckBox v-if="alignList" type="radio" :data="alignList" @changed="alignStatusChanged">
@@ -23,7 +22,6 @@
 import {editorStore} from "@/store/editor";
 import {WIDGETS_NAMES} from "@/constant";
 import {onMounted, ref} from "vue";
-import WGroupControl from "@/components/widgets/w-group/WGroupControl.vue";
 
 const alignList = ref()
 

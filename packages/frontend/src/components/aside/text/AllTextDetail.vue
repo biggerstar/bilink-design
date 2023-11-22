@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import {ref, watch} from "vue";
-import {apiGetList} from "@/api/getList";
+import {apigetWidgets} from "@/api/getWidgets";
 
 const props = defineProps({
   loadNewData: {   // 只要变化就读取新数据，不够优雅，后面通过mitt 或者 将该组件单独 作为展示组件 来做
@@ -102,7 +102,7 @@ async function getNextDataList(nextHttpList) {
 
 /** 获取某个分类的列表数据 */
 async function getNextDataByAllPage(parentItem, opt = {}) {
-  const res = await apiGetList({
+  const res = await apigetWidgets({
     id: parentItem.id,
     page_num: 1,
     page_size: 3,

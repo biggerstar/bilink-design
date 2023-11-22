@@ -8,6 +8,7 @@ import {
   WIDGET_SELECTOR,
   WIDGETS_NAMES
 } from "@/constant";
+import {getElement4EventTarget} from "@/utils/tool";
 
 /**
  * 某种鼠标响应事件时，计算鼠标指针在在目标元素内的百分比位置
@@ -134,6 +135,15 @@ export function selectAllText4Element(el: HTMLElement) {
   }
 }
 
+/** 图片加载失败从dom中移除掉 */
+export function handleImageError(ev) {
+  const target = getElement4EventTarget(ev)
+  if (target && target.nodeName.toLowerCase() === 'img') {
+    const parentNode = target?.parentElement
+    if (parentNode) parentNode.remove()
+  }
+}
+
 /**
  * 后面可以单独拎出来当工具用
  * 操作 css transform 的 api，方便更新，删除 transform 的值
@@ -223,9 +233,9 @@ export function genCascaderTree(sourceData: object[]) {
 }
 
 /** 生成指定步长的数组 */
-export function generateStepNumberArray(start, end, step) {
+export function generateStepNumberArray(start: number, end: number, step: number) {
+  if (!step) return []
   const result = [];
-  if (step === 0) throw new Error('步长不能为零')
   const increment = start < end ? 1 : -1;
   for (let i = start; increment * i <= increment * end; i += step) {
     result.push(i);

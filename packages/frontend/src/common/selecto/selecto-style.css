@@ -1,0 +1,5 @@
+div.selecto-selection {
+  z-index: 300 !important;
+  border:#4D7CFF solid 3px;
+  background-color: rgba(108, 167, 250, 0.45);
+}

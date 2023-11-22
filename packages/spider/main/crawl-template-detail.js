@@ -32,8 +32,13 @@ export async function crawlTemplateDetail(id) {
   return new Promise((resolve, reject) => {
     fetch(`https://www.gaoding.com/api/v3/cp/contents/${id}/distribution-infos?id=${id}&with_content=false`, options)
       .then(res => res.json())
-      .then(async (res) => res && (await fetch(res.content_url)).json())
-      .then(res => resolve(res))
+      .then(async (res) => {
+        if (!res) return
+        if (res.hasOwnProperty('content_url')) {
+          const jsonResult = (await fetch(res.content_url)).json()
+          resolve(jsonResult)
+        } else resolve()
+      })
       .catch(reject);
   })
 }

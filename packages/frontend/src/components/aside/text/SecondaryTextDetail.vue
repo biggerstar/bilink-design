@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from 'vue'
-import {apiGetList} from "@/api/getList";
+import {apigetWidgets} from "@/api/getWidgets";
 import {getElement4EventTarget} from "@/utils/tool";
 
 const props = defineProps({
@@ -52,7 +52,7 @@ watch(props, () => {
 function loadNewRecordList() {
   if (!curUseId.value || isLoading.value || pageEnd) return
   isLoading.value = true
-  apiGetList({
+  apigetWidgets({
     id: curUseId.value,
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,

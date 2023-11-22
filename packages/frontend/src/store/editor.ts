@@ -19,6 +19,7 @@ import {apiGetFonts} from "@/api/getFonts";
 import {SelectoManager} from "@/common/selecto/selecto";
 import {isNil} from "lodash-es";
 import {v4 as uuid4} from "uuid";
+import {Emitter} from 'mitt'
 
 /**
  * 设计页面(/design) 的store
@@ -29,6 +30,7 @@ class EditorStore {
   public moveableManager: MoveableManager
   public selectoManager: SelectoManager
   public lineGuides: LineGuides
+  public bus: Emitter<any>
   /** 所有字体 */
   public allFont: object[] = []
 
@@ -90,6 +92,7 @@ class EditorStore {
     if (effectDom) currentWidget[DESIGN_SET_STATE](activeInfo)
   }
 
+  public mainTarget: HTMLElement  // #main
   public designCanvasTarget: HTMLElement  // #design-canvas
   public editorAreaBoxTarget: HTMLElement  // #editor-area-box
   public editorAreaTarget: HTMLElement  // #editor-area
@@ -99,6 +102,7 @@ class EditorStore {
 
   /** 设置当前画布缩放级别，若传入为空或者null，则表示计算当前画布的最佳缩放比例，需要在首次加载画板功能时调用一次将画布设置到最佳尺寸  */
   public updateCanvasScale(scale: number | null | void = null) {
+    if (!this.designCanvasTarget) return
     const bodyStyle = document.body.style
     if (!scale || isNumber(scale) && scale <= 0) {
       const canvasInfo = this.currentTemplate.layouts[0]
@@ -117,7 +121,7 @@ class EditorStore {
    * */
   public updateCanvasStyle<T extends Record<any, any>>(canvasInfoOptions: T & Partial<LayoutConfig>, options: { safe?: boolean } = {}): void {
     if (!this.currentTemplate) return
-    if (!this.designCanvasTarget || !this.editorAreaTarget) throw new Error('designCanvas 未挂载')
+    if (!this.designCanvasTarget || !this.editorAreaTarget) return
     const canvasInfo: LayoutConfig = <any>canvasInfoOptions
     let {width, height, backgroundColor, backgroundImage} = canvasInfo
     const bodyStyle = document.body.style
@@ -157,7 +161,6 @@ class EditorStore {
         this.allFont.push(fontData)
       }
     }
-
     return loadFont({
       url: fontData.content.woff,
       family: fontData.content.family,
@@ -216,39 +219,36 @@ class EditorStore {
     /* --------------------下面则是通过 selecto 进行选择后的合并过程 ------------------------------*/
     const childrenOptions = editorStore.selectoManager.selected.map(node => node[DESIGN_OPTIONS])
     if (!childrenOptions.length) return
+    const minLeft = Math.min.apply(null, childrenOptions.map(config => config.left))
+    const minTop = Math.min.apply(null, childrenOptions.map(config => config.top))
+
     const newWidgetConfig = {
       uuid: uuid4(),
       type: 'group',
       elements: childrenOptions,
+      left: minLeft,
+      top: minTop
     }
-
+    childrenOptions.forEach(newConfig => {
+      newConfig.left -= minLeft
+      newConfig.top -= minTop
+    })
     this.getCurrentTemplateLayout().elements.push(<LayoutWidget>newWidgetConfig)
     const allWidgets = this.getAllWidget() // 只会操控首层的组件进行成组
     const remove_uuids = newWidgetConfig.elements.map(config => config.uuid)
     // console.log(remove_uuids)
-
     allWidgets.forEach((node: HTMLElement) => {
       const uuid = node.dataset['uuid']
       if (!uuid) return
       if (remove_uuids.includes(uuid)) node.remove()
     })
-
     nextTick(() => {
       const allWidgets = this.getAllWidget()
       const newGroupElement = allWidgets.find((node: HTMLElement) => node.dataset['uuid'] && node.dataset['uuid'] === newWidgetConfig.uuid)
-      console.log(newGroupElement)
-      if (!newGroupElement) return
-      const cssTransformApi = new CssTransformApi()
-      cssTransformApi.load(newGroupElement.style.transform)
-      const pos = cssTransformApi.get('translate')
-      if (pos) {
-        const [groupX = 0, groupY = 0] = pos
-        childrenOptions.forEach(newConfig => {
-          newConfig.left -= parseFloat(String(groupX))
-          newConfig.top -= parseFloat(String(groupY))
-        })
+      if (newGroupElement) {
+        isFunction(newGroupElement[DESIGN_GROUP_UPDATE_RECT]) && newGroupElement[DESIGN_GROUP_UPDATE_RECT]()   // 让子组件填满合并组的容器
+        this.moveableManager.moveable.target = newGroupElement
       }
-      this.moveableManager.moveable.target = newGroupElement
     }).then()
   }
 
@@ -280,6 +280,7 @@ class EditorStore {
       const vueModelElementWidgetConfig = currentLayouts.elements
       const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === groupConfig)
       vueModelElementWidgetConfig.splice(curGroupIndex, 1)
+      // TODO  错误在于 分离后点击
       nextTick(() => {
         clipElements.forEach(newConfig => {
           newConfig.left += parseFloat(String(groupX))
