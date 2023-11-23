@@ -205,7 +205,7 @@ class EditorStore {
     if (isShow) {
       if (!this.designCanvasTarget) return
       this.lineGuides = new LineGuides()
-      this.lineGuides.mount(this.designCanvasTarget)
+      this.lineGuides.mount(this.mainTarget)
     } else {
       this.lineGuides && this.lineGuides.destroy()
       this.lineGuides = void 0

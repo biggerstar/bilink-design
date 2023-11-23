@@ -22,7 +22,6 @@ export class LineGuides {
     this.__running = true
     if (typeof container === 'string') container = document.querySelector<HTMLElement>(container)
     if (!container) container = document.body
-
     const baseConfig = <NewGuidesOptions>{
       backgroundColor: '#f9f9fa',
       lineColor: '#bec2c7',
