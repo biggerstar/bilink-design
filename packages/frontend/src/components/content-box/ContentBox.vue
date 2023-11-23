@@ -9,7 +9,7 @@
 
 <style scoped>
 .content-box {
-  background-color: var(--color-gray-300);
+  background-color: var(--color-gray-200);
   word-break: break-word;
   border-radius: 8px;
   font-weight: 400;

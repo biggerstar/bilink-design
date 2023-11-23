@@ -14,10 +14,12 @@ export async function apiGetPageConfig() {
           {
             text: '下载',
             icon: 'icon-xiazaidaoru',
+            handler: 'download'
           },
           {
             text: '分享',
             icon: 'icon-fenxiang',
+            handler: 'shared'
           },
           {
             text: '敬请期待',

@@ -3,28 +3,7 @@
   <div class="header not-user-select min-w-[240px]">
     <div class="header-left" v-if="pageConfig">{{ pageConfig.brand }}</div>
     <div class="header-right">
-      <el-button-group>
-        <el-button color="#2154F4" class="w-8/12" size="large" type="primary" @click="saveProject">保存</el-button>
-        <a-popover trigger="click" placement="bottomRight">
-          <template #content>
-            <div class="w-full h-[45px] font-bold text-[1.04rem] p-1">更多操作</div>
-            <div style="width: 360px; height: 400px" class="not-user-select">
-              <div class="w-full h-auto flex flex-wrap justify-evenly">
-                <div
-                  class="w-14 h-14 rounded-lg cursor-pointer"
-                  v-for="(item,index) in moreOperationList"
-                  :key="index + item.text">
-                  <ContentBox>
-                    <div class="iconfont" :class="item.icon"></div>
-                  </ContentBox>
-                  <div class="text-center mt-1">{{ item.text }}</div>
-                </div>
-              </div>
-            </div>
-          </template>
-          <el-button color="#2154F4" class="iconfont icon-androidgengduo w-1/6" size="large" type="primary"></el-button>
-        </a-popover>
-      </el-button-group>
+      <HeaderRight v-if="pageConfig"></HeaderRight>
     </div>
   </div>
   <div class="work-area not-user-select">
@@ -115,15 +94,14 @@ import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {editorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
 import {asideTagMap, widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
-import {notification} from 'ant-design-vue';
 import {apiGetFonts} from "@/api/getFonts";
 import {apiGetPageConfig} from "@/api/getPageConfig";
-import ContentBox from '@/components/content-box/ContentBox.vue'
 import {getWidgetsName} from "@/utils/method";
 import {defaultSelectOptions, SelectoManager} from "@/common/selecto/selecto";
 import {WIDGETS_NAMES} from "@/constant";
 import {apiGetDetail} from "@/api/getDetail";
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
+import HeaderRight from "@/components/header/HeaderRight.vue";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
@@ -131,7 +109,6 @@ const activeTagName = shallowRef<string>()
 const curDetailComp = shallowRef()  // 当前编辑区域点击小组件时对应的小组件配置页
 const currentAsideTagComp = shallowRef()   // 当前左侧标签展开页使用的组件
 const currentActiveAsideTagConfig = shallowRef()   // 当前左侧标签展开页使用的配置
-const moreOperationList = ref()
 const showGroupControl = ref(false)
 const showDesignCanvas = ref(false)
 const showNotFoundTemplate = ref(false)
@@ -147,7 +124,7 @@ setTimeout(() => {
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
-function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material') {
+function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material' = "") {
   activeTagName.value = activeTagName.value !== name ? name : void 0
   currentAsideTagComp.value = name ? asideTagMap[activeTagName.value] : void 0
   pageConfig.value
@@ -215,10 +192,10 @@ function loadEditorTemplate(templateData: { id: string, data: Record<any, any> }
       editorStore.dragWidgetManager.start()
       editorStore.dragWidgetManager.bus.on("drop", (material) => {
         editorStore.addMaterial(<any>material)
-        editorStore.moveableManager.moveable.target=[]
-        editorStore.selectoManager.selected=[]
+        editorStore.moveableManager.moveable.target = []
+        editorStore.selectoManager.selected = []
       })
-      showTagPage('text')
+      // showTagPage('text')
     }
   }, 100)
 }
@@ -233,7 +210,6 @@ onMounted(async () => {
   apiGetPageConfig().then(res => {
     if (res.code !== 200) return
     pageConfig.value = editorStore.pageConfig = res.data
-    moreOperationList.value = editorStore.pageConfig.header.moreOperation
   })
   const searchParams = new URLSearchParams(location.search)
   const curUrlSpecifyId = searchParams.get('id')
@@ -254,20 +230,6 @@ function createListenEventBus() {
     loadEditorTemplate(template)
     console.log(template)
   })
-}
-
-/*-----------------------------------header start-------------------------------------*/
-const openNotification = () => {
-  notification.open({
-    message: '保存成功',
-    description: '🎉🎉 您的项目已经保存成功啦!',
-    duration: 1.5,
-  });
-};
-
-function saveProject() {  /* 保存当前工程 */
-  sessionStorage.setItem('layout', JSON.stringify(editorStore.currentTemplate))
-  openNotification()
 }
 
 onUnmounted(() => {
