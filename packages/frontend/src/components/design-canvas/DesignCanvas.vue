@@ -26,7 +26,7 @@ onMounted(() => {
   editorStore.designCanvasTarget = designCanvas.value
   editorStore.editorAreaBoxTarget = editorAreaBox.value
   editorStore.editorAreaTarget = editorArea.value
-  const templateConfig = editorStore.currentTemplate.layouts[0]
+  const templateConfig = editorStore.getCurrentTemplateLayout()
   editorStore.displayLineGuides(true)
   editorStore.updateCanvasStyle(templateConfig)
   editorStore.updateCanvasScale()

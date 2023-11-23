@@ -1,4 +1,4 @@
-export {router as getResource} from './getResource.ts'
-export {router as getWidgets} from './getWidgets.ts'
-export {router as getFonts} from './getFonts.ts'
-export {router as getDetail} from './getDetail.ts'
+export {router as resource} from './resource.ts'
+export {router as widgets} from './widgets.ts'
+export {router as fonts} from './fonts.ts'
+export {router as detail} from './detail.ts'

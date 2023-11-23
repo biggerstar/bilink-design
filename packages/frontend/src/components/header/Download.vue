@@ -35,8 +35,11 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-
-const emits = defineEmits(['handler'])
+import {DESIGN_AREA_BOUNDARY_SELECTOR} from "@/constant";
+import {notification} from "ant-design-vue";
+import {sleep} from "../../../../common/tool/tool";
+import html2canvas from "html2canvas";
+import {jsPDF} from "jspdf";
 
 const CONFIG = {
   workType: {
@@ -95,7 +98,7 @@ function doDownload() {
     workType: config.value.workType.value,
     workSize: config.value.workSize.value,
   }
-  emits('handler', downloadInfo)
+  download(downloadInfo)
 }
 
 onMounted(() => {
@@ -103,10 +106,54 @@ onMounted(() => {
   config.value.workSize.value = config.value.workSize.options[2].value
 })
 
+/**
+ * 进行导出下载成图片或者pdf  TODO 监控转换进度
+ * */
+async function download(downloadInfo: { workType: string, workSize: number }) {
+  const editorArea = document.querySelector(DESIGN_AREA_BOUNDARY_SELECTOR)
+  if (!editorArea) throw new Error('未在dom中找到画板')
+  notification.open({
+    message: '开始下载',
+    description: '🎉🎉 您的项目已经开始下载喽!,耐心等一等哦',
+    duration: 3,
+  });
+  await sleep(600)
+  html2canvas(<HTMLElement>editorArea, {
+    logging: false,
+    useCORS: true,
+    allowTaint: false,
+    backgroundColor: null,
+    foreignObjectRendering: false,
+    scale: downloadInfo.workSize,
+  }).then(canvas => {
+    // console.log(canvas)
+    // document.body.appendChild(canvas)
+    const suffix = downloadInfo.workType.split('/').pop()
+    const base64Image = canvas.toDataURL(downloadInfo.workType)
+    // console.log(suffix)
+    if (downloadInfo.workType === 'pdf') {  // 下载pdf
+      const doc = new jsPDF();
+      const imageWidth = canvas.width;
+      const imageHeight = canvas.height;
+      const scale = Math.min(doc.internal.pageSize.width / imageWidth, doc.internal.pageSize.height / imageHeight);
+      const pdfWidth = imageWidth * scale;
+      const pdfHeight = imageHeight * scale;
+      const x = (doc.internal.pageSize.width - pdfWidth) / 2;
+      const y = (doc.internal.pageSize.height - pdfHeight) / 2;
+
+      doc.addImage(base64Image, 'JPEG', x, y, pdfWidth, pdfHeight);
+      doc.save("exported_image.pdf");
+    } else {  // 默认下载图片
+      const downloadLink = document.createElement('a');
+      downloadLink.href = base64Image;
+      downloadLink.download = `exported_image.${suffix}`;
+      downloadLink.click();
+    }
+  })
+}
 </script>
 
 <style scoped>
-
 </style>
 
 

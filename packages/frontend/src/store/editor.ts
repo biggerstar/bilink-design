@@ -21,7 +21,8 @@ import {isNil} from "lodash-es";
 import {v4 as uuid4} from "uuid";
 import {Emitter} from 'mitt'
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
-import {apiGetDetail} from "@/api/getDetail";
+import {apiGetDetail, apiPostDetail} from "@/api/getDetail";
+import {notification} from "ant-design-vue";
 
 /**
  * 设计页面(/design) 的store
@@ -95,7 +96,9 @@ class EditorStore {
     const currentWidget = editorStore.moveableManager.currentWidget
     if (!currentWidget) return
     /* 通过activeOptions引用更新在 currentTemplate.items 中的配置  */
-    deepmerge(this.getCurrentOptions(), activeInfo, options)
+    const currentOptions = this.getCurrentOptions()
+    // console.log(currentOptions)
+    deepmerge(currentOptions, activeInfo, options)
     this.moveableManager?.moveable?.updateRect()
     this.lineGuides?.updateGuidesStyle?.()
     if (effectDom) currentWidget[DESIGN_SET_STATE](activeInfo)
@@ -114,7 +117,7 @@ class EditorStore {
     if (!this.designCanvasTarget) return
     const bodyStyle = document.body.style
     if (!scale || isNumber(scale) && scale <= 0) {
-      const canvasInfo = this.currentTemplate.layouts[0]
+      const canvasInfo = this.getCurrentTemplateLayout()
       const DC_Rect = this.designCanvasTarget.getBoundingClientRect()
       scale = Number(Math.min((DC_Rect.width - 60 * 2) / canvasInfo.width, (DC_Rect.height - 60 * 2) / canvasInfo.height).toFixed(2))       // 获取最佳比例
     }
@@ -141,7 +144,7 @@ class EditorStore {
     has('backgroundImage') && (this.editorAreaTarget.style.backgroundImage = `url(${backgroundImage})`)
     this.moveableManager?.moveable?.updateRect?.()
     this.lineGuides?.updateGuidesStyle?.()
-    deepmerge(this.currentTemplate.layouts, canvasInfo, options)
+    deepmerge(this.getCurrentTemplateLayout(), canvasInfo, options)
   }
 
   /**
@@ -404,6 +407,53 @@ class EditorStore {
       material.left = currentLayout.width / 2 - sizeInfo.width / 2
       material.top = currentLayout.height / 2 - sizeInfo.height / 2
       currentLayout.elements.push(<any>res.data.model)
+    }
+  }
+
+  /**
+   * 保存当前工程到服务器
+   * @param type push表示新id 的url会添加到历史记录中， replace表示不会添加到历史记录中
+   * */
+  public async saveProject(type: 'push' | 'replace' = 'push') {  /* 保存当前工程 */
+    const saveNotification = (mode: 'success' | 'error', msg?: string) => {
+      if (!mode) return
+      if (mode === 'success') {
+        notification.open({
+          message: '保存成功',
+          description: msg || '🎉🎉 您的项目已经保存成功啦!',
+          duration: 1.5,
+        });
+      } else {
+        notification.open({
+          message: '保存失败',
+          description: msg || '哦吼，保存失败了',
+          duration: 1.5,
+        });
+      }
+    };
+    const currentTemplate = toRaw(editorStore.currentTemplate)
+    if (!currentTemplate) saveNotification("error", '哦吼, 系统错误,没找到本地模板数据')
+    const reqBody: any = {
+      uid: 123456,   // 先默认用户，后面有加入用户系统的时候在进行区分
+      data: currentTemplate
+    }
+    console.log(currentTemplate)
+    const urls = new URL(location.href)
+    const curUrlId = urls.searchParams.get('id')
+    if (curUrlId) reqBody.id = curUrlId
+    const res = await apiPostDetail(reqBody)
+    if (res && res.code === 200) {
+      const resData = res.data
+      if (resData && resData.id) {
+        if (curUrlId !== resData.id.toString()) {   // 如果id不一样才进行地址栏url，相同的话不会改变
+          urls.searchParams.set('id', resData.id)
+          if (type === 'push') history.replaceState(history.state, '', urls.href)  // 将官方默认资源id转成用户当前设计的自有模板id
+          else history.pushState(history.state, '', urls.href)
+        }
+      }
+      saveNotification("success")
+    } else {
+      saveNotification("error")
     }
   }
 }

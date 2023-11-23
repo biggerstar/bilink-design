@@ -4,6 +4,8 @@ import ModelResourceTree from "./model/ResourceTree.js";
 import ModelMaterialMapping from "./model/ModelMaterialMapping.js";
 import ModelAllMaterial from "./model/ModelAllMaterial.js";
 import ModelFonts from "./model/Fonts.js";
+import AllUserDesign from "./model/AllUserDesign.js";
+import sequelize from "./sequelize.js";
 
 export async function init_table() {
   const isDev = process.env.ENV === 'development'
@@ -19,6 +21,8 @@ export async function init_table() {
   await ModelMaterialMapping.sync()
   await ModelAllMaterial.sync()
   await ModelFonts.sync()
+  await AllUserDesign.sync()
+  await sequelize.query('ALTER TABLE `all-user-designs` AUTO_INCREMENT = 2600000000');   // 设置自增用户设计图表起始编号
 }
 
-
+if(process.env.INIT_TABLE === 'true') await init_table()
