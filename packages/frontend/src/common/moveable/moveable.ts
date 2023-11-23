@@ -1,14 +1,4 @@
-import Moveable, {
-  MoveableOptions,
-  OnDrag,
-  OnDragEnd,
-  OnResize,
-  OnResizeEnd,
-  OnRotate,
-  OnRotateEnd,
-  OnScale,
-  OnScaleEnd,
-} from "moveable";
+import Moveable, {MoveableOptions, OnDrag, OnResize, OnResizeEnd, OnRotate, OnScale,} from "moveable";
 import createNativeEventHookList from "@/common/moveable/native-event-hook-list";
 import {
   CssTransformApi,
@@ -17,7 +7,8 @@ import {
   isWidget,
   parseWidget4DomChain,
   parseWidgetsInfo4DomChain,
-  toFixed
+  toFixed,
+  toMatrixString
 } from "@/utils/method";
 import {editorStore} from "@/store/editor";
 import './moveable-style.css'
@@ -30,7 +21,7 @@ import {
   WIDGET_SELECTOR
 } from "@/constant";
 import {LayoutWidget} from "@type/layout";
-import {setDirection} from "@/common/method/set-direction";
+import {pick} from "lodash-es";
 
 const guideLines = [
   WIDGET_SELECTOR,
@@ -79,7 +70,6 @@ export class MoveableManager {
   public currentElement: HTMLElement | void   // 当前聚焦的元素
   public currentGroupElement: HTMLElement | void   // 当前聚焦的元素
   public resizeObserver: ResizeObserver | null
-  public __temp__: Record<any, any> = {}
 
   public get currentWidget(): HTMLElement | void {   // 获取当前活跃的组件
     return parseWidget4DomChain(<any>this.currentElement)
@@ -106,33 +96,42 @@ export class MoveableManager {
     this.moveable = moveable
     this.groupMoveable = GroupMoveable
 
-    /** 将 transform 字符串转换成适合组件的配置的对象 */
-    function parseTransform(transform: string) {
-      const cssTransformApi = new CssTransformApi()
-      cssTransformApi.load(transform)
-      const styleObj = cssTransformApi.getAll()
-      const transInfo = {}
-      for (const name in styleObj) {
-        if (['scale', 'rotate'].includes(name)) transInfo[name] = toFixed(styleObj[name][0], 3)
-        else if (name === 'translate') transInfo['location'] = styleObj[name].map(val => toFixed(val, 3))
+
+    /**
+     * 自动生成合适的组件位置和变换大小，并同步到当前使用的模板配置中
+     * */
+    function syncMatrixTransform(transform: string, target: Element) {
+      let matrix: DOMMatrix = new (WebKitCSSMatrix || DOMMatrix)(transform)
+      const updateObj: Record<any, any> = {
+        transform: {
+          tx: 0,   // translateX 和 Y
+          ty: 0,
+          ...pick(matrix, ['a', 'b', 'c', 'd'])
+        }
       }
-      return transInfo
+      const cssTransformApi = new CssTransformApi()
+      cssTransformApi
+        .load(transform)
+        .remove("rotate")
+        .remove("scale")
+        .set("matrix", toMatrixString(updateObj.transform).join(','))   // 将 rotate，scale 通过 matrix 替代
+      const nowTranslate = cssTransformApi.get("translate")
+      if (nowTranslate && nowTranslate.length) {
+        updateObj.left = parseFloat(nowTranslate[0])
+        updateObj.top = parseFloat(nowTranslate[1])
+      }
+      // console.log(updateObj)
+      editorStore.updateActiveWidgetsState(updateObj, {effectDom: false, widgetEl: target})
+      return cssTransformApi.transform
     }
 
     this.resizeObserver = new ResizeObserver(() => this.moveable.updateRect())
     this.resizeObserver.observe(container)
 
-    function syncTransformConfig(transform: string) {
-      transform && editorStore.updateActiveWidgetsState(parseTransform(transform), {effectDom: false})
-    }
-
     moveable
-      .on("drag", (ev: OnDrag) => ev.target.style.transform = ev.transform)
-      .on("dragEnd", (ev: OnDragEnd) => syncTransformConfig(ev.lastEvent?.transform))
-      .on("scale", (ev: OnScale) =>/* 缩放时 width, height 不会变 */   ev.target.style.transform = ev.drag.transform)
-      .on("scaleEnd", (ev: OnScaleEnd) => syncTransformConfig(ev.lastEvent?.transform))
-      .on("rotate", (ev: OnRotate) => ev.target.style.transform = ev.drag.transform)
-      .on("rotateEnd", (ev: OnRotateEnd) => syncTransformConfig(ev.lastEvent?.transform))
+      .on("drag", (ev: OnDrag) => ev.target.style.transform = syncMatrixTransform(ev.transform, ev.target))
+      .on("scale", (ev: OnScale) => ev.target.style.transform = syncMatrixTransform(ev.transform, ev.target)) /* 缩放时 width, height 不会变 */
+      .on("rotate", (ev: OnRotate) => ev.target.style.transform = syncMatrixTransform(ev.transform, ev.target))
       .on("resize", (ev: OnResize) => {
         ev.target.style.transform = ev.transform
         ev.target.style.width = `${ev.width}px`;
@@ -141,7 +140,7 @@ export class MoveableManager {
       .on("resizeEnd", (ev: OnResizeEnd) => {
         const lastEvent: OnResize = ev.lastEvent
         if (!lastEvent) return
-        syncTransformConfig(lastEvent.transform)
+        syncMatrixTransform(lastEvent.transform, ev.target)
         editorStore.updateActiveWidgetsState({
           width: toFixed(lastEvent.width, 3),
           height: toFixed(lastEvent.height, 3),
@@ -269,6 +268,7 @@ export class MoveableManager {
   }
 
   public mouseup(el: HTMLElement) {
+    // console.log('draggable', this.moveable.draggable, 'rotatable', this.moveable.rotatable, 'resizable', this.moveable.resizable);
     const widgetsEl = parseWidget4DomChain(el)
     const inOuterByGroup = widgetsEl && !inGroup(widgetsEl) && !editorStore.allowInGroupMovement  // 是否是在最外层的合并组,鼠标只要抬起就为组件或者合并组的外框加上操控按钮和框选线
     if (inOuterByGroup || editorStore.allowInGroupMovement) {
@@ -278,6 +278,11 @@ export class MoveableManager {
         renderDirections: MOVEABLE_ALL_DIRECTION
       })
     }
+    this.moveable.setState({  // TODO 暂时都允许所有调整，后面根据后端指定操控方式加载
+      draggable: true,
+      resizable: true,
+      rotatable: true,
+    })
   }
 
   /**

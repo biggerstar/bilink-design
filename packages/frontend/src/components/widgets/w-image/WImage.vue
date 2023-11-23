@@ -7,7 +7,7 @@
     ref="W_Widget"
   >
     <div class="edit-widget-area" spellcheck="false">
-      <img class="w-full h-auto" ref="imgRef" @load="loading=false" draggable="false" :src="props.config.url"
+      <img class="w-full h-auto bg-no-repeat" ref="imgRef" @load="loading=false" draggable="false" :src="props.config.url"
            :alt="props.config.title">
     </div>
     <slot></slot>

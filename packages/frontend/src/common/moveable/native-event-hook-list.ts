@@ -27,7 +27,7 @@ function updateSelection(ev: MouseEvent) {
   /*-------------------------重新为三种不同目标(group，小组件, hover)添加框选------------------------------*/
   if (moveableManager.currentGroupElement) moveableManager.currentGroupElement.classList.add(WIDGET_GROUP_SELECTION_SELECTOR)
   if (moveableManager.currentWidget) moveableManager.currentWidget.classList.add(WIDGET_SELECTION_SELECTOR_KEEP)
-  if (activeElement) activeElement.classList.add(WIDGET_SELECTION_SELECTOR_KEEP)
+  if (ev.buttons === 0 && activeElement) activeElement.classList.add(WIDGET_SELECTION_SELECTOR_KEEP)
 }
 
 export default function createNativeEventHookList() {
@@ -36,10 +36,12 @@ export default function createNativeEventHookList() {
       name: 'mousedown',
       call: (ev: MouseEvent) => {
         updateSelection(ev)
+        const moveableManager = editorStore.moveableManager
         const downEl = getElement4EventTarget(ev)
+        setDirection(<any>moveableManager.moveable, downEl)
+        moveableManager.moveable.dragStart(ev)
         const widgetsEl = parseWidget4DomChain(downEl)
         if (!widgetsEl) editorStore.removeSeparatingBorder()
-        const moveableManager = editorStore.moveableManager
         if (widgetsEl) moveableManager.mousedown(downEl, ev)
       },
       options: {
@@ -56,15 +58,6 @@ export default function createNativeEventHookList() {
         // if (ev.buttons !== 0) moveableManager.mousemove(overEl)
         updateSelection(ev)
       }, 260),
-    },
-    {
-      name: 'mousemove',
-      call: throttle((ev: MouseEvent) => {
-        const overEl = getElement4EventTarget(ev)
-        if (!overEl) return;
-        if (ev.buttons !== 0) setDirection(<any>editorStore.moveableManager.moveable, overEl)  /*  鼠标未按下才自动跳框 */
-      }, 80),
-      options: true
     },
     {
       name: 'mouseup',

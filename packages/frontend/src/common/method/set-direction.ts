@@ -12,8 +12,9 @@ export function getDirectionType(direction: string): 'scale' | 'resize' | void {
  * 设置当前点击调整框的意图
  * 当前支持判定 'scale' 'resize'
  * */
-export function setDirection(moveable: Moveable, clickTarget: HTMLElement) {
-  const direction = getDirectionType(clickTarget.dataset['direction'])
+export function setDirection(moveable: Moveable, target: HTMLElement) {
+  // console.log(target)
+  const direction = getDirectionType(target.dataset['direction'])
   // console.log(direction)
   if (direction === 'scale') {
     moveable.setState({
@@ -29,7 +30,8 @@ export function setDirection(moveable: Moveable, clickTarget: HTMLElement) {
       scalable: false,
       snappable: false,
     })
-  } else {
+  }
+  else {
     moveable.setState({
       keepRatio: true,
       scalable: true,

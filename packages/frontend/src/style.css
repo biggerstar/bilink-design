@@ -205,17 +205,9 @@ html, body, #app {
   border: var(--widget-box-selection-color) dotted var(--widget-box-selection-line-weight);
 }
 
-.widget-box-selection:active::before {
-  border: none;
-}
-
-.widget-box-selection:focus::before {
-  border: none;
-}
-
 .dragging-material{
   position: fixed;
-  z-index: 1000;
+  z-index: 666;
   pointer-events: none;
 }
 

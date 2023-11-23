@@ -66,7 +66,7 @@ onMounted(() => {
   box-shadow: 0 0 0 10000px #F6F7F9;
   -webkit-box-shadow: 0 0 0 10000px #F6F7F9;
   -moz-box-shadow: 0 0 0 10000px #F6F7F9;
-  z-index: 120;
+  z-index: 20;
   background-color: transparent;
   pointer-events: none;
 }

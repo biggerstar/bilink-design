@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {createSetWidgetsStyle, CssTransformApi} from "@/utils/method";
+import {createSetWidgetsStyle, CssTransformApi, toMatrixString} from "@/utils/method";
 import {isFunction} from "is-what";
 import {editorStore} from "@/store/editor";
 import {DESIGN_OPTIONS, DESIGN_SET_STATE} from "@/constant";
@@ -14,7 +14,7 @@ export function createBaseCssAction() {
   const cssTransformApi = new CssTransformApi()
 
   function updateTransform(name, value) {
-    cssTransformApi.load(element!.style.transform).change(name, value)
+    cssTransformApi.load(element!.style.transform).set(name, value)
     setWidgetsStyle("transform", cssTransformApi.transform)
   }
 
@@ -50,7 +50,8 @@ export function createBaseCssAction() {
     blendMode: (val) => setWidgetsStyle('backgroundBlendMode', val),
     transform: (transform) => {
       // console.log(Object.values(transform).join(','))
-      updateTransform('matrix', Object.values(transform).join(','))
+      // updateTransform('matrix', Object.values(transform).join(','))
+      updateTransform('matrix', toMatrixString(transform).join(','))
     },
     opacity: (val) => setWidgetsStyle("opacity", `${val}`),
     left: (X) => {

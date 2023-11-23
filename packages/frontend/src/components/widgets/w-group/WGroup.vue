@@ -44,6 +44,7 @@ let childrenPosition = []
  *  设置当前位置的宽高和位置，保证group元素完全包裹所有子组件
  * */
 function autoSetWGroupSizeAndOffsetPosition() {
+  return;
   const cssTransformApi = new CssTransformApi()
   cssTransformApi.load(W_Widget.value.style.transform)
   let pos = cssTransformApi.get('translate')
@@ -68,7 +69,7 @@ function autoSetWGroupSizeAndOffsetPosition() {
   // console.log(curW, curH, offsetLeft, offsetTop)
   W_Widget.value.style.width = `${curW}px`
   W_Widget.value.style.height = `${curH}px`
-  cssTransformApi.change('translate', `${offsetLeft + pos[0]}px,${offsetTop + pos[1]}px`)
+  cssTransformApi.set('translate', `${offsetLeft + pos[0]}px,${offsetTop + pos[1]}px`)
   cssTransformApi.apply(W_Widget.value)
   /* 重置group内组件位置并同步到外部配置中 */
   newChildrenPosition.forEach(info => {
@@ -125,7 +126,6 @@ onMounted(async () => {
   W_Widget.value[DESIGN_GROUP_UPDATE_RECT] = autoSetWGroupSizeAndOffsetPosition   // 重新调整组尺寸以包裹所有子组件
   W_Widget.value.addEventListener('mousedown', listenMouseDown)
   W_Widget.value.addEventListener('mouseup', listenMouseup)
-  setTimeout(() => autoSetWGroupSizeAndOffsetPosition(),200)
 })
 onUnmounted(() => {
 

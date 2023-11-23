@@ -144,6 +144,8 @@ export function handleImageError(ev) {
   }
 }
 
+type TransFormFunctionType = 'translate' | 'rotate' | 'translateX' | 'translateY' | 'matrix' | 'scale' | string
+
 /**
  * 后面可以单独拎出来当工具用
  * 操作 css transform 的 api，方便更新，删除 transform 的值
@@ -159,7 +161,7 @@ export class CssTransformApi {
   }
 
   /** 修改 transform 中的函数值 */
-  change(name: string, val: string): this {
+  set(name: TransFormFunctionType, val: string): this {
     this.remove(name)
     this.transform = `${this.transform} ${name}(${val})`
     return this
@@ -178,7 +180,7 @@ export class CssTransformApi {
   }
 
   /** 获取某个函数名的值 */
-  get(name: 'translate' | 'rotate' | 'translateX' | 'translateY' | 'matrix' | 'scale' | string): Array<any> | void {
+  get(name: TransFormFunctionType): Array<any> | void {
     const reg = new RegExp(`${name}\\(([^)]*)\\)`)
     const matchData = this.transform.match(reg)
     if (!matchData || !matchData[1]) return
@@ -186,7 +188,7 @@ export class CssTransformApi {
   }
 
   /** 移除某个函数 */
-  remove(name): this {
+  remove(name: TransFormFunctionType): this {
     const reg = new RegExp(`${name}\\([^)]*\\)`, 'g')
     this.transform = this.transform.replace(reg, '');
     return this
@@ -243,4 +245,9 @@ export function generateStepNumberArray(start: number, end: number, step: number
     cur += step
   }
   return result
+}
+
+/** 将 transform matrix 对象转对应列表，顺序是 a, b, c, d, tx ,ty */
+export function toMatrixString(transformObj: Record<any, any>): any[] {
+  return [transformObj.a || 1, transformObj.b || 0, transformObj.c || 0, transformObj.d || 1, transformObj.tx || 0, transformObj.ty || 0]
 }

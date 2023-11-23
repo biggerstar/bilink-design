@@ -91,12 +91,12 @@ class EditorStore {
    * safe 安全合并，在源对象上若没有的不会被合并, 默认 false
    * effectDom 本次设置的值是否对应到dom并影响dom效果 ， 默认 true
    * */
-  public updateActiveWidgetsState<T extends Record<any, any>>(activeInfo: T, options: { safe?: boolean, effectDom?: boolean } = {}): void {
-    const {effectDom = true} = options
-    const currentWidget = editorStore.moveableManager.currentWidget
+  public updateActiveWidgetsState<T extends Record<any, any>>(activeInfo: T, options: { safe?: boolean, effectDom?: boolean, widgetEl?: Element } = {}): void {
+    const {effectDom = true, widgetEl} = options
+    const currentWidget = widgetEl || editorStore.moveableManager.currentWidget
     if (!currentWidget) return
     /* 通过activeOptions引用更新在 currentTemplate.items 中的配置  */
-    const currentOptions = this.getCurrentOptions()
+    const currentOptions = currentWidget[DESIGN_OPTIONS]
     // console.log(currentOptions)
     deepmerge(currentOptions, activeInfo, options)
     this.moveableManager?.moveable?.updateRect()
