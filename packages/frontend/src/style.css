@@ -165,9 +165,6 @@ html, body, #app {
   box-sizing: border-box;
 }
 
-/*.widget-group-box-selection{*/
-/*  z-index: 8;*/
-/*}*/
 .widget-box-selection:hover::before {
   content: '';
   position: absolute;

@@ -30,6 +30,7 @@ import {
   WIDGET_SELECTOR
 } from "@/constant";
 import {LayoutWidget} from "@type/layout";
+import {setDirection} from "@/common/method/set-direction";
 
 const guideLines = [
   WIDGET_SELECTOR,
@@ -239,8 +240,6 @@ export class MoveableManager {
     if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
     this.moveable.setState({  // 先定义状态，最终状态由鼠标抬起后决定( mouseup, click )
       draggable: true,
-      resizable: false,
-      scalable: false,
       rotatable: false,
       renderDirections: [],
     })

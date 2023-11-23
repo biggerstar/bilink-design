@@ -16,12 +16,8 @@
     "@ant-design/icons-vue": "^7.0.1",
     "@biggerstar/deepmerge": "^1.0.2",
     "@egjs/infinitegrid": "^4.10.1",
-    "@egjs/vue-grid": "^1.14.2",
-    "@egjs/vue-infinitegrid": "^4.10.1",
     "@egjs/vue3-infinitegrid": "^4.10.1",
     "@scena/guides": "^0.29.2",
-    "@types/cors": "^2.8.16",
-    "@types/uuid": "^9.0.7",
     "ant-design-vue": "~4.0.6",
     "axios": "^1.6.2",
     "default-passive-events": "^2.0.0",
@@ -42,6 +38,8 @@
     "vue3-guides": "^0.12.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.16",
+    "@types/uuid": "^9.0.7",
     "@types/cookie-parser": "^1.4.6",
     "@types/express": "^4.17.21",
     "@types/http-errors": "^2.0.4",

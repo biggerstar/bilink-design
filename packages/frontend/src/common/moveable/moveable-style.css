@@ -60,3 +60,18 @@
 /*.moveable-line .moveable-guideline .moveable-vertical.moveable-target.moveable-bold.moveable-snap {*/
 /*  width: 1px;*/
 /*}*/
+
+.rCS1w3zcxh .moveable-rotation .moveable-rotation-control {
+  width: 24px;
+  height: 24px;
+}
+
+div.moveable-control.moveable-rotation-control {
+  border: none;
+  background-image: url('./rotation-icon.svg') !important;
+  background-repeat: no-repeat !important;
+  background-size: 100% 100%;
+  display: block;
+  margin-left: -11px;
+  margin-top: -11px;
+}

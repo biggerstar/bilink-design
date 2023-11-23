@@ -35,7 +35,7 @@ declare module 'vue' {
     ContentBox: typeof import('./src/components/content-box/ContentBox.vue')['default']
     DesignCanvas: typeof import('./src/components/design-canvas/DesignCanvas.vue')['default']
     DividingLine: typeof import('./src/components/dividing-line/DividingLine.vue')['default']
-    Download: typeof import('./src/components/header/download.vue')['default']
+    Download: typeof import('./src/components/header/Download.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
