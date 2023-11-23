@@ -65,6 +65,9 @@ dependencies:
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
+  v-contextmenu:
+    specifier: ^3.0.0
+    version: 3.0.0(vue@3.3.8)
   vue:
     specifier: ^3.3.8
     version: 3.3.8(typescript@5.3.2)
@@ -4816,6 +4819,15 @@ packages:
   /uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
+    dev: false
+
+  /v-contextmenu@3.0.0(vue@3.3.8):
+    resolution: {integrity: sha512-zi38JxmTt66TmljgV1JbfEa9WvoQkpzRuEwZK7Tjb2XoRejbWLozQtkyTWXJa6x6Y3FrVDfgT36w01gpTpo41A==}
+    engines: {node: '>=10.16.0'}
+    peerDependencies:
+      vue: ^3.0.0
+    dependencies:
+      vue: 3.3.8(typescript@5.3.2)
     dev: false
 
   /validator@13.11.0:

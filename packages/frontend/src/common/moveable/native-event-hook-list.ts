@@ -35,14 +35,17 @@ export default function createNativeEventHookList() {
     {
       name: 'mousedown',
       call: (ev: MouseEvent) => {
-        updateSelection(ev)
         const moveableManager = editorStore.moveableManager
         const downEl = getElement4EventTarget(ev)
         setDirection(<any>moveableManager.moveable, downEl)
-        moveableManager.moveable.dragStart(ev)
         const widgetsEl = parseWidget4DomChain(downEl)
-        if (!widgetsEl) editorStore.removeSeparatingBorder()
-        if (widgetsEl) moveableManager.mousedown(downEl, ev)
+        if (!widgetsEl) {
+          editorStore.removeSeparatingBorder()
+          moveableManager.deActive()
+        }
+        moveableManager.mousedown(downEl, ev)
+        moveableManager.moveable.dragStart(ev)
+        updateSelection(ev)
       },
       options: {
         capture: true,

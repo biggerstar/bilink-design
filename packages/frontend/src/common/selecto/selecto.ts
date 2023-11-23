@@ -1,8 +1,7 @@
 import Moveable, {getElementInfo} from "moveable";
 import Selecto, {OnDragStart, OnSelect, SelectoOptions} from 'selecto'
 import {editorStore} from "@/store/editor";
-import {MOVEABLE_SCALE_DIRECTION, WIDGET_SELECTOR} from "@/constant";
-import {parseWidget4DomChain} from "@/utils/method";
+import {MOVEABLE_SCALE_DIRECTION, WIDGET_GROUP_SELECTION_SEPARATE, WIDGET_SELECTOR} from "@/constant";
 import './selecto-style.css'
 
 export const defaultSelectOptions = {
@@ -45,8 +44,10 @@ export class SelectoManager {
     // console.log(selecto)
     // console.log(container);
     selecto.on('dragStart', (ev: OnDragStart) => {
-      const widgetEl = parseWidget4DomChain(ev.inputEvent?.target || ev.inputEvent?.srcElement)
-      if (widgetEl) ev.stop()   // 如果点击组件则不进行选择
+      const moveableManager = editorStore.moveableManager
+      const moveable = moveableManager.moveable
+      const widgetEl = moveableManager.getMinAreaWidgetForMousePoint(ev.inputEvent.pageX, ev.inputEvent.pageY)
+      if (widgetEl || (Array.isArray(moveable.target) && moveable.target.length)) ev.stop()   // 如果点击组件则不进行选择
     })
     selecto.on('select', (ev: OnSelect) => {
       if (ev.added.length) this.selected = [...new Set(this.selected.concat(ev.added))]
@@ -62,6 +63,9 @@ export class SelectoManager {
     })
       .on('selectEnd', () => {
         if (this.selected.length <= 1) return this.selected = []   // 如果未选择或者只选择一个忽略
+        this.selected.forEach(node => {
+          node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE)
+        })
         this.moveable.setState({   // 如果选择了多个，则显示组外框和四个scale角及旋转按钮
           target: this.selected,
           hideDefaultLines: false,

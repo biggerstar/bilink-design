@@ -11,7 +11,13 @@ import {
 } from "@/constant";
 import {nextTick, reactive, toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
-import {CssTransformApi, loadFont, parseWidget4DomChain} from "@/utils/method";
+import {
+  CssTransformApi,
+  getWidgetOptionsFromElement,
+  loadFont,
+  parseGroupWidget4DomChain,
+  parseWidget4DomChain
+} from "@/utils/method";
 import {isFunction, isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
 import {CurrentTemplate, LayoutConfig, LayoutWidget, Material, PageConfig} from "@/types/layout";
@@ -65,6 +71,8 @@ class EditorStore {
   public dragMaterial(item: Material = null) {
     this.currentDraggingMaterial = item
   }
+
+  public currentClipboard: LayoutWidget = null
 
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
@@ -245,7 +253,7 @@ class EditorStore {
       newConfig.left -= minLeft
       newConfig.top -= minTop
     })
-    this.getCurrentTemplateLayout().elements.push(<LayoutWidget>newWidgetConfig)
+    this.addMaterialToGroup(<any>newWidgetConfig)
     const allWidgets = this.getAllWidget() // 只会操控首层的组件进行成组
     const remove_uuids = newWidgetConfig.elements.map(config => config.uuid)
     // console.log(remove_uuids)
@@ -297,7 +305,7 @@ class EditorStore {
         clipElements.forEach(newConfig => {
           newConfig.left += parseFloat(String(groupX))
           newConfig.top += parseFloat(String(groupY))
-          vueModelElementWidgetConfig.push(newConfig)
+          this.addMaterialToGroup(newConfig)
         })
       }).then()
     })
@@ -347,6 +355,9 @@ class EditorStore {
     return stop
   }
 
+  /**
+   * 添加素材
+   * */
   public async addMaterial(material: Partial<Material & LayoutWidget>, opt: { autoSize?: boolean } = {}) {
     // console.log(materialDetail)
     const options = {}
@@ -391,10 +402,10 @@ class EditorStore {
       left: material.left,
       top: material.top,
     }
-    currentLayout.elements.push(<any>newWidgetConfig)
+    this.addMaterialToGroup(<any>newWidgetConfig)
   }
 
-  public async addMaterial4Id(id: string | number) {
+  public async addMaterialFromId(id: string | number) {
     const res = await apiGetDetail({id})
     // console.log(res)
     if (res && res.data?.model) {
@@ -406,8 +417,52 @@ class EditorStore {
       }
       material.left = currentLayout.width / 2 - sizeInfo.width / 2
       material.top = currentLayout.height / 2 - sizeInfo.height / 2
-      currentLayout.elements.push(<any>res.data.model)
+      this.addMaterialToGroup(<any>res.data.model)
     }
+  }
+
+  /** 添加组件来自配置信息，默认添加到根中，如果指定了要添加的合并组，则会添加到该组中 */
+  public addMaterialToGroup(newWidgetOptions: LayoutWidget, groupProxyOptions?) {
+    const currentTemplateLayout = groupProxyOptions || this.getCurrentTemplateLayout()
+    if (!currentTemplateLayout) return
+    const sizeInfo = {
+      width: newWidgetOptions.width,
+      height: newWidgetOptions.height,
+    }
+    console.log(sizeInfo, newWidgetOptions)
+    newWidgetOptions.left = currentTemplateLayout.width / 2 - sizeInfo.width / 2
+    newWidgetOptions.top = currentTemplateLayout.height / 2 - sizeInfo.height / 2
+    currentTemplateLayout.elements.push(newWidgetOptions)
+  }
+
+  /**
+   * 移除dom中的组件
+   * @param widgetElOrOptions  传入组件的dom元素 或者 组件的vue响应式代理配置引用，会自动查找并移除
+   * */
+  public removeWidget(widgetElOrOptions: Element | LayoutWidget) {
+    widgetElOrOptions = <any>widgetElOrOptions || editorStore.moveableManager.currentWidget
+    let widgetOptions = widgetElOrOptions instanceof Element ? getWidgetOptionsFromElement(widgetElOrOptions.parentElement) : widgetElOrOptions
+    const widgetGroupEl = parseGroupWidget4DomChain(<any>widgetElOrOptions)
+    if (widgetGroupEl) {   // 如果要移除的组件在合并组内，则找到该组然后移除该组的子组件
+      const widgetGroupOptions: LayoutWidget = getWidgetOptionsFromElement(widgetGroupEl)
+      if (widgetGroupOptions) {
+        this.removeWidgetFromParentVueModelOptions(widgetGroupOptions, widgetOptions)
+      }
+    } else {   // 如果要移除的组件不在任何合并组内，则说明在根中，找到根直接移除
+      this.removeWidgetFromParentVueModelOptions(this.getCurrentTemplateLayout(), widgetOptions)
+    }
+
+  }
+
+  /**
+   * 从vue响应式中移除组件节点，传入该组件所在的合并组或者根组件配置信息
+   * */
+  public removeWidgetFromParentVueModelOptions(widgetParentOptions, widgetOptions) {
+    const vueModelElementWidgetConfig = widgetParentOptions.elements
+    const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === widgetOptions)
+    vueModelElementWidgetConfig.splice(curGroupIndex, 1)
+    this.moveableManager.moveable.updateRect()
+    this.moveableManager.moveable.updateSelectors()
   }
 
   /**
@@ -437,7 +492,7 @@ class EditorStore {
       uid: 123456,   // 先默认用户，后面有加入用户系统的时候在进行区分
       data: currentTemplate
     }
-    console.log(currentTemplate)
+    // console.log(currentTemplate)
     const urls = new URL(location.href)
     const curUrlId = urls.searchParams.get('id')
     if (curUrlId) reqBody.id = curUrlId

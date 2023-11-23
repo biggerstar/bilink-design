@@ -231,9 +231,10 @@ export class MoveableManager {
     if (editorStore.isSeparating) return
     let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
     let activeElement /* 最终要活跃的组件变量名 */ = minAreaWidget
-    const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
-    if (!widgetsInfo || !widgetsInfo.rootWidgetElement) return
     this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
+    const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
+    if (!widgetsInfo || !widgetsInfo.rootWidgetElement) return this.currentGroupElement = null
+    if (ev.buttons !== 1) return  // 只有单击左键才响应
     this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
     /*---------------------------------默认状态------------------------------------------*/
     if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
@@ -263,11 +264,14 @@ export class MoveableManager {
         get: () => activeElement
       }
     })
-    this.active(activeElement)
-    this.moveable.dragStart(ev)
+    if (ev.buttons === 1) {
+      this.active(activeElement)
+      this.moveable.dragStart(ev)
+    }
   }
 
   public mouseup(el: HTMLElement) {
+    if (editorStore.selectoManager.selected.length) return
     // console.log('draggable', this.moveable.draggable, 'rotatable', this.moveable.rotatable, 'resizable', this.moveable.resizable);
     const widgetsEl = parseWidget4DomChain(el)
     const inOuterByGroup = widgetsEl && !inGroup(widgetsEl) && !editorStore.allowInGroupMovement  // 是否是在最外层的合并组,鼠标只要抬起就为组件或者合并组的外框加上操控按钮和框选线

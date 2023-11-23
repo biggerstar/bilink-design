@@ -2,6 +2,8 @@
 
 import {isFunction, isNumber, isObject, isString} from "is-what";
 import {
+  DESIGN_OPTIONS,
+  DESIGN_SET_STATE,
   WIDGET_DATASET_IN_GROUP,
   WIDGET_DATASET_NAME,
   WIDGET_DATASET_TYPE,
@@ -9,6 +11,7 @@ import {
   WIDGETS_NAMES
 } from "@/constant";
 import {getElement4EventTarget} from "@/utils/tool";
+import {cloneDeep} from "lodash-es";
 
 /**
  * 某种鼠标响应事件时，计算鼠标指针在在目标元素内的百分比位置
@@ -63,8 +66,17 @@ export function parseWidget4DomChain(el: HTMLElement, handleValidate?: (target: 
   }
 }
 
+/** 解析元素最近的合并组 */
 export function parseGroupWidget4DomChain(el: HTMLElement) {
   return parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+}
+
+export function getWidgetOptionsFromElement(el: Element, clone = false) {
+  return clone ? cloneDeep(el[DESIGN_OPTIONS]) : el[DESIGN_OPTIONS]
+}
+
+export function getWidgetSetStateFromElement(el: Element) {
+  return el[DESIGN_SET_STATE]
 }
 
 export function inGroup(target: HTMLElement) {
@@ -97,6 +109,13 @@ export function parseWidgetsInfo4DomChain(el: HTMLElement, outermost: boolean = 
     rootWidgetElement: rootElement,
     isGroup: !!groupEl,
   }
+}
+
+/**
+ * 从eventTarget中找到组件元素
+ * */
+function getElement4EventTarget(ev: MouseEvent | TouchEvent) {
+  return parseWidget4DomChain(getElement4EventTarget(ev))
 }
 
 /**

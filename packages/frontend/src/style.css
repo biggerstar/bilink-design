@@ -205,10 +205,20 @@ html, body, #app {
   border: var(--widget-box-selection-color) dotted var(--widget-box-selection-line-weight);
 }
 
-.dragging-material{
+.dragging-material {
   position: fixed;
   z-index: 666;
   pointer-events: none;
+}
+
+.v-contextmenu {
+  border-radius: 10px !important;
+  z-index: 6666666;
+}
+
+.v-contextmenu-inner {
+  border-radius: 10px !important;
+  padding: 0 !important;
 }
 
 :root {

@@ -4,7 +4,7 @@
       v-model:value="activeNavId"
       placeholder=""
       :options="cascaderOptions"
-      @change="(_,opt)=> cascaderCurrentLabelName = opt[opt.length - 1].label"
+      @change="changeCascader"
     >
       <div class="w-full h-full flex justify-start items-center ml-[20px] mr-[20px]">
         <div class="flex justify-around items-center font-bold text-[0.9rem] cursor-pointer">
@@ -41,6 +41,10 @@ const allMaterialResourceData = shallowRef([])
 const activeNavId = shallowRef<string | number | (string | number)[]>(PAGE_MATERIAL_TYPE_ID)
 const cascaderOptions = shallowRef([])
 const cascaderCurrentLabelName = ref('所有模板')
+
+function changeCascader(_, opt) {
+  cascaderCurrentLabelName.value = opt[opt.length - 1].label
+}
 
 onMounted(() => {
   /* 获取所有的列表数据 */
