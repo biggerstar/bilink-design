@@ -41,7 +41,7 @@ export default function createNativeEventHookList() {
         const widgetsEl = parseWidget4DomChain(downEl)
         if (!widgetsEl) {
           editorStore.removeSeparatingBorder()
-          moveableManager.deActive()
+          moveableManager.moveable.target = []
         }
         moveableManager.mousedown(downEl, ev)
         moveableManager.moveable.dragStart(ev)

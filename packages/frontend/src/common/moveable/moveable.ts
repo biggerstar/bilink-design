@@ -65,7 +65,6 @@ export const defaultMoveableOptions: MoveableOptions = {
 
 export class MoveableManager {
   public moveable: Moveable
-  public groupMoveable: Moveable   // 只用于框选组
   public container: HTMLElement
   public currentElement: HTMLElement | void   // 当前聚焦的元素
   public currentGroupElement: HTMLElement | void   // 当前聚焦的元素
@@ -92,9 +91,7 @@ export class MoveableManager {
     if (!container) container = document.body
     this.container = container
     const moveable = new Moveable(container, moveableOptions);
-    const GroupMoveable = new Moveable(container, moveableOptions);
     this.moveable = moveable
-    this.groupMoveable = GroupMoveable
 
 
     /**
@@ -162,6 +159,9 @@ export class MoveableManager {
     this.eventHookList.forEach((item) => {
       this.container && this.container.removeEventListener(item.name, item.call)
     })
+    this.resizeObserver && this.resizeObserver.disconnect()
+    this.resizeObserver = null
+    this.deActive()
   }
 
   /**
@@ -234,8 +234,8 @@ export class MoveableManager {
     this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
     if (!widgetsInfo || !widgetsInfo.rootWidgetElement) return this.currentGroupElement = null
-    if (ev.buttons !== 1) return  // 只有单击左键才响应
     this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
+    if (ev.buttons !== 1) return  // 只有单击左键才响应
     /*---------------------------------默认状态------------------------------------------*/
     if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
     this.moveable.setState({  // 先定义状态，最终状态由鼠标抬起后决定( mouseup, click )
@@ -324,9 +324,6 @@ export class MoveableManager {
   public deActive() {
     this.currentElement = void 0
     this.moveable.target = []
-    this.resizeObserver && this.resizeObserver.disconnect()
-    this.resizeObserver = null
     this.currentGroupElement = null
-    this.groupMoveable.target = []
   }
 }

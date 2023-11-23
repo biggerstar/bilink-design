@@ -71,6 +71,7 @@ const contextmenuList = ref([
     text: '复制',
     icon: 'icon-fuzhi',
     isShow: true,
+    disable: () => editorStore.moveableManager.currentWidget,
     handler() {
       const widgetEl = editorStore.moveableManager.currentWidget
       if (widgetEl && isWidget(widgetEl)) editorStore.currentClipboard = getWidgetOptionsFromElement(widgetEl, true)
@@ -96,7 +97,9 @@ const contextmenuList = ref([
     disable: () => editorStore.currentClipboard,
     icon: 'icon-paste',
     handler() {
-      editorStore.currentClipboard && editorStore.addMaterialToGroup(editorStore.currentClipboard)
+      editorStore.currentClipboard && editorStore.addMaterialToGroup(editorStore.currentClipboard, null, {
+        autoPosition: true
+      })
     }
   },
 ])
@@ -111,7 +114,7 @@ onMounted(() => {
   editorStore.updateCanvasScale()
 })
 
-function listenContextmenu(ev) {
+async function listenContextmenu(ev) {
   ev.buttons === 2 && contextmenuList.value.forEach((menuInfo: any) => {
     isFunction(menuInfo.show) && (menuInfo.isShow = menuInfo.show())
     isFunction(menuInfo.disable) && (menuInfo.isDisable = !menuInfo.disable())

@@ -422,27 +422,37 @@ class EditorStore {
   }
 
   /** 添加组件来自配置信息，默认添加到根中，如果指定了要添加的合并组，则会添加到该组中 */
-  public addMaterialToGroup(newWidgetOptions: LayoutWidget, groupProxyOptions?) {
+  public addMaterialToGroup(newWidgetOptions: LayoutWidget, groupProxyOptions?: LayoutWidget, opt: { autoPosition?: boolean } = {}) {
     const currentTemplateLayout = groupProxyOptions || this.getCurrentTemplateLayout()
     if (!currentTemplateLayout) return
-    const sizeInfo = {
-      width: newWidgetOptions.width,
-      height: newWidgetOptions.height,
+    const {autoPosition = false} = opt
+    if (autoPosition) {
+      const sizeInfo = {
+        width: newWidgetOptions.width,
+        height: newWidgetOptions.height,
+      }
+      newWidgetOptions.left = currentTemplateLayout.width / 2 - sizeInfo.width / 2
+      newWidgetOptions.top = currentTemplateLayout.height / 2 - sizeInfo.height / 2
     }
-    console.log(sizeInfo, newWidgetOptions)
-    newWidgetOptions.left = currentTemplateLayout.width / 2 - sizeInfo.width / 2
-    newWidgetOptions.top = currentTemplateLayout.height / 2 - sizeInfo.height / 2
     currentTemplateLayout.elements.push(newWidgetOptions)
   }
 
   /**
    * 移除dom中的组件
-   * @param widgetElOrOptions  传入组件的dom元素 或者 组件的vue响应式代理配置引用，会自动查找并移除
+   * @param target  传入组件的dom元素 或者 组件的vue响应式代理配置引用，会自动查找并移除
    * */
-  public removeWidget(widgetElOrOptions: Element | LayoutWidget) {
-    widgetElOrOptions = <any>widgetElOrOptions || editorStore.moveableManager.currentWidget
-    let widgetOptions = widgetElOrOptions instanceof Element ? getWidgetOptionsFromElement(widgetElOrOptions.parentElement) : widgetElOrOptions
-    const widgetGroupEl = parseGroupWidget4DomChain(<any>widgetElOrOptions)
+  public removeWidget(target: Element | LayoutWidget) {
+    let widgetEl
+    let widgetOptions
+    if (target instanceof Element) {
+      widgetEl = target
+      widgetOptions = getWidgetOptionsFromElement(widgetEl)
+    } else {
+      widgetOptions = target
+      widgetOptions = this.getAllWidget().find(node => getWidgetOptionsFromElement(node) === widgetOptions)
+      if (!widgetOptions) console.error('该配置对应的组件不在画布上')
+    }
+    const widgetGroupEl = parseGroupWidget4DomChain(<any>widgetEl.parentElement)   // 获取其所在的合并组
     if (widgetGroupEl) {   // 如果要移除的组件在合并组内，则找到该组然后移除该组的子组件
       const widgetGroupOptions: LayoutWidget = getWidgetOptionsFromElement(widgetGroupEl)
       if (widgetGroupOptions) {
@@ -451,7 +461,6 @@ class EditorStore {
     } else {   // 如果要移除的组件不在任何合并组内，则说明在根中，找到根直接移除
       this.removeWidgetFromParentVueModelOptions(this.getCurrentTemplateLayout(), widgetOptions)
     }
-
   }
 
   /**
