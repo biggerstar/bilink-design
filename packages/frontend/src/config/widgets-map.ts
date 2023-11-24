@@ -14,6 +14,8 @@ import WImageDetail from "@/components/widgets/w-image/WImageDetail.vue";
 import WGroupDetail from "@/components/widgets/w-group/WGroupDetail.vue";
 import WGroup from "@/components/widgets/w-group/WGroup.vue";
 import WSvg from "@/components/widgets/w-svg/WSvg.vue";
+import MyDesign from "@/components/aside/my-design/MyDesign.vue";
+import AddPanel from "@/components/aside/add-panel/AddPanel.vue";
 
 export const widgetsDetailMap = {
   'default': DefaultEditorDetail,
@@ -44,6 +46,9 @@ export const asideTagMap = {
   'text': Text,
   'images': Images,
   'template': Template,
+  'my-design': MyDesign,
+  'add-panel': AddPanel,
 }
 
 export const githubUrl = 'https://github.com/biggerstar/bilink-design'
+export const mockUserId = 123456

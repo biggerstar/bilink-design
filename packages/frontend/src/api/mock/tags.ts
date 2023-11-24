@@ -3,7 +3,63 @@ export default [
   {
     name: '添加',
     icon: 'icon-tianjia',
-    comp: 'add-page',
+    comp: 'add-panel',
+    layoutInfo: [
+      {
+        name: '文字',
+        items: [
+          {
+            text: '标题',
+            icon: 'icon-dabiaoti',
+            call: 'title'
+          },
+          {
+            text: '副标题',
+            icon: 'icon-xiaobiaoti',
+            call: 'subtitle'
+
+          },
+          {
+            text: '正文',
+            icon: 'icon-bianjizhengwen',
+            call: 'text'
+
+          },
+        ]
+      },
+      {
+        name: '形状',
+        items: [
+          {
+            tip: '正方形',
+            icon: 'icon-checkbox',
+            call: 'square',
+            border: true,
+
+          },
+          {
+            tip: '三角形',
+            icon: 'icon-sanjiaoxing',
+            call: 'triangle',
+            border: true,
+
+          },
+          {
+            tip: '圆形',
+            icon: 'icon-yuanxing',
+            call: 'rotundity',
+            border: true,
+
+          },
+          {
+            tip: '直线',
+            icon: 'icon-line-fill',
+            call: 'straightLine',
+            border: true,
+          },
+        ]
+      }
+    ]
   },
   {
     name: '模板',
@@ -65,6 +121,6 @@ export default [
   {
     name: '我的',
     icon: 'icon-wode',
-    comp: 'my-page',
+    comp: 'my-design',
   },
 ]

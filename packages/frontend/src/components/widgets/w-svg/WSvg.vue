@@ -20,11 +20,11 @@ import {nextTick, onMounted, ref} from 'vue'
 import {createBaseCssAction} from "@/components/widgets/base-action";
 import axios from "axios";
 
-const props = <any>defineProps({
+const props = defineProps({
   config: {
     type: Object,
     default: {}
-  }
+  } as any
 })
 const W_Widget = ref<HTMLElement>()
 const svgBoxRef = ref<HTMLElement>()
@@ -37,8 +37,10 @@ baseCssAction.expand({
     if (!svgBoxRef.value) return
     const svgEl = svgBoxRef.value.querySelector('svg')
     if (!svgEl) return
-    colors[0] && baseCssAction.updateStyle('fill', colors[0], svgEl)
-    colors[1] && baseCssAction.updateStyle('stroke', colors[1], svgEl)
+    let [color1, color2] = colors
+    if (!color2) color2 = color1
+    baseCssAction.updateStyle('fill', color1, svgEl)
+    baseCssAction.updateStyle('stroke', color2, svgEl)
   },
 })
 

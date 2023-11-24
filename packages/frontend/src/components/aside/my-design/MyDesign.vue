@@ -37,7 +37,7 @@
   </a-modal>
 
 
-  <InfiniteScroll class="w-full h-full" :is-loading="isLoading" @scroll-to-bottom="loadNewRecordList">
+  <InfiniteScroll class="w-full h-full" :is-loading="isLoading" @scroll-to-bottom="loadNewRecordList('scroll')">
     <div class="container pl-[10px] pr-[12px] mb-[50px] w-full h-full">
       <justified-infinite-grid
         :gap="8"
@@ -127,7 +127,8 @@ let pageEnd = false     // 数据是否已经都加载完了
 
 onMounted(() => loadNewRecordList())
 
-function loadNewRecordList() {
+function loadNewRecordList(from?) {
+  if (from === 'scroll') return // 暂时不进行加载，后面在进行优化
   if (isLoading.value || pageEnd) return
   isLoading.value = true
   apiGetDetail({

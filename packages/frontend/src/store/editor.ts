@@ -32,6 +32,7 @@ import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
 import {apiGetDetail, apiPostDetail} from "@/api/getDetail";
 import {notification} from "ant-design-vue";
 import {mockUserId} from "@/config/widgets-map";
+import {DrawGraph} from "@/common/draw-graph/DrawGraph";
 
 /**
  * 设计页面(/design) 的store
@@ -43,6 +44,7 @@ class EditorStore {
   public selectoManager: SelectoManager
   public dragWidgetManager: DragWidgetManager
   public lineGuides: LineGuides
+  public drawGraph: DrawGraph
   public bus: Emitter<any>
   /** 所有字体 */
   public allFont: object[] = []
@@ -409,7 +411,12 @@ class EditorStore {
     this.addMaterialToGroup(<any>newWidgetConfig)
   }
 
-  public async addMaterialFromId(id: string | number) {
+  /**
+   * 通过id直接加载远程物料
+   * @param id
+   * @param coverOptions  覆盖物料的初始配置
+   * */
+  public async addMaterialFromId(id: string | number, coverOptions: Partial<LayoutWidget> = {}) {
     const res = await apiGetDetail({id})
     // console.log(res)
     if (res && res.data?.model) {
@@ -421,12 +428,13 @@ class EditorStore {
       }
       material.left = currentLayout.width / 2 - sizeInfo.width / 2
       material.top = currentLayout.height / 2 - sizeInfo.height / 2
-      this.addMaterialToGroup(<any>res.data.model)
+      this.addMaterialToGroup(<any>Object.assign(res.data.model, coverOptions))
     }
   }
 
-  /** 添加组件来自配置信息，默认添加到根中，如果指定了要添加的合并组，则会添加到该组中 */
+  /** 添加组件来自配置信息，默认添加到根中，如果指定了要添加的合并组( groupProxyOptions )，则会添加到该组中 */
   public addMaterialToGroup(newWidgetOptions: LayoutWidget, groupProxyOptions?: LayoutWidget, opt: { autoPosition?: boolean } = {}) {
+   console.log(newWidgetOptions)
     const currentTemplateLayout = groupProxyOptions || this.getCurrentTemplateLayout()
     if (!currentTemplateLayout) return
     const {autoPosition = false} = opt

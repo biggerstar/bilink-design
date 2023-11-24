@@ -142,6 +142,9 @@ const contextmenuData: {
     handler() {
       const widgetEl = editorStore.moveableManager.currentWidget
       if (widgetEl && isWidget(widgetEl)) editorStore.removeWidget(widgetEl)
+      if(editorStore.selectoManager.selected.length){
+        editorStore.selectoManager.selected.forEach(widget=>editorStore.removeWidget(widget))
+      }
     }
   },
 ]

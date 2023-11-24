@@ -235,13 +235,14 @@ export class MoveableManager {
    * */
   public mousedown(el: HTMLElement, ev: MouseEvent) {
     if (editorStore.isSeparating) return
+    if (editorStore.drawGraph.painting) return // 正在绘画dom元素中退出组件操作
     let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
     let activeElement /* 最终要活跃的组件变量名 */ = minAreaWidget
     this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
     if (!widgetsInfo || !widgetsInfo.rootWidgetElement) return this.currentGroupElement = null
     this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
-    if (ev.buttons !== 1) return  // 只有单击左键才响应
+    if (ev.buttons !== 1 || editorStore.selectoManager.selected.length) return  // 只有单击左键才响应
     /*---------------------------------默认状态------------------------------------------*/
     if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
     this.moveable.setState({  // 先定义状态，最终状态由鼠标抬起后决定( mouseup, click )
@@ -276,7 +277,7 @@ export class MoveableManager {
     }
   }
 
-  public mouseup(el: HTMLElement, ev: MouseEvent) {
+  public mouseup(el: HTMLElement, _: MouseEvent) {
     if (editorStore.selectoManager.selected.length) return
     // console.log('draggable', this.moveable.draggable, 'rotatable', this.moveable.rotatable, 'resizable', this.moveable.resizable);
     const widgetsEl = parseWidget4DomChain(el)
