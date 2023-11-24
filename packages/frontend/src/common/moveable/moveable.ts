@@ -235,7 +235,7 @@ export class MoveableManager {
    * */
   public mousedown(el: HTMLElement, ev: MouseEvent) {
     if (editorStore.isSeparating) return
-    if (editorStore.drawGraph.painting) return // 正在绘画dom元素中退出组件操作
+    if (editorStore.drawGraph?.painting) return // 正在绘画dom元素中退出组件操作
     let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
     let activeElement /* 最终要活跃的组件变量名 */ = minAreaWidget
     this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件

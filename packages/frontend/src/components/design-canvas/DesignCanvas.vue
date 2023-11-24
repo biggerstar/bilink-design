@@ -4,6 +4,7 @@
       <div id="editor-area-box" ref="editorAreaBox">
         <div class="editor-area-mask"></div>
         <!-- 取巧使用遮罩覆盖溢出元素 box-shadow 上颜色等于中间镂空两个部分就能分割开 -->
+        <div id="editor-area-bg" ref="editorAreaBG"></div>
         <div id="editor-area" ref="editorArea">
           <slot></slot>
           <a-watermark :content="'bi.link'" style="height: 100%; width: 100%;z-index: -1">
@@ -48,6 +49,7 @@ const vHotkey = HotkeyDirective({})
 
 const designCanvas = ref()
 const editorArea = ref()
+const editorAreaBG = ref()
 const editorAreaBox = ref()
 const hotkeyMap = ref({})
 
@@ -67,7 +69,7 @@ const contextmenuData: {
     isShow: true,
     hotKey: ['ctrl+a', 'command+a'],
     handler: () => {
-      const allWidget: HTMLElement[] = <any>Array.from(editorStore.editorAreaTarget.children).filter(isWidget)
+      const allWidget: HTMLElement[] =  Array.from(editorStore.editorAreaTarget.children).filter(isWidget) as any
       editorStore.selectoManager.doSelect(allWidget)
     }
   },
@@ -142,8 +144,8 @@ const contextmenuData: {
     handler() {
       const widgetEl = editorStore.moveableManager.currentWidget
       if (widgetEl && isWidget(widgetEl)) editorStore.removeWidget(widgetEl)
-      if(editorStore.selectoManager.selected.length){
-        editorStore.selectoManager.selected.forEach(widget=>editorStore.removeWidget(widget))
+      if (editorStore.selectoManager.selected.length) {
+        editorStore.selectoManager.selected.forEach(widget => editorStore.removeWidget(widget))
       }
     }
   },
@@ -165,6 +167,7 @@ onMounted(() => {
   editorStore.designCanvasTarget = designCanvas.value
   editorStore.editorAreaBoxTarget = editorAreaBox.value
   editorStore.editorAreaTarget = editorArea.value
+  editorStore.editorAreaBgTarget = editorAreaBG.value
   const templateConfig = editorStore.getCurrentTemplateLayout()
   editorStore.displayLineGuides(true)
   editorStore.updateCanvasStyle(templateConfig)
@@ -233,6 +236,19 @@ onUnmounted(() => {
 
 #editor-area {
   position: relative;
+  background-color: transparent;
+  width: var(--canvas-width);
+  height: var(--canvas-height);
+  transform-origin: left top;
+  transform: scale(var(--canvas-scale));
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#editor-area-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
   background-color: transparent;
   width: var(--canvas-width);
   height: var(--canvas-height);

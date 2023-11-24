@@ -122,6 +122,7 @@ class EditorStore {
   public designCanvasTarget: HTMLElement  // #design-canvas
   public editorAreaBoxTarget: HTMLElement  // #editor-area-box
   public editorAreaTarget: HTMLElement  // #editor-area
+  public editorAreaBgTarget: HTMLElement  // #editor-area-bg
 
   /** 获取当前画布缩放级别  */
   public getCurScaleValue = () => Number(document.body.style.getPropertyValue(CSS_DEFINE["--canvas-scale"]))
@@ -149,13 +150,14 @@ class EditorStore {
     if (!this.currentTemplate) return
     if (!this.designCanvasTarget || !this.editorAreaTarget) return
     const canvasInfo: LayoutConfig = <any>canvasInfoOptions
-    let {width, height, backgroundColor, backgroundImage} = canvasInfo
+    let {width, height, backgroundColor, backgroundImage, opacity} = canvasInfo
     const bodyStyle = document.body.style
-    const has = (key: keyof LayoutConfig) => Reflect.has(canvasInfo, key)
+    const has = (key: keyof (LayoutConfig & Partial<CSSStyleDeclaration>)) => Reflect.has(canvasInfo, key)
     has('width') && bodyStyle.setProperty(CSS_DEFINE["--canvas-width"], `${width}px`)
     has('height') && bodyStyle.setProperty(CSS_DEFINE["--canvas-height"], `${height}px`)
-    has('backgroundColor') && (this.editorAreaTarget.style.backgroundColor = isNil(backgroundColor) ? '#FFF' : backgroundColor)
-    has('backgroundImage') && (this.editorAreaTarget.style.backgroundImage = `url(${backgroundImage})`)
+    has('backgroundColor') && (this.editorAreaBgTarget.style.backgroundColor = isNil(backgroundColor) ? '#FFF' : backgroundColor)
+    has('backgroundImage') && (this.editorAreaBgTarget.style.backgroundImage = backgroundImage ? `url(${backgroundImage})` : 'unset')
+    has('opacity') && (this.editorAreaBgTarget.style.opacity = opacity)
     this.moveableManager?.moveable?.updateRect?.()
     this.lineGuides?.updateGuidesStyle?.()
     deepmerge(this.getCurrentTemplateLayout(), canvasInfo, options)
@@ -434,7 +436,7 @@ class EditorStore {
 
   /** 添加组件来自配置信息，默认添加到根中，如果指定了要添加的合并组( groupProxyOptions )，则会添加到该组中 */
   public addMaterialToGroup(newWidgetOptions: LayoutWidget, groupProxyOptions?: LayoutWidget, opt: { autoPosition?: boolean } = {}) {
-   console.log(newWidgetOptions)
+    console.log(newWidgetOptions)
     const currentTemplateLayout = groupProxyOptions || this.getCurrentTemplateLayout()
     if (!currentTemplateLayout) return
     const {autoPosition = false} = opt

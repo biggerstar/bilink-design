@@ -19,8 +19,8 @@
               <span>{{ item.tip || item.text }}</span>
             </template>
             <a-space direction="vertical" class="text-center">
-              <div class="iconfont text-[1.1rem]" :class="item.icon"></div>
-              <div> {{ item.text }}</div>
+              <div class="iconfont text-[1.15rem]" :class="item.icon"></div>
+              <div class="text-[0.8rem]"> {{ item.text }}</div>
             </a-space>
           </a-tooltip>
         </content-box>
@@ -33,7 +33,6 @@
 import {onMounted, ref} from "vue";
 import {editorStore} from "@/store/editor";
 import {isFunction} from "is-what";
-import {DrawGraph} from "@/common/draw-graph/DrawGraph";
 
 const curUseLayoutConfig = ref<Record<any, any>>()
 const curShapeIndex = ref()
@@ -52,13 +51,10 @@ const callMap = {
     })
   },
   square() {
-    console.log(33333333333333333)
-    editorStore.drawGraph.draw(() => {
-
-    })
+    // editorStore.drawGraph.draw(() => {
+    // })
   },
   triangle() {
-    console.log(33333333333333333)
     // editorStore.addMaterialFromId('48241575')
   },
   rotundity() {
@@ -68,7 +64,7 @@ const callMap = {
 
   }
 }
-editorStore.drawGraph = new DrawGraph()
+// editorStore.drawGraph = new DrawGraph()
 onMounted(() => {
   curUseLayoutConfig.value = editorStore.pageConfig.asideTag.find(item => item.name === '添加')
   console.log(curUseLayoutConfig.value)

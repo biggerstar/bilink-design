@@ -20,7 +20,7 @@ const props = defineProps({
   },
   fontSize: {
     type: String,
-    default: '1rem',
+    default: '0.9rem',
   },
 })
 const {fontSize} = props
