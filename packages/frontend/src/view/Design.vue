@@ -9,13 +9,22 @@
   <div class="work-area not-user-select">
     <!--  --------------------aside---------------------  -->
     <div class="aside">
-      <div class="tool-tags h-full" v-if="pageConfig">
-        <div v-for="(item,index) in pageConfig.asideTag" :key="index" @click="showTagPage(item.comp)">
-          <div class="tag" :class="{activeTag:activeTagName && item.comp && activeTagName === item.comp }">
-            <i class="iconfont icon" :class="item.icon"> </i>
-            <div class="tag-name">{{ item.name }}</div>
+      <div class="w-full flex-col justify-between">
+        <div class="tool-tags h-full" v-if="pageConfig">
+          <div v-for="(item,index) in pageConfig.asideTag" :key="index" @click="showTagPage(item.comp)">
+            <div class="tag" :class="{activeTag:activeTagName && item.comp && activeTagName === item.comp }">
+              <i class="iconfont icon" :class="item.icon"> </i>
+              <div class="tag-name">{{ item.name }}</div>
+            </div>
           </div>
         </div>
+        <a
+          :href="githubUrl"
+          target="_blank"
+          class="absolute bottom-[10px] left-[20px] cursor-pointer text-blue-800 hover:text-blue-500">
+          <div class="iconfont icon-github text-[1.2rem]"></div>
+          <div class="font-bold text-[0.6rem]">github</div>
+        </a>
       </div>
       <div class="widgets-panel relative" :style="{width: activeTagName ? '312px': '0'}">
         <div class="aside-close-btn flex-col justify-center" v-show="activeTagName" @click="showTagPage()">
@@ -93,7 +102,7 @@ import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveabl
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {editorStore} from "@/store/editor";
 import ScaleControl from "@/components/scale-control/ScaleControl.vue";
-import {asideTagMap, widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
+import {asideTagMap, githubUrl, widgetsDetailMap, widgetsMap} from "@/config/widgets-map";
 import {apiGetFonts} from "@/api/getFonts";
 import {apiGetPageConfig} from "@/api/getPageConfig";
 import {getWidgetsName} from "@/utils/method";
@@ -298,6 +307,11 @@ $tool-tags-width: 72px;
         margin: 4.8px 8px;
         padding: 7px 2px;
 
+        &:hover {
+          background-color: var(--color-gray-100);
+          border-radius: 10px;
+        }
+
         .icon {
           font-size: 1.2rem;
         }
@@ -312,6 +326,10 @@ $tool-tags-width: 72px;
         width: auto;
         text-align: center;
         cursor: pointer;
+      }
+
+      .github {
+
       }
 
     }

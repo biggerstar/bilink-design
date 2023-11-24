@@ -137,7 +137,7 @@ const contextmenuData: {
     text: '删除',
     icon: 'icon-shanchu-',
     isShow: true,
-    hotKey: ['delete', 'enter'],
+    hotKey: ['delete'],
     disable: () => editorStore.moveableManager.currentWidget,
     handler() {
       const widgetEl = editorStore.moveableManager.currentWidget
@@ -177,15 +177,16 @@ async function listenContextmenu(ev) {
 }
 
 const preventContextmenu = (ev) => ev.preventDefault()
-
+let designCanvasEl
 onMounted(async () => {
   designCanvas.value.addEventListener("mousedown", listenContextmenu)
   designCanvas.value.addEventListener("contextmenu", preventContextmenu)
+  designCanvasEl = designCanvas.value
 })
 
 onUnmounted(() => {
-  designCanvas.value.removeEventListener("mousedown", listenContextmenu)
-  designCanvas.value.removeEventListener("contextmenu", preventContextmenu)
+  designCanvasEl.removeEventListener("mousedown", listenContextmenu)
+  designCanvasEl.removeEventListener("contextmenu", preventContextmenu)
 })
 
 </script>

@@ -46,3 +46,4 @@ export const asideTagMap = {
   'template': Template,
 }
 
+export const githubUrl = 'https://github.com/biggerstar/bilink-design'
