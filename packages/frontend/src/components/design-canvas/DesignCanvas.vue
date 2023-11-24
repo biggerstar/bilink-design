@@ -1,5 +1,5 @@
 <template>
-  <div id="design-canvas" ref="designCanvas" v-contextmenu:contextmenu class="not-user-select">
+  <div id="design-canvas" ref="designCanvas" v-hotkey="hotkeyMap" v-contextmenu:contextmenu class="not-user-select">
     <div id="editor-shell-wrap">
       <div id="editor-area-box" ref="editorAreaBox">
         <div class="editor-area-mask"></div>
@@ -18,11 +18,16 @@
         class="contextmenu-item iconfont"
         :class="item.icon"
         v-show="item.isShow"
-        :disabled="item['isDisable']"
+        :disabled="item.isDisable"
         v-for="(item,index) in contextmenuList"
         @click="item.handler"
         :key="`${index}menu`">
-        <span>{{ item.text }}</span>
+        <span class="menu-text">{{ item.text }}</span>
+        <span v-if="Array.isArray(item.hotKey) && item.hotKey.length">
+          <a-tag style="transform: scale(0.9);margin-right: auto; color: #7f8792">
+            {{ item.hotKey[0] }}
+          </a-tag>
+        </span>
       </ContextmenuItem>
     </div>
   </Contextmenu>
@@ -34,36 +39,59 @@ import {Contextmenu, ContextmenuItem, directive} from "v-contextmenu";
 import {onMounted, onUnmounted, ref} from 'vue'
 import {editorStore} from "@/store/editor";
 import "v-contextmenu/dist/themes/default.css";
-import {isFunction} from "is-what";
+import {isFunction, isString} from "is-what";
 import {getWidgetOptionsFromElement, isWidget} from "@/utils/method";
+import {HotkeyDirective} from 'v-hotkey3'
 
 const vContextmenu = directive // 使用指令
+const vHotkey = HotkeyDirective({})
 
 const designCanvas = ref()
 const editorArea = ref()
 const editorAreaBox = ref()
+const hotkeyMap = ref({})
 
-const contextmenuList = ref([
+const contextmenuData: {
+  text: string;
+  icon: string;
+  isShow?: boolean;
+  isDisable?: boolean;
+  hotKey?: string[];
+  handler?: Function;
+  show?: Function;
+  disable?: Function;
+}[] = [
+  {
+    text: '全选',
+    icon: 'icon-RestoreWindow',
+    isShow: true,
+    hotKey: ['ctrl+a', 'command+a'],
+    handler: () => {
+      const allWidget: HTMLElement[] = <any>Array.from(editorStore.editorAreaTarget.children).filter(isWidget)
+      editorStore.selectoManager.doSelect(allWidget)
+    }
+  },
   {
     text: '合并组',
     icon: 'icon-sucai',
+    isShow: false,
     show: () => {
       return editorStore.selectoManager.selected.length > 1
     },
-    isShow: false,
     handler: () => editorStore.mergeGroup()
   },
   {
     text: '拆分组',
     icon: 'icon-lianjieduankai',
-    show: () => editorStore.moveableManager.currentGroupElement,
     isShow: false,
+    hotKey: ['ctrl+g', 'command+g'],
+    show: () => editorStore.moveableManager.currentGroupElement,
     handler: () => editorStore.separationGroup()
   },
   {
     text: '组内移动',
-    isShow: false,
     icon: 'icon-icon-gongzuoliuchengtongji-xianxing',
+    isShow: false,
     show: () => editorStore.moveableManager.currentGroupElement,
     handler: () => editorStore.allowInGroupMovement = true
   },
@@ -71,6 +99,7 @@ const contextmenuList = ref([
     text: '复制',
     icon: 'icon-fuzhi',
     isShow: true,
+    hotKey: ['ctrl+c', 'command+c'],
     disable: () => editorStore.moveableManager.currentWidget,
     handler() {
       const widgetEl = editorStore.moveableManager.currentWidget
@@ -79,8 +108,9 @@ const contextmenuList = ref([
   },
   {
     text: '剪切',
-    isShow: true,
     icon: 'icon-jianqie2',
+    isShow: true,
+    hotKey: ['ctrl+x', 'command+x'],
     disable: () => editorStore.moveableManager.currentWidget,
     handler() {
       const widgetEl = editorStore.moveableManager.currentWidget
@@ -92,17 +122,41 @@ const contextmenuList = ref([
   },
   {
     text: '粘贴',
+    icon: 'icon-paste',
     isShow: true,
     isDisable: false,
+    hotKey: ['ctrl+v', 'command+v'],
     disable: () => editorStore.currentClipboard,
-    icon: 'icon-paste',
     handler() {
       editorStore.currentClipboard && editorStore.addMaterialToGroup(editorStore.currentClipboard, null, {
         autoPosition: true
       })
     }
   },
-])
+  {
+    text: '删除',
+    icon: 'icon-shanchu-',
+    isShow: true,
+    hotKey: ['delete', 'enter'],
+    disable: () => editorStore.moveableManager.currentWidget,
+    handler() {
+      const widgetEl = editorStore.moveableManager.currentWidget
+      if (widgetEl && isWidget(widgetEl)) editorStore.removeWidget(widgetEl)
+    }
+  },
+]
+const contextmenuList = ref(contextmenuData)
+
+function createHotkeyMap() {
+  const keyMap = {}
+  contextmenuData.forEach((item: object) => {
+    if (Array.isArray(item.hotKey)) {
+      item.hotKey.forEach(key => isFunction(item.handler) && (keyMap[key] = item.handler))
+    } else if (isString(item.hotKey)) keyMap[item.hotKey] = item.handler
+  })
+  return keyMap
+}
+
 
 onMounted(() => {
   editorStore.designCanvasTarget = designCanvas.value
@@ -112,6 +166,7 @@ onMounted(() => {
   editorStore.displayLineGuides(true)
   editorStore.updateCanvasStyle(templateConfig)
   editorStore.updateCanvasScale()
+  hotkeyMap.value = createHotkeyMap()
 })
 
 async function listenContextmenu(ev) {
@@ -186,6 +241,7 @@ onUnmounted(() => {
 .contextmenu-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 200px;
   height: 40px;
   text-align: start;
@@ -194,11 +250,12 @@ onUnmounted(() => {
   background-color: #FFFFFF;
 
   &::before {
-    margin-left: 8px;
+    margin-left: 5px;
   }
 
-  span {
-    margin-left: 10px;
+  .menu-text {
+    margin-right: auto;
+    margin-left: 15px;
   }
 }
 

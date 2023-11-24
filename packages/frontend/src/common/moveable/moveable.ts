@@ -4,6 +4,7 @@ import {
   CssTransformApi,
   getWidgetsName,
   inGroup,
+  isMoveableControl,
   isWidget,
   parseWidget4DomChain,
   parseWidgetsInfo4DomChain,
@@ -76,6 +77,10 @@ export class MoveableManager {
 
   private __running: boolean
   public eventHookList: Array<any>
+
+  public __temp__ = {
+    mousedownEl: void 0
+  }
 
   constructor() {
     this.eventHookList = createNativeEventHookList()
@@ -211,10 +216,12 @@ export class MoveableManager {
   }
 
   /**
-   * 找到鼠标位置下不管第几层面积最小的组
+   * 找到鼠标位置下不管第几层面积最小的组,如果在元素层次穿透过程发现moveable控制按钮，则直接返回
    * */
-  public getMinAreaWidgetForMousePoint(x: number, y: number): HTMLElement {
+  public getMinAreaWidgetForMousePoint(x: number, y: number): HTMLElement | null {
     const mousePointElements = <any>document.elementsFromPoint(x, y)
+    const foundMoveableControl = mousePointElements.find(node => isMoveableControl(node))
+    if (foundMoveableControl) return null
     const mousePointWidgets = mousePointElements.filter(isWidget)
     const mousePointMinAreaWidgets = mousePointWidgets.sort((n1: HTMLElement, n2: HTMLElement) => {
       // 找到鼠标位置下不管第几层面积最小的组件，因为大组件可点击的地方多，这样能保证不管覆盖层级如何都能选择到所有的组件
@@ -270,7 +277,7 @@ export class MoveableManager {
     }
   }
 
-  public mouseup(el: HTMLElement) {
+  public mouseup(el: HTMLElement, ev: MouseEvent) {
     if (editorStore.selectoManager.selected.length) return
     // console.log('draggable', this.moveable.draggable, 'rotatable', this.moveable.rotatable, 'resizable', this.moveable.resizable);
     const widgetsEl = parseWidget4DomChain(el)
@@ -293,6 +300,7 @@ export class MoveableManager {
    * 聚焦某个小组件
    * */
   public click(el: HTMLElement, ev: MouseEvent) {
+    if (isMoveableControl(el)) return
     const widgetsEl = parseWidget4DomChain(el)
     let activeElement = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)  // 获得抬起时的鼠标点下面积最小的组件并进行活跃
     const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)

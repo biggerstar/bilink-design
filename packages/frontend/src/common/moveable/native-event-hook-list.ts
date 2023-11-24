@@ -1,7 +1,7 @@
 import {getElement4EventTarget} from "@/utils/tool";
 import {throttle} from "lodash-es";
 import {setDirection} from "@/common/method/set-direction";
-import {isWidget, parseWidget4DomChain} from "@/utils/method";
+import {isMoveableControl, isWidget, parseWidget4DomChain} from "@/utils/method";
 import {editorStore} from "@/store/editor";
 import {
   WIDGET_GROUP_SELECTION_SELECTOR,
@@ -37,14 +37,19 @@ export default function createNativeEventHookList() {
       call: (ev: MouseEvent) => {
         const moveableManager = editorStore.moveableManager
         const downEl = getElement4EventTarget(ev)
-        setDirection(<any>moveableManager.moveable, downEl)
         const widgetsEl = parseWidget4DomChain(downEl)
-        if (!widgetsEl) {
+        moveableManager.__temp__.mousedownEl = downEl
+        if (!widgetsEl && downEl) {
+          if (!isMoveableControl(downEl)) {   // 如果不是点击moveable变形按钮
+            moveableManager.moveable.target = []
+            editorStore.allowInGroupMovement = false
+          }
           editorStore.removeSeparatingBorder()
-          moveableManager.moveable.target = []
+          editorStore.selectoManager.selected = []
         }
-        moveableManager.mousedown(downEl, ev)
+        setDirection(<any>moveableManager.moveable, downEl)
         moveableManager.moveable.dragStart(ev)
+        moveableManager.mousedown(downEl, ev)
         updateSelection(ev)
       },
       options: {
@@ -70,9 +75,9 @@ export default function createNativeEventHookList() {
         const widgetsEl = parseWidget4DomChain(upEl)
         const moveableManager = editorStore.moveableManager
         if (widgetsEl) {
-          moveableManager.mouseup(upEl)
+          moveableManager.mouseup(upEl, ev)
         } else if (!widgetsEl) {
-          if (upEl.classList.contains('moveable-control')) return   // 如果点击的是 moveable 调整控制按钮则直接返回不会进行失活
+          if (isMoveableControl(upEl)) return   // 如果点击的是 moveable 调整控制按钮则直接返回不会进行失活
           moveableManager.deActive()
         }
       },
@@ -93,7 +98,6 @@ export default function createNativeEventHookList() {
           editorStore.moveableManager.setWidgetState(widgetsEl, {
             draggable: true
           })
-          editorStore.moveableManager.activeWidgets(widgetsEl)
           moveableManager.click(clickEl, ev)
         }
       },

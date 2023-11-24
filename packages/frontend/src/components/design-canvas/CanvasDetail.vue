@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import {nextTick, onMounted, ref, watch} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import Card from "@/components/card/Card.vue";
 import {editorStore} from '@/store/editor'
 import ElColorPicker from 'element-plus/es/components/color-picker/index.mjs'

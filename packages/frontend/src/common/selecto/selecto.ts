@@ -63,9 +63,7 @@ export class SelectoManager {
     })
       .on('selectEnd', () => {
         if (this.selected.length <= 1) return this.selected = []   // 如果未选择或者只选择一个忽略
-        this.selected.forEach(node => {
-          node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE)
-        })
+        this.doSelect()
         this.moveable.setState({   // 如果选择了多个，则显示组外框和四个scale角及旋转按钮
           target: this.selected,
           hideDefaultLines: false,
@@ -73,6 +71,11 @@ export class SelectoManager {
           rotatable: true,
         })
       })
+  }
+
+  public doSelect(selectList?: Array<HTMLElement | SVGElement>) {
+    if (selectList) this.selected = selectList
+    this.selected.forEach(node => node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE))
   }
 
   public destroy() {

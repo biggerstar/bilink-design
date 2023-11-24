@@ -23,6 +23,8 @@ export const WIDGET_SELECTION_SELECTOR = 'widget-box-selection'
 export const WIDGET_SELECTION_SELECTOR_KEEP = 'widget-box-selection-keep'
 export const WIDGET_GROUP_SELECTION_SELECTOR = 'widget-group-box-selection'
 export const WIDGET_GROUP_SELECTION_SEPARATE = 'widget-box-selection-separate'
+export const MOVEABLE_CONTROL = 'moveable-control'
+export const MOVEABLE_ROTATION = 'moveable-rotation'
 
 export const WIDGETS_NAMES = {
   W_TEXT: 'w-text',

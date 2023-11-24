@@ -26,6 +26,7 @@ declare module 'vue' {
     ASlider: typeof import('ant-design-vue/es')['Slider']
     ASpace: typeof import('ant-design-vue/es')['Space']
     ASpin: typeof import('ant-design-vue/es')['Spin']
+    ATag: typeof import('ant-design-vue/es')['Tag']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     AWatermark: typeof import('ant-design-vue/es')['Watermark']
     Button: typeof import('./src/components/button/Button.vue')['default']
