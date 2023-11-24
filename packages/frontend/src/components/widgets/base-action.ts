@@ -29,7 +29,7 @@ export function createBaseCssAction() {
     editorStore.updateActiveWidgetsState({
       width: element.scrollWidth,
       height: element.scrollHeight,
-    })
+    }, {effectDom: true})
     element.style.transformOrigin = transformOrigin
   }
 

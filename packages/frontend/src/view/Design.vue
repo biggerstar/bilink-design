@@ -130,10 +130,12 @@ setTimeout(() => {
   // showTagPage('text')
   // showTagPage('images')
   // showTagPage('template')
+  // showTagPage('my-design')
+  showTagPage('add-panel')
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
-function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material' = "") {
+function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material' | 'my-design' | 'add-panel' = "") {
   activeTagName.value = activeTagName.value !== name ? name : void 0
   currentAsideTagComp.value = name ? asideTagMap[activeTagName.value] : void 0
   pageConfig.value

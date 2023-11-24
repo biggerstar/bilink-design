@@ -98,13 +98,12 @@ export class MoveableManager {
     const moveable = new Moveable(container, moveableOptions);
     this.moveable = moveable
 
-
     /**
      * 自动生成合适的组件位置和变换大小，并同步到当前使用的模板配置中
      * */
     function syncMatrixTransform(transform: string, target: Element) {
       let matrix: DOMMatrix = new (WebKitCSSMatrix || DOMMatrix)(transform)
-      const updateObj: Record<any, any> = {
+      const updateObj: Partial<LayoutWidget> = {
         transform: {
           tx: 0,   // translateX 和 Y
           ty: 0,

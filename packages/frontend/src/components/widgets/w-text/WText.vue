@@ -1,6 +1,3 @@
-<!--
-  展示组件，不做任何交互
--->
 <template>
   <div
     :data-uuid="props.config['uuid']"
@@ -12,7 +9,6 @@
       editing:editing
     }"
     @dblclick="dbClickW_Widget"
-    @blur="blurText"
   >
     <!--    <canvas ref="canvasRef"></canvas>-->
     <a-spin :spinning="showSpin" size="large">
@@ -20,7 +16,10 @@
         <span
           v-for="(item,index) in textContents"
           :key="index"
-          v-html="filterText(item.content)"
+          @blur="blurText(item)"
+          @input="inputText(item)"
+          v-html="item.content"
+          spellcheck="false"
           :style="{
             color:item.color,
             fontFamily:item.fontFamily,
@@ -31,7 +30,12 @@
           }"
         > </span>
       </div>
-      <div v-else class="edit-widget-area" ref="textRef" v-html="textContent" spellcheck="false">
+      <div
+        v-else
+        class="edit-widget-area" ref="textRef"
+        @blur="blurText"
+        @input="inputText"
+        v-html="textContent" spellcheck="false">
       </div>
     </a-spin>
     <slot></slot>
@@ -81,7 +85,12 @@ baseCssAction.expand({  // 对传入状态的处理函数
     baseCssAction.updateBoxSize()
   },
   content: (text) => textContent.value = filterText(text),
-  contents: (textList) => textContents.value = textList,
+  contents: (textList: any[]) => textList && (textContents.value = textList.map(item => {
+    return {
+      ...item,
+      content: filterText(item.content)
+    }
+  })),
   textAlign: (name: string) => {
     const config = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
     if (!config) return
@@ -112,20 +121,41 @@ onMounted(async () => {
       baseCssAction.setState(props.config)
     }
   })
+
+  W_Widget.value.addEventListener("keydown", (ev) => {
+    console.log(ev.target);
+    // console.log(textRef.value.innerText)
+  })
+
+
 })
 
-function dbClickW_Widget() {
-  const el = <HTMLElement>W_Widget.value
-  el.contentEditable = 'plaintext-only'
-  el.focus()
-  if (!editing.value) selectAllText4Element(el)   // 只有首次双击会全选，后面编辑状态双击根据不同系统自己选择文字
-  editing.value = true
+
+let inputContentTemp = ''  // 文字输入临时
+
+function inputText(item) {
+  console.log(item)
+  editorStore.updateActiveWidgetsState({content: textRef.value.innerText}, {effectDom: false})
+  inputContentTemp = filterText(textRef.value.innerText).replaceAll(' ', '</br>')
 }
 
-function blurText() {
-  editing.value = false
-  W_Widget.value!.contentEditable = String(false)
+function dbClickW_Widget() {
+  const el = <HTMLElement>textRef.value
+  el.contentEditable = 'plaintext-only'
+  if (!editing.value) selectAllText4Element(el)   // 只有首次双击会全选，后面编辑状态双击根据不同系统自己选择文字
+  editing.value = true
+  el.focus()
+}
+
+function blurText(item) {
   window.getSelection().removeAllRanges()
+  textRef.value!.contentEditable = String(false)
+  editing.value = false
+  console.log(textContents)
+  if (inputContentTemp) {
+    textContent.value = inputContentTemp
+    inputContentTemp = ''
+  }
 }
 
 </script>
@@ -152,7 +182,7 @@ function blurText() {
 }
 
 .editing {
-  cursor: text;
+  cursor: text !important;
   user-select: text;
 }
 </style>

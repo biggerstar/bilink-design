@@ -9,7 +9,9 @@ declare module 'vue' {
   export interface GlobalComponents {
     AButton: typeof import('ant-design-vue/es')['Button']
     ACascader: typeof import('ant-design-vue/es')['Cascader']
+    AddPanel: typeof import('./src/components/aside/add-panel/AddPanel.vue')['default']
     ADropdown: typeof import('ant-design-vue/es')['Dropdown']
+    AEmpty: typeof import('ant-design-vue/es')['Empty']
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
     AllImagesDetail: typeof import('./src/components/aside/images/AllImagesDetail.vue')['default']
     AllMaterialDetail: typeof import('./src/components/aside/material/AllMaterialDetail.vue')['default']
@@ -49,6 +51,7 @@ declare module 'vue' {
     Material: typeof import('./src/components/aside/material/Material.vue')['default']
     More: typeof import('./src/components/header/More.vue')['default']
     MorePage: typeof import('./src/components/header/MorePage.vue')['default']
+    MyDesign: typeof import('./src/components/aside/my-design/MyDesign.vue')['default']
     Right: typeof import('./src/components/header/Right.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

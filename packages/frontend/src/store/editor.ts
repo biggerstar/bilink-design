@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {MoveableManager} from "@/common/moveable/moveable";
 import {
   CSS_DEFINE,
@@ -29,6 +31,7 @@ import {Emitter} from 'mitt'
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
 import {apiGetDetail, apiPostDetail} from "@/api/getDetail";
 import {notification} from "ant-design-vue";
+import {mockUserId} from "@/config/widgets-map";
 
 /**
  * 设计页面(/design) 的store
@@ -99,13 +102,14 @@ class EditorStore {
    * safe 安全合并，在源对象上若没有的不会被合并, 默认 false
    * effectDom 本次设置的值是否对应到dom并影响dom效果 ， 默认 true
    * */
-  public updateActiveWidgetsState<T extends Record<any, any>>(activeInfo: T, options: { safe?: boolean, effectDom?: boolean, widgetEl?: Element } = {}): void {
-    const {effectDom = true, widgetEl} = options
+  public updateActiveWidgetsState<T extends Partial<LayoutWidget>>(activeInfo: T, options: { safe?: boolean, effectDom?: boolean, widgetEl?: Element } = {}): void {
+    const {effectDom = false, widgetEl} = options
     const currentWidget = widgetEl || editorStore.moveableManager.currentWidget
     if (!currentWidget) return
     /* 通过activeOptions引用更新在 currentTemplate.items 中的配置  */
     const currentOptions = currentWidget[DESIGN_OPTIONS]
     // console.log(currentOptions)
+    // console.log(activeInfo)
     deepmerge(currentOptions, activeInfo, options)
     this.moveableManager?.moveable?.updateRect()
     this.lineGuides?.updateGuidesStyle?.()
@@ -498,7 +502,7 @@ class EditorStore {
     const currentTemplate = toRaw(editorStore.currentTemplate)
     if (!currentTemplate) saveNotification("error", '哦吼, 系统错误,没找到本地模板数据')
     const reqBody: any = {
-      uid: 123456,   // 先默认用户，后面有加入用户系统的时候在进行区分
+      uid: mockUserId,   // 先默认用户，后面有加入用户系统的时候在进行区分
       data: currentTemplate
     }
     // console.log(currentTemplate)

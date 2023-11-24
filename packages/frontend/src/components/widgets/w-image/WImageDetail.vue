@@ -26,7 +26,7 @@ import SliderNumber from '@/components/slider-number/SliderNumber.vue'
 import {isNumber} from "is-what";
 
 const widgetOpacity = ref()
-const opacityChanged = (val) => editorStore.updateActiveWidgetsState({opacity: val / 100})
+const opacityChanged = (val) => editorStore.updateActiveWidgetsState({opacity: val / 100},{effectDom:true})
 onMounted(() => {
   const currentOptions = toRaw(editorStore.getCurrentOptions() || {})
   widgetOpacity.value = isNumber(currentOptions.opacity) ? currentOptions.opacity * 100 : 100

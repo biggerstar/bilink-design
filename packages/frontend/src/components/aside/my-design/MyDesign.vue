@@ -41,14 +41,47 @@
     <div class="container pl-[10px] pr-[12px] mb-[50px] w-full h-full">
       <justified-infinite-grid
         :gap="8"
-        :column-range="[1,2]"
+        :column-range="[1,3]"
       >
         <div
-          class="overflow-hidden cursor-pointer"
+          class="template-preview overflow-hidden cursor-pointer relative"
           v-for="(childItem,index) in materialDetail"
           @click="loadNewPoster(childItem)"
           :key="childItem.title + index.toString()"
         >
+          <a-popover v-model:open="childItem.show" trigger="click"
+                     @click.stop.prevent
+                     class="popover-btn absolute right-1.5 top-1.5"
+                     placement="bottomLeft">
+            <div @click="(childItem.show=true)  "
+                 class="iconfont icon-gengduosangedian w-[28px] h-[16px]  leading-4 rounded-lg  transition"></div>
+            <template #content>
+              <div class=" min-w-[300px]"></div>
+              <div class="font-bold text-[1.1rem] pb-4">{{ childItem.title }}</div>
+              <div class="text-[1.1rem]">
+                <div>
+                  <a-space>
+                    <span>类型</span>
+                    <span>{{ childItem.type }}</span>
+                  </a-space>
+                </div>
+                <div>
+                  <a-space>
+                    <span>大小</span>
+                    <span>{{ `${childItem.preview.width} x ${childItem.preview.height} px` }}</span>
+                  </a-space>
+                </div>
+                <hr class="hr-line" style="width: 100%"/>
+                <div class="text-[1rem] hover:bg-gray-100 not-user-select">
+                  <div class="flex h-[40px] items-center cursor-pointer"
+                       @click="deleteUserTemplate(childItem)">
+                    <span class="iconfont icon-shanchu- ml-[10px]"></span>
+                    <span class="ml-3">删除</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </a-popover>
           <img
             draggable="false"
             class="w-full h-full rounded-lg bg-no-repeat"
@@ -62,23 +95,24 @@
         </div>
       </justified-infinite-grid>
     </div>
+    <a-empty v-if="!materialDetail.length" description="您还没有创作模板哦"/>
   </InfiniteScroll>
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue'
-import {apiGetWidgets} from "@/api/getWidgets";
+import {onMounted, ref} from 'vue'
 import {JustifiedInfiniteGrid} from "@egjs/vue3-infinitegrid";
 import {QuestionCircleFilled} from '@ant-design/icons-vue';
 import {editorStore} from "@/store/editor";
-import {apiGetDetail} from "@/api/getDetail";
+import {apiDeleteDetail, apiGetDetail} from "@/api/getDetail";
 import {handleImageError} from '@/utils/method'
+import {mockUserId} from "@/config/widgets-map.js";
+import {message} from 'ant-design-vue';
 
 const props = defineProps({
-  id: {
-    type: [Number, String, Array],
-    required: true,
-    default: ''
+  config: {
+    type: Object,
+    default: {}
   }
 })
 
@@ -89,30 +123,19 @@ const selectedTemplate = ref()
 const selectedPosterId = ref()
 const materialDetail = ref([])
 let curFetchPage = 1   // 记录当前加载的页数
-let beforeId
-let curUseId = computed(() => Array.isArray(props.id) ? props.id[props.id.length - 1] : props.id)   // 记录当前加载的页数
 let pageEnd = false     // 数据是否已经都加载完了
 
 onMounted(() => loadNewRecordList())
-watch(props, () => {
-  if (curUseId.value !== beforeId) {
-    beforeId = curUseId.value
-    curFetchPage = 1
-    pageEnd = false
-    materialDetail.value = []
-    loadNewRecordList()
-  }
-})
 
 function loadNewRecordList() {
-  if (!curUseId.value || isLoading.value || pageEnd) return
+  if (isLoading.value || pageEnd) return
   isLoading.value = true
-  apiGetWidgets({
-    id: curUseId.value,
+  apiGetDetail({
+    uid: mockUserId,
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,
   }).then(async (res) => {
-    // console.log(curUseId.value, res);
+    // console.log(res);
     if (res.code === 404) return pageEnd = true
     if (res.code !== 200) return
     materialDetail.value = materialDetail.value.concat(res.data)
@@ -137,8 +160,6 @@ async function loadNewPoster(childItem) {
 
 function addToNewProject() {
   replaceProject()
-  // TODO  添加成新页面而不是直接替换
-
 }
 
 async function replaceProject() {
@@ -149,10 +170,42 @@ async function replaceProject() {
   openModal.value = false
 }
 
+async function deleteUserTemplate(item) {
+  item.show = false
+  const res = await apiDeleteDetail({id: item.id})
+  if (res.code === 200) {
+    const foundIndex = materialDetail.value.findIndex(material => item.id === material.id)
+    console.log(foundIndex)
+    if (foundIndex >= 0) {
+      materialDetail.value.splice(foundIndex, 1)
+    }
+    message.success('删除成功', item.id);
+  } else {
+    message.success('删除失败-_-!', item.id, res.message);
+  }
+}
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.template-preview {
+  .popover-btn {
+    opacity: 0;
+    background-color: white;
+
+    &:active {
+      opacity: 1;
+      background-color: var(--color-gray-300);
+    }
+  }
+
+  &:hover {
+    .popover-btn {
+      opacity: 1;
+    }
+  }
+
+}
 </style>
 
 

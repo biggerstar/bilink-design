@@ -108,6 +108,7 @@ import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
 import SliderNumber from "@/components/slider-number/SliderNumber.vue";
 import {isNumber} from "is-what";
+import {LayoutWidget} from "@type/layout";
 
 const isShowFontsPage = ref(false)
 const isShowMainDetailPage = ref(true)
@@ -155,14 +156,14 @@ function textStyleStatusChanged(curItem) {
     style = curItem.style
     activeStyleItems(curItem)
   }
-  editorStore.updateActiveWidgetsState(style)
+  editorStore.updateActiveWidgetsState(style, {effectDom: true})
 }
 
 /**
  * 文字排序控件点击后状态改变
  * */
 function alignStatusChanged(item) {
-  editorStore.updateActiveWidgetsState({textAlign: item.value})
+  editorStore.updateActiveWidgetsState({textAlign: item.value}, {effectDom: true})
 }
 
 /**
@@ -178,9 +179,9 @@ function updateTextStyle(textStyle: any[]) {
   })
 }
 
-const spaceInfoChanged = (item) => editorStore.updateActiveWidgetsState({[item.key]: item.value})
-const textColorChanged = (val) => editorStore.updateActiveWidgetsState({color: val})
-const opacityChanged = (val) => editorStore.updateActiveWidgetsState({opacity: val / 100})
+const spaceInfoChanged = (item) => editorStore.updateActiveWidgetsState({[item.key]: item.value}, {effectDom: true})
+const textColorChanged = (val) => editorStore.updateActiveWidgetsState({color: val}, {effectDom: true})
+const opacityChanged = (val) => editorStore.updateActiveWidgetsState({opacity: val / 100}, {effectDom: true})
 
 
 /** 二级页面选择字体后执行 */
@@ -192,10 +193,10 @@ function choiceFont(item) {
 
 /** 更新与加载远程字体 */
 function updateFont() {
-  const font: Record<any, any> = {}
+  const font: Partial<LayoutWidget> = {}
   if (fontSizeValue.value) font.fontSize = Number(fontSizeValue.value)
   if (curFont.value?.id) font.fontFamily = curFont.value.name
-  editorStore.updateActiveWidgetsState(font)
+  editorStore.updateActiveWidgetsState(font, {effectDom: true})
 }
 
 onMounted(() => {

@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 export function getElement4EventTarget(ev: Event): HTMLElement {
   return <HTMLElement>(ev.target || ev['srcElement'])
 }

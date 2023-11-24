@@ -5,6 +5,7 @@
       lass="w-8/12"
       size="large"
       type="primary"
+      @mousedown.prevent
       @click="editorStore.saveProject()">
       保存
     </el-button>

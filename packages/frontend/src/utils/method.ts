@@ -3,7 +3,9 @@
 import {isFunction, isNumber, isObject, isString} from "is-what";
 import {
   DESIGN_OPTIONS,
-  DESIGN_SET_STATE, MOVEABLE_CONTROL, MOVEABLE_ROTATION,
+  DESIGN_SET_STATE,
+  MOVEABLE_CONTROL,
+  MOVEABLE_ROTATION,
   WIDGET_DATASET_IN_GROUP,
   WIDGET_DATASET_NAME,
   WIDGET_DATASET_TYPE,
@@ -68,7 +70,7 @@ export function parseWidget4DomChain(el: HTMLElement, handleValidate?: (target: 
 
 /** 解析元素最近的合并组 */
 export function parseGroupWidget4DomChain(el: HTMLElement) {
-  return parseWidget4DomChain(el, (target) =>  target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
+  return parseWidget4DomChain(el, (target) => target.dataset[WIDGET_DATASET_NAME] === WIDGETS_NAMES.W_GROUP)
 }
 
 export function getWidgetOptionsFromElement(el: Element, clone = false) {
@@ -87,7 +89,7 @@ export function isGroup(target: HTMLElement) {
   return parseWidgetsInfo4DomChain(target).isGroup
 }
 
-export function isMoveableControl(el:Element) {
+export function isMoveableControl(el: Element) {
   return el.classList.contains(MOVEABLE_CONTROL) || el.classList.contains(MOVEABLE_ROTATION)
 }
 

@@ -46,6 +46,8 @@ export default function createNativeEventHookList() {
           }
           editorStore.removeSeparatingBorder()
           editorStore.selectoManager.selected = []
+        } else if (widgetsEl) {
+          if (downEl?.isContentEditable) return  // 如果正在编辑，则不进行拖动
         }
         setDirection(<any>moveableManager.moveable, downEl)
         moveableManager.moveable.dragStart(ev)

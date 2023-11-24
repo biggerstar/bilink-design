@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 export const CSS_DEFINE = {
   '--canvas-width': '--canvas-width',
   '--canvas-height': '--canvas-height',

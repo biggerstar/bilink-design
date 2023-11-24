@@ -2,20 +2,61 @@ import express from "express";
 import {isNumber, isObject, isString} from "is-what";
 import {crawlTemplateDetail} from "../../spider/main/crawl-template-detail.js";
 import AllUserDesign from "../../common/db/model/AllUserDesign.js";
+import ModelAllMaterial from "../../common/db/model/ModelAllMaterial.js";
 
 /**
  * 获取资源具体信息
  * */
 export const router = express.Router();
 router.get('/detail', async (req, res) => {
-  let {id} = req.query
+  let {id, uid, page_num = '1', page_size = '20'} = req.query
+  if (uid && (isString(uid) || isNumber(uid))) {
+    const foundUserDetailList = await AllUserDesign.findAll({
+      where: {  // 找某个用户的当前拥有的模板
+        uid
+      },
+      limit: Number(page_size),
+      offset: Number(page_num)
+    })
+    /*---------------------------------------------------------------------------*/
+    // 被点线保包围的这段代码目的为了返回一个预览图，这是不合理的，后面可以通过用户数据通过后端渲染生成预览图
+    let allSourceIDList = foundUserDetailList.map(detail => detail.dataValues.sourceId)
+    let allSourceIDMappingList = foundUserDetailList.map(detail => {
+      return {
+        id: detail.dataValues.id,
+        sourceId: detail.dataValues.sourceId,
+      }
+    })
+    allSourceIDList = [...new Set(allSourceIDList)]
+    let foundOfficialDetailList
+    if (allSourceIDList.length) {
+      foundOfficialDetailList = await ModelAllMaterial.findAll({
+        where: {
+          id: allSourceIDList
+        },
+      })
+    }
+    if (foundOfficialDetailList?.length) {
+      return res.send({
+        code: 200,
+        message: '成功',
+        foundUserDetailList,
+        data: foundOfficialDetailList.map(detail => {
+          const found = allSourceIDMappingList.find(item => item.sourceId === detail.dataValues.id)
+          detail.dataValues.data.id = found.id
+          return detail.dataValues.data
+        })
+      })
+    }
+    /*---------------------------------------------------------------------------*/
+  }
   if (isString(id)) {
     const userDetail = await AllUserDesign.findByPk(id)
     if (userDetail) {
-      return res.status(200).send({   // 后面还需要加入用户鉴权才能获取自身设计图
+      return res.send({   // 后面还需要加入用户鉴权才能获取自身设计图
         code: 200,
         message: '成功',
-        data: userDetail.dataValues.data
+        data: userDetail.dataValues.data,
       })
     }
 
@@ -28,7 +69,7 @@ router.get('/detail', async (req, res) => {
       })
     }
   }
-  res.send({
+  res.status(200).send({
     code: 404,
     message: '资源不存在'
   })
@@ -52,6 +93,7 @@ router.post('/detail', async (req, res) => {
     }
     if (!userTemplateId) {
       const createdDetail = await AllUserDesign.create({   // 没找到就创建
+        sourceId: id,
         uid,
         data
       })
