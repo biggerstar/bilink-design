@@ -4,7 +4,7 @@ import {pick} from "lodash-es";
 
 export async function apiGetDetail(opt: { id?: string | number, uid?: string | number, page_size?: string | number, page_num?: string | number } = {}, returnData: boolean = true) {
   if (!opt.id && !opt.uid) console.error('[apiGetDetail] 您需要传入获取组件详情的id 或 uid')
-  const res = await axios.get('/detail', {params: opt})
+  const res = await axios.get('/detail', {params: opt,maxRedirects:3})
   return returnData ? res?.data || [] : res
 }
 

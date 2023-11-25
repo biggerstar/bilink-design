@@ -86,11 +86,17 @@
             draggable="false"
             class="w-full h-full rounded-lg bg-no-repeat"
             style="border: #eae8e8 solid 1px;object-fit: cover; background-size: cover;"
+            v-if="childItem?.preview?.url"
             :src="`${childItem.preview.url}`"
             :alt="childItem.title"
             data-grid-maintained-target="true"
             @error="handleImageError($event)"
           />
+          <div v-else
+               class="fill-box flex flex-col justify-center font-bold text-[0.9rem] bg-gray-100 border-solid border-2 border-gray-200 rounded-lg">
+            <div v-if="childItem.title">{{ childItem.title}}</div>
+            <div v-else>无预览图</div>
+          </div>
         </div>
       </justified-infinite-grid>
     </div>

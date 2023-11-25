@@ -35,11 +35,18 @@ router.get('/detail', async (req, res) => {
       return res.send({
         code: 200,
         message: '成功',
-        foundUserDetailList,
         data: foundUserDetailList.map(detail => {
           const found = foundOfficialDetailList.find(item => item.dataValues.id === detail.dataValues.sourceId)  // 遍历用户模板(为了保持更新事件在前顺序)，并从官方模板找到原模板信息
-          found.dataValues.data.id = detail.dataValues.id
-          return found.dataValues.data
+          let mapResult: Record<any, any> = {}
+          if (found) mapResult = found.dataValues.data
+          else {  // 没找到官方源设计图则说明是用户创建的白板设计图
+            const firstLayout = detail.dataValues.data?.layouts?.[0]  // 第一个设计图
+            if (firstLayout) {
+              mapResult.title = firstLayout?.title
+            }
+          }
+          mapResult.id = detail.dataValues.id
+          return mapResult
         })
       })
     }
@@ -72,14 +79,15 @@ router.get('/detail', async (req, res) => {
 
 router.post('/detail', async (req, res) => {
   let {id, uid, data} = req.body || {}
+  // console.log({id, uid, data})
   if ((isNumber(uid) || isString(uid)) && uid && data && isObject(data)) {  // uid 和 data 是必要的
     let userTemplateId = null    // 返回前端的该用户模板的新id,如果是执行更新，原样返回
-    if ((isNumber(id) || isString(id)) && id) {   // 传入id说明意图更新模板数据，尝试找找有没有在数据库中
-      const userDetail = await AllUserDesign.findByPk(id)
+    if (id && (isNumber(id) || isString(id))) {   // 传入id说明意图更新模板数据，尝试找找有没有在用户设计图数据库中
+      const userDetail = await AllUserDesign.findByPk(Number(id))
       if (userDetail) {
         await AllUserDesign.update({
           data,
-          updatedAt: Date.now() / 1000
+          updatedAt: Math.ceil(Date.now() / 1000)
         }, {   // 找到直接更新
           where: {
             id,
@@ -89,13 +97,20 @@ router.post('/detail', async (req, res) => {
         userTemplateId = id
       }
     }
-    if (!userTemplateId) {
-      const createdDetail = await AllUserDesign.create({   // 没找到就创建
-        sourceId: id,
-        uid,
+    if (!userTemplateId) {  // 没找到用户设计图就创建
+      let sourceId
+      const inAllMaterial = await ModelAllMaterial.findByPk(id)
+      if (inAllMaterial) {
+        // 目的1: 能在素材中找到用户指定传入的源id就将该id用作用户模板的源id，检测的目的是保证可用性和防止前端乱传id
+        // 目的2: 如果指定的id没找到说明是新的用户模板，进行创建并返回该模板的新id
+        sourceId = inAllMaterial.dataValues.id
+      }
+      const createdDetail = await AllUserDesign.create({
+        sourceId: sourceId,
+        uid: Number(uid),
         data,
-        updatedAt: Date.now() / 1000,
-        createdAt: Date.now() / 1000,
+        updatedAt: Math.ceil(Date.now() / 1000),
+        createdAt: Math.ceil(Date.now() / 1000),
       })
       userTemplateId = createdDetail.dataValues.id
     }
@@ -121,7 +136,7 @@ router.delete('/detail', async (req, res) => {
   if (isNumber(id) || isString(id)) {
     const deletedCount = await AllUserDesign.destroy({
       where: {
-        id
+        id: Number(id)
       }
     } as any)
     if (deletedCount > 0) {

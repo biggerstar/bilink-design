@@ -1,9 +1,11 @@
 <template>
   <!--  --------------------header---------------------  -->
-  <div class="header not-user-select min-w-[240px]">
-    <div class="header-left" v-if="pageConfig">{{ pageConfig.brand }}</div>
+  <div class="header not-user-select min-w-[240px]" v-if="pageConfig">
+    <div class="header-left">
+      <HeaderLeft></HeaderLeft>
+    </div>
     <div class="header-right">
-      <HeaderRight v-if="pageConfig"></HeaderRight>
+      <HeaderRight></HeaderRight>
     </div>
   </div>
   <div class="work-area not-user-select">
@@ -65,8 +67,15 @@
             <hr class="hr-line"/>
             <p
               @click="showTagPage('template')"
-              class="text-[1.2rem] cursor-pointer text-[#2154F4]"
-              style="letter-spacing: 2px">触摸我去看看其他模板吧</p>
+              class="text-[1.2rem] cursor-pointer text-[#0984e3] hover:text-[#2154F4]"
+              style="letter-spacing: 2px">
+              触摸我去看看其他模板吧
+            </p>
+            <div
+              @click="editorStore.initCanvas()"
+              class="text-[1.1rem] text-gray-400 hover:text-gray-600 cursor-pointer mt-[10px]">
+              创建空白画板
+            </div>
           </div>
           <a-spin v-else :spinning="!showDesignCanvas" size="large"></a-spin>
         </div>
@@ -126,7 +135,8 @@ import {defaultSelectOptions, SelectoManager} from "@/common/selecto/selecto";
 import {WIDGETS_NAMES} from "@/constant";
 import {apiGetDetail} from "@/api/getDetail";
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
-import HeaderRight from "@/components/header/HeaderRight.vue";
+import HeaderRight from "@/components/header/header-right/HeaderRight.vue";
+import HeaderLeft from "@/components/header/header-left/HeaderLeft.vue";
 
 const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
@@ -187,7 +197,7 @@ function listenMouseDownEvent(ev: MouseEvent) {
 /**
  * 载入工程配置成功后调用
  * */
-function loadEditorTemplate(templateData: { id: string, data: Record<any, any> }) {
+function loadEditorTemplate(templateData: { id?: string, data: Record<any, any> }) {
   editorStore.loadEditorProject(templateData.data)
   curDetailComp.value = getCurDetailComp()
   showDesignCanvas.value = false
@@ -248,7 +258,7 @@ onMounted(async () => {
     showTemplateId.value = curUrlSpecifyId
     apiGetDetail({id: curUrlSpecifyId}).then(res => {
       if (res.code !== 200) return showNotFoundTemplate.value = true
-      loadEditorTemplate({
+      editorStore.bus.emit('loadTemplate', {
         id: curUrlSpecifyId,
         data: res.data
       })

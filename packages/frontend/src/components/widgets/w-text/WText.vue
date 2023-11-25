@@ -8,6 +8,7 @@
     :class="{
       editing:editing
     }"
+    @keydown="listenKeydown"
     @blur="blurText"
     @dblclick="dbClickW_Widget"
   >
@@ -18,7 +19,6 @@
           v-for="(item,index) in textContents"
           :key="index"
           @blur="blurText(item)"
-          @input="inputText(item)"
           v-html="item.content"
           spellcheck="false"
           :style="{
@@ -34,7 +34,6 @@
       <div
         v-else
         class="edit-widget-area" ref="textRef"
-        @input="inputText"
         v-html="textContent" spellcheck="false">
       </div>
     </a-spin>
@@ -121,17 +120,11 @@ onMounted(async () => {
       baseCssAction.setState(props.config)
     }
   })
-  // W_Widget.value.addEventListener("keydown", (ev) => {
-  //   console.log(ev.target);
-  //   // console.log(textRef.value.innerText)
-  // })
-
 })
-
 
 let inputContentTemp = ''  // 文字输入临时
 
-function inputText() {
+function listenKeydown() {
   // console.log(item)
   editorStore.updateActiveWidgetsState({content: textRef.value.innerText}, {effectDom: false})
   inputContentTemp = filterText(textRef.value.innerText).replaceAll(' ', '</br>')
@@ -139,8 +132,7 @@ function inputText() {
 
 function dbClickW_Widget() {
   const el = <HTMLElement>textRef.value
-  W_Widget.value.contentEditable = String(true)
-  Array.from(W_Widget.value.querySelectorAll('*')).forEach(node => node.contentEditable = String(true))  // 将组件下所有元素变成可编辑，用于富文本支持，必须要这一步
+  switchEditable(true)
   el.contentEditable = 'plaintext-only'
   if (!editing.value) selectAllText4Element(el)   // 只有首次双击会全选，后面编辑状态双击根据不同系统自己选择文字
   editing.value = true
@@ -149,14 +141,19 @@ function dbClickW_Widget() {
 
 function blurText() {
   window.getSelection().removeAllRanges()
-  W_Widget.value.contentEditable = String(false)
-  Array.from(W_Widget.value.querySelectorAll('*')).forEach(node => node.contentEditable = String(false)) // 关闭所有组件可编辑状态
+  switchEditable(false)
   editing.value = false
   // console.log(textContents)
   if (inputContentTemp) {
     textContent.value = inputContentTemp
     inputContentTemp = ''
   }
+}
+
+function switchEditable(status: boolean) {
+  if (!W_Widget.value) return
+  W_Widget.value.contentEditable = String(status)
+  Array.from(W_Widget.value.querySelectorAll('*')).forEach(node => node.contentEditable = String(status)) // 关闭所有组件可编辑状态
 }
 
 </script>

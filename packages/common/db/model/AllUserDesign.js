@@ -16,7 +16,7 @@ const AllUserDesign = sequelize.define('all-user-design', {
   },
   sourceId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
   data: {
     type: DataTypes.JSON,

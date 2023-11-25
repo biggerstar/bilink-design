@@ -52,8 +52,8 @@
 <script setup lang="ts">
 import {editorStore} from "@/store/editor";
 import {onMounted, ref, shallowRef, watch} from "vue";
-import Download from "@/components/header/Download.vue";
-import Shared from "@/components/header/Shared.vue";
+import Download from "@/components/header/header-right/Download.vue";
+import Shared from "@/components/header/header-right/Shared.vue";
 
 const moreOperationList = ref()
 const currentActionConfig = shallowRef()

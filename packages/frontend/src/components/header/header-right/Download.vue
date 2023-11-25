@@ -37,7 +37,7 @@
 import {onMounted, ref} from "vue";
 import {DESIGN_AREA_BOUNDARY_SELECTOR} from "@/constant";
 import {notification} from "ant-design-vue";
-import {sleep} from "../../../../common/tool/tool";
+import {sleep} from "../../../../../common/tool/tool";
 import html2canvas from "html2canvas";
 import {jsPDF} from "jspdf";
 
