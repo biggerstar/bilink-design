@@ -1,14 +1,8 @@
 import {getElement4EventTarget} from "@/utils/tool";
 import {throttle} from "lodash-es";
-import {setDirection} from "@/common/method/set-direction";
 import {isMoveableControl, isWidget, parseWidget4DomChain} from "@/utils/method";
 import {editorStore} from "@/store/editor";
-import {
-  WIDGET_GROUP_SELECTION_SELECTOR,
-  WIDGET_SELECTION_SELECTOR,
-  WIDGET_SELECTION_SELECTOR_KEEP,
-  WIDGET_SELECTOR
-} from "@/constant";
+import {WIDGET_GROUP_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR_KEEP} from "@/constant";
 
 /**
  * 自动更新当前的框选框
@@ -19,10 +13,8 @@ function updateSelection(ev: MouseEvent) {
   const activeElement = moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
   // console.log('activeElement', activeElement)
   /*------------------------------移除当前所有框选--------------------------------------------*/
-  const elements = editorStore.editorAreaBoxTarget.querySelectorAll(WIDGET_SELECTOR)
-  elements.forEach(element => {
-    element.classList.remove(WIDGET_GROUP_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR_KEEP)
-  })
+  const elements = editorStore.getAllWidget()
+  elements.forEach(element => element.classList.remove(WIDGET_GROUP_SELECTION_SELECTOR, WIDGET_SELECTION_SELECTOR_KEEP))
   // console.log(moveableManager.currentGroupElement,moveableManager.currentWidget,activeElement)
   /*-------------------------重新为三种不同目标(group，小组件, hover)添加框选------------------------------*/
   if (moveableManager.currentGroupElement) moveableManager.currentGroupElement.classList.add(WIDGET_GROUP_SELECTION_SELECTOR)
@@ -35,22 +27,7 @@ export default function createNativeEventHookList() {
     {
       name: 'mousedown',
       call: (ev: MouseEvent) => {  // moveable 主程
-        const moveableManager = editorStore.moveableManager
-        const downEl = getElement4EventTarget(ev)
-        const widgetsEl = parseWidget4DomChain(downEl)
-        if (!widgetsEl && downEl) {
-          if (!isMoveableControl(downEl)) {   // 如果不是点击moveable变形按钮
-            moveableManager.moveable.target = []
-            editorStore.allowInGroupMovement = false
-          }
-          editorStore.removeSeparatingBorder()
-          editorStore.selectoManager.selected = []
-        } else if (widgetsEl) {
-          if (downEl?.isContentEditable) return  // 如果正在编辑，则不进行拖动
-        }
-        setDirection(<any>moveableManager.moveable, downEl)
-        moveableManager.moveable.dragStart(ev)
-        moveableManager.mousedown(downEl, ev)
+        editorStore.moveableManager.mousedown(ev)
         updateSelection(ev)
       },
       options: {
@@ -61,26 +38,22 @@ export default function createNativeEventHookList() {
     {
       name: 'mousemove',
       call: throttle((ev: MouseEvent) => {
-        const overEl = getElement4EventTarget(ev)
-        if (!overEl) return;
-        // const moveableManager = editorStore.moveableManager
-        // if (ev.buttons !== 0) moveableManager.mousemove(overEl)
         updateSelection(ev)
-      }, 260),
+      }, 160),
     },
     {
       name: 'mouseup',
       call: (ev: MouseEvent) => {
         const upEl = getElement4EventTarget(ev)
         if (!upEl) return
-        const widgetsEl = parseWidget4DomChain(upEl)
         const moveableManager = editorStore.moveableManager
-        if (widgetsEl) {
-          moveableManager.mouseup(upEl, ev)
-        } else if (!widgetsEl) {
-          if (isMoveableControl(upEl)) return   // 如果点击的是 moveable 调整控制按钮则直接返回不会进行失活
-          moveableManager.deActive()
+        const activeElement = moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+        if (activeElement) moveableManager.mouseup(upEl, ev)
+        else if (!activeElement) {
+          if (!isMoveableControl(upEl)) moveableManager.deActive()   // 如果无点击到组件不是点击的是 moveable 调整控制按钮则进行失活
         }
+        // console.log(moveableManager.currentGroupElement, moveableManager.currentWidget)
+        updateSelection(ev)
       },
       options: {
         capture: true,
@@ -94,13 +67,11 @@ export default function createNativeEventHookList() {
         const widgets: HTMLElement[] = <any>Array.from(document.elementsFromPoint(ev.pageX, ev.pageY).filter(isWidget))
         const widgetsEl = widgets.length ? widgets[widgets.length - 1] : parseWidget4DomChain(clickEl)
         const moveableManager = editorStore.moveableManager
-        updateSelection(ev)
         if (widgetsEl) {
-          editorStore.moveableManager.setWidgetState(widgetsEl, {
-            draggable: true
-          })
+          editorStore.moveableManager.setWidgetState(widgetsEl, {draggable: true})
           moveableManager.click(clickEl, ev)
         }
+        updateSelection(ev)
       },
       options: true
     },

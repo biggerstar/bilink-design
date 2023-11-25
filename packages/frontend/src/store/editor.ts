@@ -9,12 +9,14 @@ import {
   WIDGET_GROUP_SELECTION_SELECTOR,
   WIDGET_GROUP_SELECTION_SEPARATE,
   WIDGET_SELECTION_SELECTOR_KEEP,
-  WIDGET_SELECTOR
+  WIDGET_SELECTOR,
+  WIDGETS_NAMES
 } from "@/constant";
 import {nextTick, reactive, toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
 import {
   CssTransformApi,
+  getWidgetName,
   getWidgetOptionsFromElement,
   loadFont,
   parseGroupWidget4DomChain,
@@ -26,7 +28,7 @@ import {LineGuides} from "@/common/line-guides/line-guides";
 import {CurrentTemplate, LayoutConfig, LayoutWidget, Material, PageConfig} from "@/types/layout";
 import {apiGetFonts} from "@/api/getFonts";
 import {SelectoManager} from "@/common/selecto/selecto";
-import {isNil} from "lodash-es";
+import {cloneDeep, isNil} from "lodash-es";
 import {v4 as uuid4} from "uuid";
 import {Emitter} from 'mitt'
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
@@ -34,6 +36,13 @@ import {apiGetDetail, apiPostDetail} from "@/api/getDetail";
 import {notification} from "ant-design-vue";
 import {mockUserId} from "@/config/widgets-map";
 import {DrawGraph} from "@/common/draw-graph/DrawGraph";
+
+type EditorEvent = {
+  loadTemplate: {
+    id?: string,
+    data: any
+  }
+}
 
 /**
  * 设计页面(/design) 的store
@@ -46,7 +55,7 @@ class EditorStore {
   public dragWidgetManager: DragWidgetManager
   public lineGuides: LineGuides
   public drawGraph: DrawGraph
-  public bus: Emitter<any>
+  public bus: Emitter<EditorEvent>
   /** 所有字体 */
   public allFont: object[] = []
 
@@ -78,7 +87,7 @@ class EditorStore {
     this.currentDraggingMaterial = item
   }
 
-  public currentClipboard: LayoutWidget = null
+  public currentClipboard: LayoutWidget[] = []
 
   /** 获取当前活跃小组件的配置信息 */
   public getCurrentOptions(): Record<any, any> {
@@ -103,18 +112,20 @@ class EditorStore {
     this.isSeparating = false
   }
 
-
-  /** 销毁当前正在编辑的工程 */
-  public destroyEditorProject() {
-    this.currentTemplateIndex = 0
-    this.allowInGroupMovement = false
-    this.isSeparating = false
-    this.currentTemplate = null
-    editorStore.bus.emit('destroyTemplate')
-  }
-
-  public initCanvas(){
-
+  public initCanvas() {
+    const currentTemplate = {
+      layouts: [
+        {
+          width: 1200,
+          height: 2200,
+          elements: [],
+          title: '未命名设计'
+        },
+      ]
+    }
+    editorStore.bus.emit('loadTemplate', {
+      data: currentTemplate
+    })
   }
 
   /** 设置当前正在活跃的小组件配置,会自动更新源currentProject.items中的配置,是否直接覆盖整个对象(值)
@@ -313,36 +324,30 @@ class EditorStore {
     const currentGroupElement = editorStore.moveableManager.currentGroupElement
     if (!currentGroupElement) return
     this.isSeparating = true
-    const groupConfig: LayoutWidget = currentGroupElement[DESIGN_OPTIONS]
-    const clipElements = toRaw(groupConfig.elements) || []
-    const uuidList = clipElements.map(item => item.uuid)
-    const allWidgets: HTMLElement[] = <any>this.editorAreaTarget.querySelectorAll(WIDGET_SELECTOR)
-    const newWidgetElementList: HTMLElement[] = Array.from(allWidgets).filter(node => uuidList.includes(node.dataset['uuid']))
-    newWidgetElementList.forEach(node => node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE))
-    currentGroupElement.classList.add(WIDGET_GROUP_SELECTION_SELECTOR)
-    this.selectoManager.selected = newWidgetElementList
-
+    const groupConfig: LayoutWidget = getWidgetOptionsFromElement(currentGroupElement)
+    const clipElementsConfigInfo = toRaw(groupConfig.elements) || []
+    const uuidList = clipElementsConfigInfo.map(item => item.uuid)
+    const allWidgets: HTMLElement[] = this.getAllWidget()
+    const addSeparateBorder = () => {
+      const newWidgetElementList: HTMLElement[] = Array.from(allWidgets).filter(node => uuidList.includes(node.dataset['uuid']))
+      newWidgetElementList.forEach(node => node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE))
+      currentGroupElement.classList.add(WIDGET_GROUP_SELECTION_SELECTOR)
+      this.selectoManager.selected = newWidgetElementList
+    }
+    addSeparateBorder()
     this.autoMonitoringGroupMovement(() => {   // 只有等到点击分离组后的外部才真正进行分离
       this.selectoManager.selected = []    // 必须在前面，否则 selectoManager.on('selectEnd') 会将所有选择框选
-      if (!this.isSeparating) return this.removeSeparatingBorder()
-      const currentLayouts = this.getCurrentTemplateLayout()
-      if (!currentLayouts) return
       const latestGroupElement = editorStore.moveableManager.currentGroupElement
       if (!latestGroupElement) return
       const cssTransformApi = new CssTransformApi()
       cssTransformApi.load(latestGroupElement.style.transform)
       const [groupX = 0, groupY = 0] = cssTransformApi.get('translate')  // 获取组在当前画布中位置，解散后子组件需要在自身偏移基础上添加上当所在组在画布中的距离
-      const vueModelElementWidgetConfig = currentLayouts.elements
-      const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === groupConfig)
-      vueModelElementWidgetConfig.splice(curGroupIndex, 1)
-      // TODO  错误在于 分离后点击
-      nextTick(() => {
-        clipElements.forEach(newConfig => {
-          newConfig.left += parseFloat(String(groupX))
-          newConfig.top += parseFloat(String(groupY))
-          this.addMaterialToGroup(newConfig)
-        })
-      }).then()
+      clipElementsConfigInfo.forEach(newConfig => {
+        newConfig.left += parseFloat(String(groupX))
+        newConfig.top += parseFloat(String(groupY))
+        this.addMaterialToGroup(newConfig)
+      })
+      this.removeWidget(groupConfig)
     })
   }
 
@@ -353,8 +358,6 @@ class EditorStore {
     isFunction(this.__temp__.stop) && this.__temp__.stop()  // 添加监听前先停止上一个监听
     if (!this.designCanvasTarget || this.allowInGroupMovement) return
     const self = this
-    const currentGroupElement = editorStore.moveableManager.currentGroupElement
-    if (!currentGroupElement) return
     let isStop = false
 
     /**
@@ -363,6 +366,8 @@ class EditorStore {
      * */
     function monitoringClickGroupOuter(ev: MouseEvent) {
       if (isStop) return
+      const currentGroupElement = editorStore.moveableManager.currentGroupElement
+      if (!currentGroupElement) return
       const target = self.moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
       const foundGroupForTarget = parseWidget4DomChain(target, (node) => currentGroupElement === node)
       if (!foundGroupForTarget) {
@@ -376,10 +381,12 @@ class EditorStore {
 
     function stop() {
       isStop = true
-      self.designCanvasTarget.removeEventListener("mousedown", monitoringClickGroupOuter, false)
-      self.designCanvasTarget.removeEventListener("mouseup", updateRect, false)
+      self.designCanvasTarget.removeEventListener("mousedown", monitoringClickGroupOuter)
+      self.designCanvasTarget.removeEventListener("mouseup", updateRect)
     }
 
+    const currentGroupElement = editorStore.moveableManager.currentGroupElement
+    if (!currentGroupElement) return
     const updateRect = () => currentGroupElement && currentGroupElement[DESIGN_GROUP_UPDATE_RECT]?.()  // 自动调整group尺寸包裹所有子组件
 
     this.designCanvasTarget.addEventListener("mousedown", monitoringClickGroupOuter)
@@ -476,14 +483,17 @@ class EditorStore {
       newWidgetOptions.left = currentTemplateLayout.width / 2 - sizeInfo.width / 2
       newWidgetOptions.top = currentTemplateLayout.height / 2 - sizeInfo.height / 2
     }
+    this.selectoManager.selected = []
     if (!newWidgetOptions.uuid) newWidgetOptions.uuid = uuid4()
-    currentTemplateLayout.elements.push(newWidgetOptions)
+    currentTemplateLayout.elements.push(cloneDeep(newWidgetOptions))   // 添加新组件必须深度克隆，如果传进来是vue代理对象可能会出错，必须断开vue响应式连接
     const vueModelElementOptions = currentTemplateLayout.elements.find(elementConfig => elementConfig.uuid === newWidgetOptions.uuid) // 找到经过vue转换后的组件配置的代理对象
     nextTick(() => {
       const newWidElement = this.findWidgetElement(vueModelElementOptions, "options")
-      if (newWidElement) {
+      // console.log(newWidElement)
+      // if (newWidElement) console.log(getWidgetName(newWidElement))
+      if (newWidElement && getWidgetName(newWidElement) === WIDGETS_NAMES.W_TEXT) {  // 如果是文本组件，进行全选文本使得能更突出显示
         newWidElement.contentEditable = 'true'
-        selectAllText4Element(newWidElement)   // 不管任何组件，有文字的直接全选使其在画布显示更明显
+        selectAllText4Element(newWidElement)
         newWidElement.focus()
       }
     }).then()
@@ -501,7 +511,7 @@ class EditorStore {
       widgetOptions = getWidgetOptionsFromElement(widgetEl)
     } else {
       widgetOptions = target
-      widgetOptions = this.getAllWidget().find(node => getWidgetOptionsFromElement(node) === widgetOptions)
+      widgetEl = this.getAllWidget().find(node => getWidgetOptionsFromElement(node) === widgetOptions)
       if (!widgetOptions) console.error('该配置对应的组件不在画布上')
     }
     const widgetGroupEl = parseGroupWidget4DomChain(<any>widgetEl.parentElement)   // 获取其所在的合并组
@@ -523,6 +533,7 @@ class EditorStore {
     const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === widgetOptions)
     vueModelElementWidgetConfig.splice(curGroupIndex, 1)
     this.moveableManager.moveable.target = []
+    this.selectoManager.selected = []
     this.moveableManager.moveable.updateRect()
     this.moveableManager.moveable.updateSelectors()
   }

@@ -44,6 +44,7 @@ import "v-contextmenu/dist/themes/default.css";
 import {isFunction, isString} from "is-what";
 import {getWidgetOptionsFromElement, isWidget} from "@/utils/method";
 import {HotkeyDirective} from 'v-hotkey3'
+import {LayoutWidget} from "@type/layout";
 
 const vContextmenu = directive // 使用指令
 const vHotkey = HotkeyDirective({})
@@ -101,10 +102,10 @@ const contextmenuData: {
     icon: 'icon-fuzhi',
     isShow: true,
     hotKey: ['ctrl+c', 'command+c'],
-    disable: () => editorStore.moveableManager.currentWidget,
+    disable: () => editorStore.moveableManager.currentWidgets.length,
     handler() {
-      const widgetEl = editorStore.moveableManager.currentWidget
-      if (widgetEl && isWidget(widgetEl)) editorStore.currentClipboard = getWidgetOptionsFromElement(widgetEl, true)
+      const currentWidgets = editorStore.moveableManager.currentWidgets
+      editorStore.currentClipboard = currentWidgets.map((widget: HTMLElement) => getWidgetOptionsFromElement(widget, true))
     }
   },
   {
@@ -112,13 +113,14 @@ const contextmenuData: {
     icon: 'icon-jianqie2',
     isShow: true,
     hotKey: ['ctrl+x', 'command+x'],
-    disable: () => editorStore.moveableManager.currentWidget,
+    disable: () => editorStore.moveableManager.currentWidgets.length,
     handler() {
-      const widgetEl = editorStore.moveableManager.currentWidget
-      if (widgetEl && isWidget(widgetEl)) {
-        editorStore.currentClipboard = getWidgetOptionsFromElement(widgetEl, true)
-        editorStore.removeWidget(widgetEl)
-      }
+      const currentWidgets = editorStore.moveableManager.currentWidgets
+      editorStore.currentClipboard = currentWidgets.map((widget: HTMLElement) => {
+        editorStore.removeWidget(widget)
+        return getWidgetOptionsFromElement(widget, true)
+      })
+
     }
   },
   {
@@ -127,10 +129,10 @@ const contextmenuData: {
     isShow: true,
     isDisable: false,
     hotKey: ['ctrl+v', 'command+v'],
-    disable: () => editorStore.currentClipboard,
+    disable: () => editorStore.currentClipboard.length,
     handler() {
-      editorStore.currentClipboard && editorStore.addMaterialToGroup(editorStore.currentClipboard, null, {
-        autoPosition: true
+      editorStore.currentClipboard.forEach((widgetOptions: LayoutWidget) => {
+        editorStore.addMaterialToGroup(widgetOptions, null, {autoPosition: true})
       })
     }
   },
@@ -139,13 +141,10 @@ const contextmenuData: {
     icon: 'icon-shanchu-',
     isShow: true,
     hotKey: ['delete'],
-    disable: () => editorStore.moveableManager.currentWidget,
+    disable: () => editorStore.moveableManager.currentWidgets.length,
     handler() {
-      const widgetEl = editorStore.moveableManager.currentWidget
-      if (widgetEl && isWidget(widgetEl)) editorStore.removeWidget(widgetEl)
-      if (editorStore.selectoManager.selected.length) {
-        editorStore.selectoManager.selected.forEach(widget => editorStore.removeWidget(widget))
-      }
+      const currentWidgets = editorStore.moveableManager.currentWidgets
+      currentWidgets.forEach((widget: HTMLElement) => editorStore.removeWidget(widget))
     }
   },
 ]

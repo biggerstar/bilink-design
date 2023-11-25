@@ -3,7 +3,7 @@
     :data-uuid="props.config.uuid"
     data-widget-type="widget"
     data-widget-name='w-group'
-    class="w-position not-user-select"
+    class="w-position not-user-select m-auto"
     ref="W_Widget"
   >
     <div class="group-box relative" ref="groupBox">

@@ -21,9 +21,11 @@ export class DragWidgetManager {
     this.__running = true
     const self = this
     let draggingTarget: HTMLElement | null = null
-    let dragOffsetInTarget = {
+    let dragOffsetInTarget = {  // 鼠标mousedown点击位置
       left: 0,
-      top: 0
+      top: 0,
+      startX: 0,
+      startY: 0,
     }
     let dragSourceTargetRect: DOMRect | null = null
 
@@ -33,14 +35,13 @@ export class DragWidgetManager {
       if (!draggingTarget || !dragSourceTargetRect) return
       const currentDraggingMaterial = editorStore.currentDraggingMaterial
       if (!currentDraggingMaterial) return
-      const dragRect = draggingTarget.getBoundingClientRect()
-
-      let scale = (ev.clientX - dragOffsetInTarget.left) / dragSourceTargetRect.left
+      const offsetPx = ev.clientX - dragOffsetInTarget.startX
+      let scale = offsetPx / dragSourceTargetRect.width   // 宽度越大，scale倍率越小
       draggingTarget.style.left = `${ev.clientX - dragOffsetInTarget.left}px`
       draggingTarget.style.top = `${ev.clientY - dragOffsetInTarget.top}px`
       draggingTarget.style.opacity = '1'
-      if (dragRect.width > 300 || dragRect.height > 300) return
-      draggingTarget.style.transform = `scale(${Math.max(1, Math.min(scale ** 2, 5))})`
+      if (offsetPx > 320) return   // 偏移超过320停止缩放
+      draggingTarget.style.transform = `scale(${Math.max(1, Math.min(scale, 5))})`
     }
 
     function mouseup(ev: MouseEvent) {
@@ -50,7 +51,7 @@ export class DragWidgetManager {
       let finallyRect = draggingTarget.getBoundingClientRect()
       let editorAreaBoxRect = editorStore.editorAreaBoxTarget.getBoundingClientRect()
       document.body.removeChild(draggingTarget)
-      dragOffsetInTarget = {left: 0, top: 0}
+      dragOffsetInTarget = {left: 0, top: 0, startX: 0, startY: 0}
       dragSourceTargetRect = null
       editorStore.dragMaterial(null)
       document.removeEventListener('mousemove', mousemove)
@@ -91,6 +92,8 @@ export class DragWidgetManager {
       dragOffsetInTarget = {
         left: ev.clientX - rect.left,
         top: ev.clientY - rect.top,
+        startX: ev.clientX,
+        startY: ev.clientY,
       }
     })
   }

@@ -82,16 +82,29 @@ export function getWidgetSetStateFromElement(el: Element) {
   return el[DESIGN_SET_STATE]
 }
 
+/** 判断某个组件是否在合并组内 */
 export function inGroup(target: HTMLElement) {
   return target.dataset[WIDGET_DATASET_IN_GROUP] === 'true'
 }
 
+/**
+ * 判断某个元素的容器是否是一个组，
+ * 注意：根容器不是一个组
+ * */
 export function isGroup(target: HTMLElement) {
   return parseWidgetsInfo4DomChain(target).isGroup
 }
 
 export function isMaterial(target: HTMLElement) {
   return target.dataset[MATERIAL_DATASET_TYPE] === 'material'
+}
+
+export function getWidgetName(target: HTMLElement) {
+  return target.dataset[WIDGET_DATASET_NAME]
+}
+
+export function getWidgetType(target: HTMLElement) {
+  return target.dataset[WIDGET_DATASET_TYPE]
 }
 
 export function parseMaterial4DomChain(target: HTMLElement) {

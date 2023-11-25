@@ -54,7 +54,7 @@ export class SelectoManager {
       if (ev.removed.length) this.selected = this.selected.filter(item => !ev.removed.includes(item))
       const children = Array.from(editorStore.editorAreaTarget.children)
       this.selected = this.selected.filter(node => children.includes(node))
-      this.moveable.setState({
+      this.moveable.setState({   // 选择中
         hideDefaultLines: true,
         target: this.selected,
         renderDirections: [],
@@ -65,7 +65,7 @@ export class SelectoManager {
         if (this.selected.length <= 1) return this.selected = []   // 如果未选择或者只选择一个忽略
         this.doSelect()
         this.moveable.setState({   // 如果选择了多个，则显示组外框和四个scale角及旋转按钮
-          target: this.selected,
+          target: [],   // 必要，有多选组件时必然无聚焦
           hideDefaultLines: false,
           renderDirections: MOVEABLE_SCALE_DIRECTION,
           rotatable: true,
@@ -75,6 +75,8 @@ export class SelectoManager {
 
   public doSelect(selectList?: Array<HTMLElement | SVGElement>) {
     if (selectList) this.selected = selectList
+    document.querySelectorAll(`.${WIDGET_GROUP_SELECTION_SEPARATE}`)
+      .forEach(node => node.classList.remove(WIDGET_GROUP_SELECTION_SEPARATE))
     this.selected.forEach(node => node.classList.add(WIDGET_GROUP_SELECTION_SEPARATE))
   }
 

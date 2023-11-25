@@ -160,19 +160,9 @@ html, body, #app {
   align-items: center
 }
 
-.widget-box-selection, .widget-group-box-selection, .widget-box-selection-keep, .widget-box-selection-separate {
+.widget-group-box-selection, .widget-box-selection-keep, .widget-box-selection-separate {
   position: relative;
   box-sizing: border-box;
-}
-
-.widget-box-selection:hover::before {
-  content: '';
-  position: absolute;
-  width: calc(100% - var(--widget-box-selection-line-weight));
-  height: calc(100% - var(--widget-box-selection-line-weight));
-  left: 0;
-  top: 0;
-  border: var(--widget-box-selection-color) solid var(--widget-box-selection-line-weight);
 }
 
 .widget-box-selection-keep::before {
@@ -223,7 +213,7 @@ html, body, #app {
 
 :root {
   --canvas-padding: 60px;
-  --widget-box-selection-line-weight: 0.25rem;
+  --widget-box-selection-line-weight: 5px;
   --widget-box-selection-color: #4D7CFF;
   --color-gray-1000: #000000;
   --color-gray-900: #222529;

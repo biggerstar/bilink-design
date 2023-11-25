@@ -23,6 +23,8 @@ import {
 } from "@/constant";
 import {LayoutWidget} from "@type/layout";
 import {pick} from "lodash-es";
+import {getElement4EventTarget} from "@/utils/tool";
+import {setDirection} from "@/common/method/set-direction";
 
 const guideLines = [
   WIDGET_SELECTOR,
@@ -51,10 +53,11 @@ export const defaultMoveableOptions: MoveableOptions = {
   snapGridAll: true,
   snapGridWidth: 6,
   snapGridHeight: 6,
-  snapDistFormat: (v) => `${v}px`,
+  snapDistFormat: (v) => `${Math.round(v / editorStore.getCurScaleValue())}px`,
   isDisplaySnapDigit: true,
   defaultGroupOrigin: '0% 0%',
   renderDirections: MOVEABLE_ALL_DIRECTION,
+  // hideDefaultLines: true,   // 隐藏moveable自带的线，自己使用css进行添加和删除实现更灵活的框选
   // draggable: true,
   // clippable: false,
   // resizable: true,
@@ -73,6 +76,20 @@ export class MoveableManager {
 
   public get currentWidget(): HTMLElement | void {   // 获取当前活跃的组件
     return parseWidget4DomChain(<any>this.currentElement)
+  }
+
+  public get currentWidgets(): (HTMLElement | SVGElement)[] {   // 获取当前选择和活跃的一个或多个组件
+    const selected = editorStore.selectoManager.selected
+    const currentWidget: HTMLElement = <any>this.currentWidget
+    const widgetsInfo = parseWidgetsInfo4DomChain(currentWidget)
+    if (!widgetsInfo) return selected
+    if (!widgetsInfo.isGroup || (widgetsInfo.isGroup && !selected.includes(<any>widgetsInfo.rootWidgetElement))) {
+      selected.push(currentWidget)
+    }
+    return selected.reduce((pre: HTMLElement[], cur: HTMLElement) => {
+      !pre.includes(cur) && isWidget(cur) && pre.push(cur)
+      return pre
+    }, [])
   }
 
   private __running: boolean
@@ -227,50 +244,70 @@ export class MoveableManager {
   }
 
   /**
-   * 点击某个小组件
+   * 点击某个位置( 控制按钮， 空白处，组件  ),主要功能做数据和状态初始化与重置
    * */
-  public mousedown(el: HTMLElement, ev: MouseEvent) {
-    if (editorStore.isSeparating) return
+  public mousedown(ev: MouseEvent) {
+    const el: HTMLElement = getElement4EventTarget(ev)
+    /*----------------------条件截断, 这些情况都不会改变moveable活跃元素----------------------*/
+    if (editorStore.isSeparating) return     // 正在分离元素中退出组件操作
     if (editorStore.drawGraph?.painting) return // 正在绘画dom元素中退出组件操作
+    if (el?.isContentEditable) return  // 如果该元素(文本类元素)正在编辑，则不进行拖动
+
+    /*----------------------数据和配置初始化(鼠标左右键都会执行)-----------------------------*/
     let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
-    let activeElement /* 最终要活跃的组件变量名 */ = minAreaWidget
-    this.currentElement = minAreaWidget // 必须颗粒化精确到内部组件
-    const widgetsInfo = parseWidgetsInfo4DomChain(activeElement, true)
-    if (!widgetsInfo || !widgetsInfo.rootWidgetElement) return this.currentGroupElement = null
-    this.currentGroupElement = widgetsInfo.isGroup ? widgetsInfo.rootWidgetElement : null
-    if (ev.buttons !== 1 || editorStore.selectoManager.selected.length) return  // 只有单击左键才响应
-    /*---------------------------------默认状态------------------------------------------*/
-    if (widgetsInfo.isGroup) activeElement = widgetsInfo.rootWidgetElement      // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
+    const widgetsInfo = parseWidgetsInfo4DomChain(minAreaWidget, true)
+    const beforeGroupElement = this.currentGroupElement
+    this.currentElement = !isMoveableControl(el) ? minAreaWidget || null : null     // 必须颗粒化精确到内部组件
+    this.currentGroupElement = widgetsInfo?.isGroup ? widgetsInfo.rootWidgetElement : null
+    if (ev.buttons !== 1) return  // 只有单击左键才响应
+    // console.log(this.currentElement, this.currentGroupElement)
+    /*!!!【 重置状态分三种情况，点击[ 控制按钮， 空白处，组件 ] 】!!!*/
+    let activeElement /* 最终要活跃的组件变量名 */
+    if (minAreaWidget) activeElement = minAreaWidget
+    if (isMoveableControl(el)) {
+      if (beforeGroupElement) this.currentGroupElement = beforeGroupElement
+      setDirection(<any>this.moveable, el)  /* 点击控制按钮:，则设置本次控制意图 */
+    } else if (!activeElement) { /* 点击空白处: 如果没有点击到任何组件，重置相关状态 */
+      this.moveable.target = []
+      editorStore.isSeparating = false
+      editorStore.allowInGroupMovement = false
+      editorStore.removeSeparatingBorder()
+    }
+    // else 点击组件: 该状态在下方到函数底部所有的代码中进行
+
+    /*---------------------------------重置状态-------------------------------------------*/
+    editorStore.selectoManager.selected = []
+    this.moveable.dragStart(ev)
+    if (!activeElement) return
+
+    /*---------------------------------默认状态-------------------------------------------*/
     this.moveable.setState({  // 先定义状态，最终状态由鼠标抬起后决定( mouseup, click )
       draggable: true,
       rotatable: false,
+      scalable: true,
+      hideDefaultLines: true,
       renderDirections: [],
     })
-    /*-----------------------------在组内且不允许组内移动----------------------------------*/
-    if (inGroup(activeElement) && !editorStore.allowInGroupMovement) {
+    /*---------------------------------点击合并组-------------------------------------------*/
+    if (widgetsInfo?.isGroup && widgetsInfo.rootWidgetElement) activeElement = widgetsInfo.rootWidgetElement   // 默认: 如果点击的是组，则让组进行活跃，用于支持整个组即时移动,如果不是，下面处理
+    /*----------------------------------组内移动-------------------------------------------*/
+    if (inGroup(activeElement) && !editorStore.allowInGroupMovement) { // 点击的目标组件在组内且外部指定不允许组内移动
       this.moveable.setState({draggable: false})
     }
     if (editorStore.allowInGroupMovement) {   // 如果允许组内移动,则聚焦小组件且设置服务器传回的操控配置
       activeElement = minAreaWidget
       this.setWidgetState(minAreaWidget)
-      this.moveable.setState({    // 本应该让所有的组件以服务器为准，这里默认宣布允许组内拖动
+      this.moveable.setState({    // 本应该让所有的组件以服务器为准，这里默认全部允许组内拖动
         draggable: true,
       })
     }
-    if (editorStore.isSeparating) {  // 如果正在分离中，拖动时不能拖动内部，直接将活跃的movable目标定义成其所在组
+    /*----------------------------------合并组分离(拆分)-------------------------------------------*/
+    if (editorStore.isSeparating && widgetsInfo.rootWidgetElement) {  // 如果正在分离中，拖动时不能拖动内部，直接将活跃的movable目标定义成其所在组
       activeElement = widgetsInfo.rootWidgetElement
     }
-
-    // console.log(activeElement)
-    Object.defineProperties(ev, {
-      target: {
-        get: () => activeElement
-      }
-    })
-    if (ev.buttons === 1) {
-      this.active(activeElement)
-      this.moveable.dragStart(ev)
-    }
+    /*----------------------------------聚焦moveable的target----------------------------------------*/
+    this.active(activeElement)
+    this.moveable.dragStart(ev)
   }
 
   public mouseup(el: HTMLElement, _: MouseEvent) {
