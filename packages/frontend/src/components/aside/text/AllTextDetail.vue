@@ -27,6 +27,8 @@
                 style="background-repeat: no-repeat; background-size: cover"
                 width="80"
                 height="80"
+                :data-material-id="childItem.id"
+                :data-material-type="'material'"
                 :src="childItem.preview.url"
                 :alt="childItem.name"
                 @mousedown.capture="()=>editorStore.dragMaterial(childItem)"

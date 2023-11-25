@@ -15,6 +15,8 @@
             style="border: #eae8e8 solid 1px;object-fit: cover; background-size: cover;"
             :src="`${childItem.preview.url}?x-oss-process=image/resize,w_${Math.max(270,Math.round(childItem.preview.width /6))}`"
             :alt="childItem.title"
+            :data-material-id="childItem.id"
+            :data-material-type="'material'"
             data-grid-maintained-target="true"
             @error="handleImageError($event)"
             @mousedown.capture="()=>editorStore.dragMaterial(childItem)"

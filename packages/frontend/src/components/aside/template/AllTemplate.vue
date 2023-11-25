@@ -53,7 +53,6 @@
             draggable="false"
             class="w-full h-full rounded-lg bg-no-repeat"
             style="border: #eae8e8 solid 1px;object-fit: cover; background-size: cover;"
-            @click="openModal = true"
             :src="`${childItem.preview.url}`"
             :alt="childItem.title"
             data-grid-maintained-target="true"
@@ -73,6 +72,7 @@ import {QuestionCircleFilled} from '@ant-design/icons-vue';
 import {editorStore} from "@/store/editor";
 import {apiGetDetail} from "@/api/getDetail";
 import {handleImageError} from '@/utils/method'
+import {message} from "ant-design-vue";
 
 const props = defineProps({
   id: {
@@ -125,13 +125,16 @@ function loadNewRecordList() {
 async function loadNewPoster(childItem) {
   const posterId = childItem?.id
   if (!posterId) return
-  const res = await apiGetDetail({
+  const res = await apiGetDetail({   // 先拿到该模板数据再进行用户交互或者载入
     id: posterId
   })
   if (res && res.code === 200) {
-    openModal.value = true
     selectedTemplate.value = res.data
     selectedPosterId.value = posterId
+    if (editorStore.getCurrentTemplateLayout()) openModal.value = true  // 如果当前画布中有模板，弹出是否替换
+    else replaceProject()  // 如果当前画布中为空，直接载入不弹窗
+  } else {
+    message.error(`拉取模板数据失败, code${res.code}`)
   }
 }
 
@@ -141,7 +144,7 @@ function addToNewProject() {
 
 }
 
-async function replaceProject() {
+function replaceProject() {
   selectedTemplate.value && editorStore.bus.emit('loadTemplate', {
     id: selectedPosterId.value,
     data: selectedTemplate.value

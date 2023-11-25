@@ -34,11 +34,10 @@ export default function createNativeEventHookList() {
   return [
     {
       name: 'mousedown',
-      call: (ev: MouseEvent) => {
+      call: (ev: MouseEvent) => {  // moveable 主程
         const moveableManager = editorStore.moveableManager
         const downEl = getElement4EventTarget(ev)
         const widgetsEl = parseWidget4DomChain(downEl)
-        moveableManager.__temp__.mousedownEl = downEl
         if (!widgetsEl && downEl) {
           if (!isMoveableControl(downEl)) {   // 如果不是点击moveable变形按钮
             moveableManager.moveable.target = []

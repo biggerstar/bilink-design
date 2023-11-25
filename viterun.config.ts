@@ -18,13 +18,16 @@ export default defineViteRunConfig(() => {
           ['10000', 'frontend_plugins', 'tailwindcss']
         ],
         build: [
-          ['frontend_build', 'frontend_plugins', 'tailwindcss']
+          ['frontend_build', 'frontend_plugins', 'tailwindcss', 'sourcemap']
         ],
         buildGit: [
           ['frontend_build', 'frontend_plugins', 'tailwindcss', 'page']   // 编译部署到git的产物,在本地无法预览
         ],
+        release: [
+          ['frontend_build', 'frontend_plugins', 'tailwindcss']
+        ],
         preview: [
-          ['p10000']
+          ['p10001']
         ],
         size: [
           ['frontend_build', 'frontend_plugins', 'tailwindcss', 'bundleAnalyzer']
@@ -94,10 +97,13 @@ export default defineViteRunConfig(() => {
           }
         }
       },
+      sourcemap: {
+        sourcemap: true,
+      }
     },
     preview: {
-      p10000: {
-        port: 10000,
+      p10001: {
+        port: 10001,
         host: true
       }
     },

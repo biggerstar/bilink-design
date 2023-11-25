@@ -11,6 +11,7 @@
           :style="{
               width: item.width ? `${item.width}px` : '88px',
             }"
+          :disabled="!editorStore.getCurrentTemplateLayout()"
           @click="()=> (curShapeIndex = item.border ? itemIndex : -1) && isFunction(callMap[item.call]) && callMap[item.call].call(null) "
           v-for="(item,itemIndex) in cardInfo.items"
           :key="`${itemIndex}item`">
@@ -67,7 +68,7 @@ const callMap = {
 // editorStore.drawGraph = new DrawGraph()
 onMounted(() => {
   curUseLayoutConfig.value = editorStore.pageConfig.asideTag.find(item => item.name === '添加')
-  console.log(curUseLayoutConfig.value)
+  // console.log(curUseLayoutConfig.value)
 })
 </script>
 

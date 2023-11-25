@@ -39,7 +39,7 @@ router.get('/widgets', async function (req, res) {
       },
       order: ['material_location'],
       limit: Math.min(100, Number(page_size)),  // 一次最大 100 条
-      offset: (Math.max(1, Number(page_num)) - 1) * Number(page_size),  // 最小偏移量为 0，不能负数
+      offset: (Math.max(0, Number(page_num)) - 1) * Number(page_size),  // 最小偏移量为 0，不能负数
     })
 
     if (Array.isArray(fountPageList) && fountPageList.length) {

@@ -11,6 +11,8 @@
           style="background-repeat: no-repeat; background-size: cover"
           width="78"
           height="78"
+          :data-material-id="childItem.id"
+          :data-material-type="'material'"
           :src="childItem.preview.url" :alt="childItem.title"
           @error="handleImageError($event)"
           @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
@@ -69,7 +71,6 @@ function loadNewRecordList() {
     isLoading.value = false
   })
 }
-
 
 </script>
 

@@ -4,6 +4,7 @@ import {isFunction, isNumber, isObject, isString} from "is-what";
 import {
   DESIGN_OPTIONS,
   DESIGN_SET_STATE,
+  MATERIAL_DATASET_TYPE,
   MOVEABLE_CONTROL,
   MOVEABLE_ROTATION,
   WIDGET_DATASET_IN_GROUP,
@@ -87,6 +88,14 @@ export function inGroup(target: HTMLElement) {
 
 export function isGroup(target: HTMLElement) {
   return parseWidgetsInfo4DomChain(target).isGroup
+}
+
+export function isMaterial(target: HTMLElement) {
+  return target.dataset[MATERIAL_DATASET_TYPE] === 'material'
+}
+
+export function parseMaterial4DomChain(target: HTMLElement) {
+  return parseWidget4DomChain(target, (node) => isMaterial(node))
 }
 
 export function isMoveableControl(el: Element) {

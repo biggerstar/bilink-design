@@ -78,10 +78,6 @@ export class MoveableManager {
   private __running: boolean
   public eventHookList: Array<any>
 
-  public __temp__ = {
-    mousedownEl: void 0
-  }
-
   constructor() {
     this.eventHookList = createNativeEventHookList()
   }

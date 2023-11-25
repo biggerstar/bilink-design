@@ -22,6 +22,7 @@
               class="icon-item w-[60px] h-[60px] items-center mt-[4px] mb-[4px] overflow-hidden cursor-pointer"
               v-for="(childItem, index) in item.children" :key="index.toString() + 'child' + childItem?.name"
               :data-material-id="childItem.id"
+              :data-material-type="'material'"
               @mousedown.capture="()=>editorStore.dragMaterial(childItem)"
               @click="()=>editorStore.addMaterial(childItem)"
             >

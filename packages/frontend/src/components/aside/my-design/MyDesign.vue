@@ -37,7 +37,7 @@
   </a-modal>
 
 
-  <InfiniteScroll class="w-full h-full" :is-loading="isLoading" @scroll-to-bottom="loadNewRecordList('scroll')">
+  <InfiniteScroll class="w-full h-full" :is-loading="isLoading" @scroll-to-bottom="loadNewRecordList()">
     <div class="container pl-[10px] pr-[12px] mb-[50px] w-full h-full">
       <justified-infinite-grid
         :gap="8"
@@ -86,7 +86,6 @@
             draggable="false"
             class="w-full h-full rounded-lg bg-no-repeat"
             style="border: #eae8e8 solid 1px;object-fit: cover; background-size: cover;"
-            @click="openModal = true"
             :src="`${childItem.preview.url}`"
             :alt="childItem.title"
             data-grid-maintained-target="true"
@@ -127,8 +126,7 @@ let pageEnd = false     // 数据是否已经都加载完了
 
 onMounted(() => loadNewRecordList())
 
-function loadNewRecordList(from?) {
-  if (from === 'scroll') return // 暂时不进行加载，后面在进行优化
+function loadNewRecordList() {
   if (isLoading.value || pageEnd) return
   isLoading.value = true
   apiGetDetail({
@@ -156,6 +154,10 @@ async function loadNewPoster(childItem) {
     openModal.value = true
     selectedTemplate.value = res.data
     selectedPosterId.value = posterId
+    if (editorStore.getCurrentTemplateLayout()) openModal.value = true  // 如果当前画布中有模板，弹出是否替换
+    else replaceProject()  // 如果当前画布中为空，直接载入不弹窗
+  } else {
+    message.error(`拉取模板数据失败, code${res.code}`)
   }
 }
 
@@ -163,7 +165,7 @@ function addToNewProject() {
   replaceProject()
 }
 
-async function replaceProject() {
+function replaceProject() {
   selectedTemplate.value && editorStore.bus.emit('loadTemplate', {
     id: selectedPosterId.value,
     data: selectedTemplate.value

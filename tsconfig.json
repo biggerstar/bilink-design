@@ -4,6 +4,7 @@
     "module": "ESNext",
     "lib": [
       "ESNext",
+      "ES6",
       "DOM",
       "DOM.Iterable"
     ],

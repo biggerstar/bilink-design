@@ -18,7 +18,8 @@ import {
   getWidgetOptionsFromElement,
   loadFont,
   parseGroupWidget4DomChain,
-  parseWidget4DomChain
+  parseWidget4DomChain,
+  selectAllText4Element
 } from "@/utils/method";
 import {isFunction, isNumber} from "is-what";
 import {LineGuides} from "@/common/line-guides/line-guides";
@@ -89,7 +90,8 @@ class EditorStore {
   public currentTemplateIndex = 0
 
   /** 获取当前使用的模板，一套设计工程可能包含多个模板作为模板组 */
-  public getCurrentTemplateLayout(): LayoutConfig {
+  public getCurrentTemplateLayout(): LayoutConfig | void {
+    if (!this.currentTemplate || !this.currentTemplate?.layouts) return
     return this.currentTemplate.layouts[this.currentTemplateIndex]
   }
 
@@ -231,7 +233,15 @@ class EditorStore {
 
   public getAllWidget(): HTMLElement[] {
     return <HTMLElement[]>Array.from(this.editorAreaTarget.querySelectorAll(WIDGET_SELECTOR))
+  }
 
+  /**
+   * 通过传入 uuid 或者 options配置引用对象，找到当前与之对应的组件dom元素
+   * */
+  public findWidgetElement(meta: any, type: 'uuid' | 'options'): HTMLElement | void {
+    const allWidget = this.getAllWidget()
+    if (type === 'uuid') return allWidget.find(node => node.dataset['uuid'] === meta)
+    else if (type === 'options') return allWidget.find(node => node[DESIGN_OPTIONS] === meta)
   }
 
   /**
@@ -268,7 +278,7 @@ class EditorStore {
     allWidgets.forEach((node: HTMLElement) => {
       const uuid = node.dataset['uuid']
       if (!uuid) return
-      if (remove_uuids.includes(uuid)) node.remove()
+      if (remove_uuids.includes(uuid)) node.remove()   //移除原有组件
     })
     nextTick(() => {
       const allWidgets = this.getAllWidget()
@@ -277,6 +287,7 @@ class EditorStore {
         isFunction(newGroupElement[DESIGN_GROUP_UPDATE_RECT]) && newGroupElement[DESIGN_GROUP_UPDATE_RECT]()   // 让子组件填满合并组的容器
         this.moveableManager.moveable.target = newGroupElement
       }
+      this.selectoManager.selected = []
     }).then()
   }
 
@@ -299,12 +310,13 @@ class EditorStore {
     this.autoMonitoringGroupMovement(() => {   // 只有等到点击分离组后的外部才真正进行分离
       this.selectoManager.selected = []    // 必须在前面，否则 selectoManager.on('selectEnd') 会将所有选择框选
       if (!this.isSeparating) return this.removeSeparatingBorder()
+      const currentLayouts = this.getCurrentTemplateLayout()
+      if (!currentLayouts) return
       const latestGroupElement = editorStore.moveableManager.currentGroupElement
       if (!latestGroupElement) return
       const cssTransformApi = new CssTransformApi()
       cssTransformApi.load(latestGroupElement.style.transform)
       const [groupX = 0, groupY = 0] = cssTransformApi.get('translate')  // 获取组在当前画布中位置，解散后子组件需要在自身偏移基础上添加上当所在组在画布中的距离
-      const currentLayouts = this.getCurrentTemplateLayout()
       const vueModelElementWidgetConfig = currentLayouts.elements
       const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === groupConfig)
       vueModelElementWidgetConfig.splice(curGroupIndex, 1)
@@ -370,6 +382,7 @@ class EditorStore {
     // console.log(materialDetail)
     const options = {}
     const currentLayout = this.getCurrentTemplateLayout()
+    if (!currentLayout) return
     if (material.type === 'text') {
       const materialDetail = await apiGetDetail({id: material.id})
       if (materialDetail && materialDetail.data) {
@@ -398,7 +411,6 @@ class EditorStore {
     // console.log(material)
 
     const newWidgetConfig: Partial<LayoutWidget> = {
-      uuid: uuid4(),
       title: material.title,
       type: material.type,
       url: material.preview?.url,
@@ -423,6 +435,7 @@ class EditorStore {
     // console.log(res)
     if (res && res.data?.model) {
       const currentLayout = this.getCurrentTemplateLayout()
+      if (!currentLayout) return
       const material = res.data?.model
       const sizeInfo = {
         width: material.width,
@@ -436,7 +449,7 @@ class EditorStore {
 
   /** 添加组件来自配置信息，默认添加到根中，如果指定了要添加的合并组( groupProxyOptions )，则会添加到该组中 */
   public addMaterialToGroup(newWidgetOptions: LayoutWidget, groupProxyOptions?: LayoutWidget, opt: { autoPosition?: boolean } = {}) {
-    console.log(newWidgetOptions)
+    // console.log(newWidgetOptions)
     const currentTemplateLayout = groupProxyOptions || this.getCurrentTemplateLayout()
     if (!currentTemplateLayout) return
     const {autoPosition = false} = opt
@@ -448,7 +461,17 @@ class EditorStore {
       newWidgetOptions.left = currentTemplateLayout.width / 2 - sizeInfo.width / 2
       newWidgetOptions.top = currentTemplateLayout.height / 2 - sizeInfo.height / 2
     }
+    if (!newWidgetOptions.uuid) newWidgetOptions.uuid = uuid4()
     currentTemplateLayout.elements.push(newWidgetOptions)
+    const vueModelElementOptions = currentTemplateLayout.elements.find(elementConfig => elementConfig.uuid === newWidgetOptions.uuid) // 找到经过vue转换后的组件配置的代理对象
+    nextTick(() => {
+      const newWidElement = this.findWidgetElement(vueModelElementOptions, "options")
+      if (newWidElement) {
+        newWidElement.contentEditable = 'true'
+        selectAllText4Element(newWidElement)   // 不管任何组件，有文字的直接全选使其在画布显示更明显
+        newWidElement.focus()
+      }
+    }).then()
   }
 
   /**
@@ -484,6 +507,7 @@ class EditorStore {
     const vueModelElementWidgetConfig = widgetParentOptions.elements
     const curGroupIndex = vueModelElementWidgetConfig.findIndex(config => config === widgetOptions)
     vueModelElementWidgetConfig.splice(curGroupIndex, 1)
+    this.moveableManager.moveable.target = []
     this.moveableManager.moveable.updateRect()
     this.moveableManager.moveable.updateSelectors()
   }
@@ -510,7 +534,7 @@ class EditorStore {
       }
     };
     const currentTemplate = toRaw(editorStore.currentTemplate)
-    if (!currentTemplate) saveNotification("error", '哦吼, 系统错误,没找到本地模板数据')
+    if (!currentTemplate) return saveNotification("error", '哦吼, 保存失败了,没找到 [ 设计图 ] 数据')
     const reqBody: any = {
       uid: mockUserId,   // 先默认用户，后面有加入用户系统的时候在进行区分
       data: currentTemplate

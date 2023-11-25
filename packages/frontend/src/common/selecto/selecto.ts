@@ -4,7 +4,7 @@ import {editorStore} from "@/store/editor";
 import {MOVEABLE_SCALE_DIRECTION, WIDGET_GROUP_SELECTION_SEPARATE, WIDGET_SELECTOR} from "@/constant";
 import './selecto-style.css'
 
-export const defaultSelectOptions = {
+export const defaultSelectOptions: Partial<SelectoOptions> = {
   getElementRect: getElementInfo,
   rootContainer: null,
   // 要选择的目标。您可以注册查询选择器或元素

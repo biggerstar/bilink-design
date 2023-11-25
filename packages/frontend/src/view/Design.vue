@@ -32,9 +32,13 @@
                alt="">
         </div>
         <div class=" w-full h-full overflow-hidden">
-          <div style="width: 312px" class="w-full h-full ">
-            <keep-alive>
-              <component :is="currentAsideTagComp" :config="currentActiveAsideTagConfig"></component>
+          <div v-if="currentAsideTagComp.comp" style="width: 312px" class="w-full h-full ">
+            <keep-alive :max="10">
+              <div class="fill-box">
+                <component :is="currentAsideTagComp.comp"
+                           :config="currentActiveAsideTagConfig"
+                           :key="currentAsideTagComp.name"></component>
+              </div>
             </keep-alive>
           </div>
         </div>
@@ -68,7 +72,10 @@
         </div>
       </div>
       <div v-else class="flex justify-center items-center w-full h-full">
-        <div class="text-[1.6rem] font-bold">⬅ 请选择一个模板</div>
+        <div  @click="showTagPage('template')" class="text-[1.6rem] font-bold cursor-pointer">
+          <span class="iconfont icon-zuojiantou text-[1.2rem]"></span>
+          开始设计
+        </div>
       </div>
       <div id="main-bottom">
         <ScaleControl
@@ -96,6 +103,7 @@
 </template>
 
 <script setup lang="ts">
+import type {Component} from 'vue'
 import {nextTick, onMounted, onUnmounted, ref, shallowRef} from "vue";
 import mitt from "mitt";
 import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveable'
@@ -116,7 +124,7 @@ const pageConfig = ref()
 const mainRef = ref<HTMLElement>()
 const activeTagName = shallowRef<string>()
 const curDetailComp = shallowRef()  // 当前编辑区域点击小组件时对应的小组件配置页
-const currentAsideTagComp = shallowRef()   // 当前左侧标签展开页使用的组件
+const currentAsideTagComp = shallowRef<{ name: string | void, comp: Component | void }>({name: void 0, comp: void 0})   // 当前左侧标签展开页使用的组件
 const currentActiveAsideTagConfig = shallowRef()   // 当前左侧标签展开页使用的配置
 const showGroupControl = ref(false)
 const showDesignCanvas = ref(false)
@@ -131,13 +139,14 @@ setTimeout(() => {
   // showTagPage('images')
   // showTagPage('template')
   // showTagPage('my-design')
-  showTagPage('add-panel')
+  // showTagPage('add-panel')
 }, 200)
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
 function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material' | 'my-design' | 'add-panel' = "") {
   activeTagName.value = activeTagName.value !== name ? name : void 0
-  currentAsideTagComp.value = name ? asideTagMap[activeTagName.value] : void 0
+  currentAsideTagComp.value.comp = name ? asideTagMap[activeTagName.value] : void 0
+  currentAsideTagComp.value.name = activeTagName.value
   pageConfig.value
   && pageConfig.value.asideTag
   && (currentActiveAsideTagConfig.value = pageConfig.value.asideTag.find(item => item.comp === name))
@@ -149,6 +158,7 @@ function getCurDetailComp(widgetsName: string | void = 'default') {
 }
 
 function listenMouseDownEvent(ev: MouseEvent) {
+  if (ev.buttons === 2 && editorStore.selectoManager.selected.length) return   // 点右键且选择多个时不进行跳组件详情
   if (!editorStore.moveableManager) return
   const widgetEl = editorStore.moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
   let widgetName
@@ -173,7 +183,9 @@ function loadEditorTemplate(templateData: { id: string, data: Record<any, any> }
   editorStore.loadEditorProject(templateData.data)
   curDetailComp.value = getCurDetailComp()
   showDesignCanvas.value = false
-  currentUsingWidgetConfigList.value = editorStore.getCurrentTemplateLayout().elements
+  const currenLayout = editorStore.getCurrentTemplateLayout()
+  if (!currenLayout) return
+  currentUsingWidgetConfigList.value = currenLayout.elements
   if (templateData.id) {
     showTemplateId.value = templateData.id
     const urlInfo = new URL(window.location.href);

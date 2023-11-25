@@ -2,7 +2,7 @@ import {editorStore} from "@/store/editor";
 import {getElement4EventTarget} from "@/utils/tool";
 import mitt, {Emitter} from "mitt";
 import {Material} from "@type/layout";
-import {parseWidget4DomChain} from "@/utils/method";
+import {parseMaterial4DomChain, parseWidget4DomChain} from "@/utils/method";
 import {toRaw} from "vue";
 
 /**
@@ -27,6 +27,8 @@ export class DragWidgetManager {
     }
     let dragSourceTargetRect: DOMRect | null = null
 
+    const isDragMaterial = (ev) => editorStore.currentDraggingMaterial && parseMaterial4DomChain(getElement4EventTarget(ev))
+
     function mousemove(ev: MouseEvent) {
       if (!draggingTarget || !dragSourceTargetRect) return
       const currentDraggingMaterial = editorStore.currentDraggingMaterial
@@ -43,6 +45,7 @@ export class DragWidgetManager {
 
     function mouseup(ev: MouseEvent) {
       const currentDraggingMaterial = toRaw(editorStore.currentDraggingMaterial)
+      editorStore.currentDraggingMaterial = null
       const target: HTMLElement = getElement4EventTarget(ev)
       let finallyRect = draggingTarget.getBoundingClientRect()
       let editorAreaBoxRect = editorStore.editorAreaBoxTarget.getBoundingClientRect()
@@ -68,11 +71,12 @@ export class DragWidgetManager {
     }
 
     document.addEventListener('dragstart', (ev) => {
-      if (editorStore.currentDraggingMaterial) ev.preventDefault()
+      if (isDragMaterial(ev)) ev.preventDefault()
     })
 
     document.addEventListener('mousedown', (ev) => {
-      if (!editorStore.currentDraggingMaterial) return
+      // console.log(!isDragMaterial(ev))
+      if (!isDragMaterial(ev)) return
       document.addEventListener('mousemove', mousemove)
       document.addEventListener('mouseup', mouseup)
       const sourceTarget: HTMLElement = getElement4EventTarget(ev)

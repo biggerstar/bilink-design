@@ -15,8 +15,9 @@ router.get('/detail', async (req, res) => {
       where: {  // 找某个用户的当前拥有的模板
         uid
       },
-      limit: Number(page_size),
-      offset: Number(page_num)
+      order: [`createdAt`],
+      limit: Math.min(40, Number(page_size)),  // 一次最大 40 条
+      offset: (Math.max(0, Number(page_num)) - 1) * Number(page_size),  // 最小偏移量为 0，不能负数
     })
     /*---------------------------------------------------------------------------*/
     // 被点线保包围的这段代码目的为了返回一个预览图，这是不合理的，后面可以通过用户数据通过后端渲染生成预览图

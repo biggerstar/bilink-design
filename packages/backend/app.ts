@@ -38,6 +38,4 @@ app.use(function (err, req, res) {
   res.render("error");
 } as express.ErrorRequestHandler);
 
-// error handler
-
 export default app

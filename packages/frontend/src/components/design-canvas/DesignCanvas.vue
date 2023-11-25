@@ -2,8 +2,9 @@
   <div id="design-canvas" ref="designCanvas" v-hotkey="hotkeyMap" v-contextmenu:contextmenu class="not-user-select">
     <div id="editor-shell-wrap">
       <div id="editor-area-box" ref="editorAreaBox">
-        <div class="editor-area-mask"></div>
         <!-- 取巧使用遮罩覆盖溢出元素 box-shadow 上颜色等于中间镂空两个部分就能分割开 -->
+        <div class="editor-area-mask"></div>
+        <!-- 背景图单独分一层而不是直接操控到画布上 -->
         <div id="editor-area-bg" ref="editorAreaBG"></div>
         <div id="editor-area" ref="editorArea">
           <slot></slot>
@@ -69,7 +70,7 @@ const contextmenuData: {
     isShow: true,
     hotKey: ['ctrl+a', 'command+a'],
     handler: () => {
-      const allWidget: HTMLElement[] =  Array.from(editorStore.editorAreaTarget.children).filter(isWidget) as any
+      const allWidget: HTMLElement[] = Array.from(editorStore.editorAreaTarget.children).filter(isWidget) as any
       editorStore.selectoManager.doSelect(allWidget)
     }
   },
@@ -77,9 +78,7 @@ const contextmenuData: {
     text: '合并组',
     icon: 'icon-sucai',
     isShow: false,
-    show: () => {
-      return editorStore.selectoManager.selected.length > 1
-    },
+    show: () => editorStore.selectoManager.selected.length > 1,
     handler: () => editorStore.mergeGroup()
   },
   {
@@ -161,7 +160,6 @@ function createHotkeyMap() {
   })
   return keyMap
 }
-
 
 onMounted(() => {
   editorStore.designCanvasTarget = designCanvas.value
