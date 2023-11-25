@@ -49,7 +49,7 @@
     <div id="main" class="main" ref="mainRef">
       <DesignCanvas v-if="showDesignCanvas && editorStore.currentTemplate">
         <component
-          v-show=" editorStore.currentTemplate && widgetsMap[widgetConfig.type]"
+          v-show="editorStore.currentTemplate && widgetsMap[widgetConfig.type]"
           v-for="(widgetConfig,index) in editorStore.getCurrentTemplateLayout().elements"
           :is="widgetsMap[widgetConfig.type]"
           :config="widgetConfig"
@@ -72,9 +72,17 @@
         </div>
       </div>
       <div v-else class="flex justify-center items-center w-full h-full">
-        <div  @click="showTagPage('template')" class="text-[1.6rem] font-bold cursor-pointer">
-          <span class="iconfont icon-zuojiantou text-[1.2rem]"></span>
-          开始设计
+        <div class="text-[1.6rem] font-bold">
+          <div @click="showTagPage('template')" class=" text-[#0984e3] hover:text-[#2154F4] cursor-pointer">
+            <span class="iconfont icon-zuojiantou text-[1.2rem]"></span>
+            开始设计
+          </div>
+          <hr class="hr-line">
+          <div
+            @click="editorStore.initCanvas()"
+            class="text-[1.1rem] text-gray-400 hover:text-gray-600 cursor-pointer">
+            创建空白画板
+          </div>
         </div>
       </div>
       <div id="main-bottom">
@@ -244,14 +252,14 @@ onMounted(async () => {
         id: curUrlSpecifyId,
         data: res.data
       })
-    })
+    }).catch(() => showNotFoundTemplate.value = true)
   } else setTimeout(() => showTagPage('template'), 1000)
 })
 
 function createListenEventBus() {
   editorStore.bus.on('loadTemplate', (template) => {
     loadEditorTemplate(template)
-    console.log(template)
+    // console.log(template)
   })
 }
 

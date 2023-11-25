@@ -22,6 +22,16 @@ const AllUserDesign = sequelize.define('all-user-design', {
     type: DataTypes.JSON,
     allowNull: false,
   },
+  updatedAt: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  createdAt: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  }
+}, {
+  timestamps: false
 });
 
 export default AllUserDesign

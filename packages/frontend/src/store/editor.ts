@@ -100,6 +100,21 @@ class EditorStore {
     this.currentTemplate = reactive(projectInfo)
     this.currentTemplateIndex = 0
     this.allowInGroupMovement = false
+    this.isSeparating = false
+  }
+
+
+  /** 销毁当前正在编辑的工程 */
+  public destroyEditorProject() {
+    this.currentTemplateIndex = 0
+    this.allowInGroupMovement = false
+    this.isSeparating = false
+    this.currentTemplate = null
+    editorStore.bus.emit('destroyTemplate')
+  }
+
+  public initCanvas(){
+
   }
 
   /** 设置当前正在活跃的小组件配置,会自动更新源currentProject.items中的配置,是否直接覆盖整个对象(值)
@@ -522,7 +537,7 @@ class EditorStore {
       if (mode === 'success') {
         notification.open({
           message: '保存成功',
-          description: msg || '🎉🎉 您的项目已经保存成功啦!',
+          description: msg || `🎉🎉 您的项目已经保存成功啦! 您可以在左侧我的查看`,
           duration: 1.5,
         });
       } else {

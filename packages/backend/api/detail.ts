@@ -15,23 +15,17 @@ router.get('/detail', async (req, res) => {
       where: {  // 找某个用户的当前拥有的模板
         uid
       },
-      order: [`createdAt`],
+      order: [['updatedAt', 'DESC']],
       limit: Math.min(40, Number(page_size)),  // 一次最大 40 条
       offset: (Math.max(0, Number(page_num)) - 1) * Number(page_size),  // 最小偏移量为 0，不能负数
     })
     /*---------------------------------------------------------------------------*/
-    // 被点线保包围的这段代码目的为了返回一个预览图，这是不合理的，后面可以通过用户数据通过后端渲染生成预览图
+    // 被点线保包围的这段代码目的为了返回一个预览图，这是不合理的，未来可以通过用户数据通过后端渲染生成预览图
     let allSourceIDList = foundUserDetailList.map(detail => detail.dataValues.sourceId)
-    let allSourceIDMappingList = foundUserDetailList.map(detail => {
-      return {
-        id: detail.dataValues.id,
-        sourceId: detail.dataValues.sourceId,
-      }
-    })
     allSourceIDList = [...new Set(allSourceIDList)]
     let foundOfficialDetailList
     if (allSourceIDList.length) {
-      foundOfficialDetailList = await ModelAllMaterial.findAll({
+      foundOfficialDetailList = await ModelAllMaterial.findAll({  // 从官方模板列表找原模板，当前目的是为了获取预览图
         where: {
           id: allSourceIDList
         },
@@ -42,10 +36,10 @@ router.get('/detail', async (req, res) => {
         code: 200,
         message: '成功',
         foundUserDetailList,
-        data: foundOfficialDetailList.map(detail => {
-          const found = allSourceIDMappingList.find(item => item.sourceId === detail.dataValues.id)
-          detail.dataValues.data.id = found.id
-          return detail.dataValues.data
+        data: foundUserDetailList.map(detail => {
+          const found = foundOfficialDetailList.find(item => item.dataValues.id === detail.dataValues.sourceId)  // 遍历用户模板(为了保持更新事件在前顺序)，并从官方模板找到原模板信息
+          found.dataValues.data.id = detail.dataValues.id
+          return found.dataValues.data
         })
       })
     }
@@ -83,10 +77,13 @@ router.post('/detail', async (req, res) => {
     if ((isNumber(id) || isString(id)) && id) {   // 传入id说明意图更新模板数据，尝试找找有没有在数据库中
       const userDetail = await AllUserDesign.findByPk(id)
       if (userDetail) {
-        await AllUserDesign.update({data}, {   // 找到直接更新
+        await AllUserDesign.update({
+          data,
+          updatedAt: Date.now() / 1000
+        }, {   // 找到直接更新
           where: {
             id,
-            uid
+            uid,
           } as any
         })
         userTemplateId = id
@@ -96,7 +93,9 @@ router.post('/detail', async (req, res) => {
       const createdDetail = await AllUserDesign.create({   // 没找到就创建
         sourceId: id,
         uid,
-        data
+        data,
+        updatedAt: Date.now() / 1000,
+        createdAt: Date.now() / 1000,
       })
       userTemplateId = createdDetail.dataValues.id
     }

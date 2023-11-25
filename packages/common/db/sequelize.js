@@ -16,7 +16,8 @@ const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
     min: 0,           // 最小连接数
     acquire: 30000,   // 获取连接的超时时间（毫秒）
     idle: 15000       // 连接的最大空闲时间（毫秒）
-  }
+  },
+  timezone: '+08:00'
 });
 
 sequelize.authenticate()

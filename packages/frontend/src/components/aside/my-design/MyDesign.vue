@@ -137,7 +137,13 @@ function loadNewRecordList() {
     // console.log(res);
     if (res.code === 404) return pageEnd = true
     if (res.code !== 200) return
-    materialDetail.value = materialDetail.value.concat(res.data)
+    const urls = new URL(location.href)
+    const curId = Number(urls.searchParams.get('id'))
+    materialDetail.value = materialDetail.value.concat(res.data).reduce((pre: any[], cur) => {   /* 将当前使用的模板前置 */
+      curId === cur.id ? pre.unshift(cur) : pre.push(cur)
+      return pre
+    }, [])
+
   }).finally(() => {
     setTimeout(() => isLoading.value = false, 800)
   })
@@ -178,11 +184,13 @@ async function deleteUserTemplate(item) {
   const res = await apiDeleteDetail({id: item.id})
   if (res.code === 200) {
     const foundIndex = materialDetail.value.findIndex(material => item.id === material.id)
-    console.log(foundIndex)
+    // console.log(foundIndex)
     if (foundIndex >= 0) {
       materialDetail.value.splice(foundIndex, 1)
+      editorStore.destroyEditorProject()
     }
     message.success('删除成功', item.id);
+    editorStore.currentTemplate = null
   } else {
     message.success('删除失败-_-!', item.id, res.message);
   }
