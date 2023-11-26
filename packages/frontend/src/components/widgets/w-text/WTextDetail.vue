@@ -108,7 +108,7 @@ import CheckBox from "@/components/checkbox/CheckBox.vue";
 import {WIDGETS_NAMES} from "@/constant";
 import SliderNumber from "@/components/slider-number/SliderNumber.vue";
 import {isNumber} from "is-what";
-import {LayoutWidget} from "@type/layout";
+import type {LayoutWidget} from "@type/layout";
 
 const isShowFontsPage = ref(false)
 const isShowMainDetailPage = ref(true)

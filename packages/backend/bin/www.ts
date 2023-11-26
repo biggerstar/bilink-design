@@ -5,9 +5,16 @@
  */
 
 import {config} from "dotenv";
+import https from "https";
 import http from "http";
 import app from "../app.ts";
-config();
+import path from "path";
+import process from "process";
+import {cert, key} from "@biggerstar/localhost-certs";
+
+const NODE_ENV = process.env.NODE_ENV
+config({path: path.resolve(process.cwd(), `.env.${NODE_ENV}`)})
+
 /**
  * Get port from environment and store in Express.
  */
@@ -19,7 +26,12 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-const server = http.createServer(app);
+const options = {
+  cert: cert(),
+  key: key()
+}
+
+const server = NODE_ENV === 'dev'?  https.createServer(options, <any>app) : http.createServer(app)   // 如果在生产环境，不进行加密以提高性能
 
 /**
  * Listen on provided port, on all network interfaces.

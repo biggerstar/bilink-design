@@ -44,7 +44,7 @@ import "v-contextmenu/dist/themes/default.css";
 import {isFunction, isString} from "is-what";
 import {getWidgetOptionsFromElement, isWidget} from "@/utils/method";
 import {HotkeyDirective} from 'v-hotkey3'
-import {LayoutWidget} from "@type/layout";
+import type {LayoutWidget} from "@type/layout";
 
 const vContextmenu = directive // 使用指令
 const vHotkey = HotkeyDirective({})

@@ -1,4 +1,4 @@
-import {resolve} from 'node:path'
+import path, {resolve} from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import {defineViteRunConfig, viteRunLogPlugin} from 'vite-run'
 import bundleAnalyzer from 'rollup-plugin-bundle-analyzer'
@@ -6,6 +6,12 @@ import Components from 'unplugin-vue-components/vite';
 import {AntDesignVueResolver, ElementPlusResolver} from 'unplugin-vue-components/resolvers';
 import AutoImport from 'unplugin-auto-import/vite'
 import tailwindcss from 'tailwindcss';
+import process from "node:process";
+import {config as dotenvConfig} from "dotenv";
+import {viteCertsPlugin} from "@biggerstar/localhost-certs";
+import {VitePluginNode} from "vite-plugin-node";
+
+dotenvConfig({path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`)})
 
 export default defineViteRunConfig(() => {
   return {
@@ -18,7 +24,7 @@ export default defineViteRunConfig(() => {
           ['10000', 'frontend_plugins', 'tailwindcss']
         ],
         build: [
-          ['frontend_build', 'frontend_plugins', 'tailwindcss', 'sourcemap']
+          ['frontend_build', 'frontend_plugins', 'tailwindcss']
         ],
         buildGit: [
           ['frontend_build', 'frontend_plugins', 'tailwindcss', 'page']   // 编译部署到git的产物,在本地无法预览
@@ -34,9 +40,9 @@ export default defineViteRunConfig(() => {
         ]
       },
       'backend': {
-        // dev: [
-        //   ['backend_build']
-        // ],
+        build: [
+          ['backend_build', 'vitePluginNode']
+        ],
       }
     },
     plugins: {
@@ -45,6 +51,7 @@ export default defineViteRunConfig(() => {
       ],
       frontend_plugins: [
         vue(),
+        viteCertsPlugin(),
         viteRunLogPlugin({
           build: {
             viteLog: {
@@ -68,6 +75,12 @@ export default defineViteRunConfig(() => {
         AutoImport({
           resolvers: [ElementPlusResolver()],
         }),
+      ],
+      vitePluginNode: [
+        VitePluginNode({
+          adapter: 'express',
+          appPath: 'bin/www.ts',
+        })
       ]
     },
     server: {
@@ -86,14 +99,30 @@ export default defineViteRunConfig(() => {
       },
       backend_build: (options) => {
         return {
-          lib: {
-            entry: `${options.packagePath}/bin/www`,
-            name: 'design-backend',
-            format: ['cjs'],
-          },
-          watch: true,
+          watch: false,
+          minify: false,
           rollupOptions: {
-            external: ['@type/*']
+            input: `${options.packagePath}/bin/www.ts`,
+            output: {
+              entryFileNames: 'server.js',
+              format: 'cjs',
+            },
+            external: [
+              '@type/*',
+              '@biggerstar/localhost-certs',
+              'fs',
+              'path',
+              'process',
+              'https',
+              'http',
+              'url',
+              'dotenv',
+              'express',
+              'cors',
+              'sequelize',
+              'cookie-parser',
+              'http-errors',
+            ]
           }
         }
       },
@@ -115,12 +144,15 @@ export default defineViteRunConfig(() => {
       }
     },
     base: {
-      page: '/bilink-design/'
+      page: process.env.GIT_RELEASE_PAGE_SUB_PATH
     },
-    baseConfig(options) {
+    baseConfig: (options) => {
       return {
+        define: {
+          __API_BASE_URL__: JSON.stringify(process.env.API_BASE_URL)
+        },
         resolve: {
-          extensions: ['.vue', '.css', '.js', '.ts', 'mjs'],
+          extensions: ['.vue', '.css', '.js', '.ts', 'mjs', 'jsx'],
           alias: {
             '@': resolve(__dirname, `${options.packagePath}/src`),
           }
