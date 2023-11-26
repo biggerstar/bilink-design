@@ -4,7 +4,7 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import createRoutes from "./routes/index.ts";
-import process from 'node:process'
+import process from 'process'
 import cors from 'cors'
 
 const app = express()
@@ -20,7 +20,7 @@ app.use(cookieParser())
 // app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', createRoutes(app))  // 创建所有路由
-
+app.use('/', (req, res) => res.send('<h1>瓜娃子别乱看</h1>'))
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   //@ts-ignore
