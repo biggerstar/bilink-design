@@ -489,13 +489,7 @@ class EditorStore {
     const vueModelElementOptions = currentTemplateLayout.elements.find(elementConfig => elementConfig.uuid === newWidgetOptions.uuid) // 找到经过vue转换后的组件配置的代理对象
     nextTick(() => {
       const newWidElement = this.findWidgetElement(vueModelElementOptions, "options")
-      // console.log(newWidElement)
-      // if (newWidElement) console.log(getWidgetName(newWidElement))
-      if (newWidElement && getWidgetName(newWidElement) === WIDGETS_NAMES.W_TEXT) {  // 如果是文本组件，进行全选文本使得能更突出显示
-        newWidElement.contentEditable = 'true'
-        selectAllText4Element(newWidElement)
-        newWidElement.focus()
-      }
+      newWidElement && this.switchTextEditable(newWidElement, true)
     }).then()
   }
 
@@ -582,6 +576,28 @@ class EditorStore {
       saveNotification("success")
     } else {
       saveNotification("error")
+    }
+  }
+
+  /**
+   * 尝试将文本组件切换编辑和显示状态
+   * */
+  public switchTextEditable(status: boolean, el?: HTMLElement) {
+    if (!el) {
+      const currentWidget = this.moveableManager.currentWidget
+      if (!currentWidget) return console.warn('切换文本时未找到文本组件dom元素')
+      el = currentWidget
+    }
+    if (getWidgetName(el) !== WIDGETS_NAMES.W_TEXT) return
+    el.contentEditable = String(status)
+    el.style.zIndex = status ? '1000' : '0'
+    Array.from(el.querySelectorAll('*')).forEach(node => node.contentEditable = String(status)) // 关闭所有组件可编辑状态
+    if (status) {
+      selectAllText4Element(el)
+      el.focus()
+    } else {
+      window.getSelection().removeAllRanges()
+      el.blur()
     }
   }
 }

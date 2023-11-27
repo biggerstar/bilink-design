@@ -13,12 +13,12 @@
     @dblclick="dbClickW_Widget"
   >
     <!--    <canvas ref="canvasRef"></canvas>-->
-    <a-spin :spinning="showSpin" size="large">
+    <a-spin :spinning="showSpin" size="large" class="fill-box">
       <div v-if="textContents" style="text-align: start; " ref="contentsRef">
         <span
           v-for="(item,index) in textContents"
           :key="index"
-          @blur="blurText(item)"
+          @blur="blurText($event)"
           v-html="item.content"
           spellcheck="false"
           :style="{
@@ -46,7 +46,6 @@ import {onMounted, ref, shallowRef} from "vue";
 import {isObject, isString} from "is-what";
 import {WIDGETS_NAMES} from "@/constant";
 import {editorStore} from "@/store/editor";
-import {selectAllText4Element} from "@/utils/method";
 import {createBaseCssAction} from "@/components/widgets/base-action";
 
 const W_Widget = shallowRef<HTMLElement>()
@@ -69,6 +68,7 @@ function filterText(text: string) {
 
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
 baseCssAction.expand({  // 对传入状态的处理函数
+  height: () => null,   // 高度自动设置
   color: (val) => baseCssAction.updateStyle('color', val || 'transparent', textRef.value),
   // rotate: (deg) => {
   //   baseCssAction.updateTransform('rotate', `${deg}deg`)
@@ -124,37 +124,30 @@ onMounted(async () => {
 
 let inputContentTemp = ''  // 文字输入临时
 
-function listenKeydown() {
+async function listenKeydown() {
   // console.log(item)
-  editorStore.updateActiveWidgetsState({content: textRef.value.innerText}, {effectDom: false})
-  inputContentTemp = filterText(textRef.value.innerText).replaceAll(' ', '</br>')
+  setTimeout(() => {  // 必须等待延时等到dom更新拿到最新的文本值
+    inputContentTemp = filterText(textRef.value.innerText).replaceAll(' ', '</br>')
+    editorStore.updateActiveWidgetsState({content: textRef.value.innerText}, {effectDom: false})
+  })
 }
 
 function dbClickW_Widget() {
   const el = <HTMLElement>textRef.value
-  switchEditable(true)
-  el.contentEditable = 'plaintext-only'
-  if (!editing.value) selectAllText4Element(el)   // 只有首次双击会全选，后面编辑状态双击根据不同系统自己选择文字
+  editorStore.switchTextEditable(true, W_Widget.value)
   editing.value = true
   el.focus()
 }
 
-function blurText() {
-  window.getSelection().removeAllRanges()
-  switchEditable(false)
-  editing.value = false
-  // console.log(textContents)
+function blurText(_: MouseEvent) {
   if (inputContentTemp) {
     textContent.value = inputContentTemp
     inputContentTemp = ''
   }
+  editorStore.switchTextEditable(false, W_Widget.value)
+  editing.value = false
 }
 
-function switchEditable(status: boolean) {
-  if (!W_Widget.value) return
-  W_Widget.value.contentEditable = String(status)
-  Array.from(W_Widget.value.querySelectorAll('*')).forEach(node => node.contentEditable = String(status)) // 关闭所有组件可编辑状态
-}
 
 </script>
 

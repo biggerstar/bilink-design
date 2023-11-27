@@ -19,7 +19,8 @@ import {
   LINE_GUIDE_HORIZONTAL_SELECTOR,
   LINE_GUIDE_VERTICAL_SELECTOR,
   MOVEABLE_ALL_DIRECTION,
-  WIDGET_SELECTOR
+  WIDGET_SELECTOR,
+  WIDGETS_NAMES
 } from "@/constant";
 import {LayoutWidget} from "@type/layout";
 import {pick} from "lodash-es";
