@@ -99,6 +99,10 @@ export function isMaterial(target: HTMLElement) {
   return target.dataset[MATERIAL_DATASET_TYPE] === 'material'
 }
 
+export function isWidgetType(target: HTMLElement, type: string) {
+  return getWidgetName(target) === type
+}
+
 export function getWidgetName(target: HTMLElement) {
   return target.dataset[WIDGET_DATASET_NAME]
 }
@@ -180,6 +184,10 @@ export function selectAllText4Element(el: HTMLElement) {
     selection.removeAllRanges()
     selection.addRange(range)
   }
+}
+
+export function removeAllTextSelectRanges() {
+  window.getSelection().removeAllRanges()
 }
 
 /** 图片加载失败从dom中移除掉 */

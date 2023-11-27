@@ -37,6 +37,12 @@ export default function createNativeEventHookList() {
     },
     {
       name: 'mousemove',
+      call: (ev: MouseEvent) => {
+        editorStore.moveableManager.mousemove(ev)
+      }
+    },
+    {
+      name: 'mousemove',
       call: throttle((ev: MouseEvent) => {
         updateSelection(ev)
       }, 160),
@@ -47,12 +53,13 @@ export default function createNativeEventHookList() {
         const upEl = getElement4EventTarget(ev)
         if (!upEl) return
         const moveableManager = editorStore.moveableManager
+        moveableManager.cycleMoved ? editorStore.switchTextEditable({type: "none"}) : editorStore.switchTextEditable()
         const activeElement = moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
+        const currentWidget = moveableManager.currentWidget
         if (activeElement) moveableManager.mouseup(upEl, ev)
         else if (!activeElement) {
-          if (!isMoveableControl(upEl) && !moveableManager.currentWidget) moveableManager.deActive()   // 如果鼠标down没点击到组件不是点击的是 moveable 调整控制按钮则进行失活
+          if (!isMoveableControl(upEl) && !currentWidget) moveableManager.deActive()   // 如果鼠标down没点击到组件不是点击的是 moveable 调整控制按钮则进行失活
         }
-        // console.log(moveableManager.currentGroupElement, moveableManager.currentWidget)
         updateSelection(ev)
       },
       options: {
@@ -80,7 +87,6 @@ export default function createNativeEventHookList() {
       call: (ev: MouseEvent) => {
         const clickEl = getElement4EventTarget(ev)
         if (!clickEl) return
-        editorStore.switchTextEditable(true)
       },
       options: true
     },
