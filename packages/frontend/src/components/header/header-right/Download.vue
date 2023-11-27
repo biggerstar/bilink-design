@@ -29,13 +29,12 @@
         </a-select-option>
       </a-select>
     </div>
-    <a-button type="primary" @click="doDownload" class="w-full h-[40px] mt-[20px] mb-[10px] font-bold">下载</a-button>
+    <a-button type="primary" @click.prevent.stop="doDownload" class="w-full h-[40px] mt-[20px] mb-[10px] font-bold">下载</a-button>
   </div>
 </template>
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import {DESIGN_AREA_BOX_BOUNDARY_SELECTOR} from "@/constant";
 import {notification} from "ant-design-vue";
 import {sleep} from "../../../../../common/tool/tool";
 import html2canvas from "html2canvas";
@@ -112,7 +111,13 @@ onMounted(() => {
  * */
 async function download(downloadInfo: { workType: string, workSize: number }) {
   const editorArea = editorStore.editorAreaBoxTarget
-  if (!editorArea) throw new Error('未在dom中找到画板')
+  if (!editorStore.currentTemplate) {
+    return notification.open({
+      message: '您似乎还没有开始进行设计哦',
+      description: '您可以先设计您的成果后再进行导出哦',
+      duration: 3,
+    });
+  }
   notification.open({
     message: '开始下载',
     description: '🎉🎉 您的项目已经开始下载喽!,耐心等一等哦',
@@ -126,7 +131,7 @@ async function download(downloadInfo: { workType: string, workSize: number }) {
     backgroundColor: null,
     foreignObjectRendering: false,
     scale: downloadInfo.workSize,
-  }).then(canvas => {
+  }).then(async (canvas) => {
     // console.log(canvas)
     // document.body.appendChild(canvas)
     const suffix = downloadInfo.workType.split('/').pop()
