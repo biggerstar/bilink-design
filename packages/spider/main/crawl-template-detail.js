@@ -33,7 +33,7 @@ export async function crawlTemplateDetail(id) {
     fetch(`https://www.gaoding.com/api/v3/cp/contents/${id}/distribution-infos?id=${id}&with_content=false`, options)
       .then(res => res.json())
       .then(async (res) => {
-        if (!res) return
+        if (!res) return resolve()
         if (res.hasOwnProperty('content_url')) {
           const jsonResult = (await fetch(res.content_url)).json()
           resolve(jsonResult)
