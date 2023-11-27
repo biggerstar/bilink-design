@@ -68,7 +68,7 @@
                 <div>
                   <a-space>
                     <span>大小</span>
-                    <span>{{ `${childItem.preview.width} x ${childItem.preview.height} px` }}</span>
+                    <span>{{ `${childItem.preview?.width} x ${childItem.preview?.height} px` }}</span>
                   </a-space>
                 </div>
                 <hr class="hr-line" style="width: 100%"/>
@@ -93,8 +93,12 @@
             @error="handleImageError($event)"
           />
           <div v-else
+               style="width: 91px; height: 167px"
                class="fill-box flex flex-col justify-center font-bold text-[0.9rem] bg-gray-100 border-solid border-2 border-gray-200 rounded-lg">
-            <div v-if="childItem.title">{{ childItem.title}}</div>
+            <div v-if="childItem.title" class="flex-center "
+                 style="word-break: break-word;white-space: pre-wrap">
+              {{ childItem.title }}
+            </div>
             <div v-else>无预览图</div>
           </div>
         </div>
@@ -140,15 +144,20 @@ function loadNewRecordList() {
     page_size: MATERIAL_PAGE_SIZE,
     page_num: curFetchPage++,
   }).then(async (res) => {
-    // console.log(res);
     if (res.code === 404) return pageEnd = true
     if (res.code !== 200) return
     const urls = new URL(location.href)
     const curId = Number(urls.searchParams.get('id'))
-    materialDetail.value = materialDetail.value.concat(res.data).reduce((pre: any[], cur) => {   /* 将当前使用的模板前置 */
+    res.data.forEach(item => {
+      if (!item.preview) item.preview = {   // 在后端未有出图能力默认占对宽高
+        width: 1200,
+        height: 2200
+      }
+    })
+    materialDetail.value = materialDetail.value.concat(res.data.reduce((pre: any[], cur) => {   /* 将当前使用的模板前置 */
       curId === cur.id ? pre.unshift(cur) : pre.push(cur)
       return pre
-    }, [])
+    }, []))
 
   }).finally(() => {
     setTimeout(() => isLoading.value = false, 800)
@@ -193,7 +202,6 @@ async function deleteUserTemplate(item) {
     // console.log(foundIndex)
     if (foundIndex >= 0) {
       materialDetail.value.splice(foundIndex, 1)
-      editorStore.destroyEditorProject()
     }
     message.success('删除成功', item.id);
     editorStore.currentTemplate = null
@@ -209,6 +217,7 @@ async function deleteUserTemplate(item) {
   .popover-btn {
     opacity: 0;
     background-color: white;
+    transition: 0.3s;
 
     &:active {
       opacity: 1;

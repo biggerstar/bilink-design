@@ -50,7 +50,7 @@ export default function createNativeEventHookList() {
         const activeElement = moveableManager.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
         if (activeElement) moveableManager.mouseup(upEl, ev)
         else if (!activeElement) {
-          if (!isMoveableControl(upEl)) moveableManager.deActive()   // 如果无点击到组件不是点击的是 moveable 调整控制按钮则进行失活
+          if (!isMoveableControl(upEl) && !moveableManager.currentWidget) moveableManager.deActive()   // 如果鼠标down没点击到组件不是点击的是 moveable 调整控制按钮则进行失活
         }
         // console.log(moveableManager.currentGroupElement, moveableManager.currentWidget)
         updateSelection(ev)
@@ -72,6 +72,15 @@ export default function createNativeEventHookList() {
           moveableManager.click(clickEl, ev)
         }
         updateSelection(ev)
+      },
+      options: true
+    },
+    {
+      name: 'dblclick',
+      call: (ev: MouseEvent) => {
+        const clickEl = getElement4EventTarget(ev)
+        if (!clickEl) return
+        editorStore.switchTextEditable(true)
       },
       options: true
     },

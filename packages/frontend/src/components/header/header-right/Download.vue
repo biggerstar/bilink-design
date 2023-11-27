@@ -35,11 +35,12 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import {DESIGN_AREA_BOUNDARY_SELECTOR} from "@/constant";
+import {DESIGN_AREA_BOX_BOUNDARY_SELECTOR} from "@/constant";
 import {notification} from "ant-design-vue";
 import {sleep} from "../../../../../common/tool/tool";
 import html2canvas from "html2canvas";
 import {jsPDF} from "jspdf";
+import {editorStore} from "@/store/editor";
 
 const CONFIG = {
   workType: {
@@ -110,7 +111,7 @@ onMounted(() => {
  * 进行导出下载成图片或者pdf  TODO 监控转换进度
  * */
 async function download(downloadInfo: { workType: string, workSize: number }) {
-  const editorArea = document.querySelector(DESIGN_AREA_BOUNDARY_SELECTOR)
+  const editorArea = editorStore.editorAreaBoxTarget
   if (!editorArea) throw new Error('未在dom中找到画板')
   notification.open({
     message: '开始下载',

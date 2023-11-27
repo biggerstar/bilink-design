@@ -81,6 +81,9 @@ router.post('/detail', async (req, res) => {
   let {id, uid, data} = req.body || {}
   // console.log({id, uid, data})
   if ((isNumber(uid) || isString(uid)) && uid && data && isObject(data)) {  // uid 和 data 是必要的
+    /*----------------------------未来可以通过后端出预览图---------------------------------*/
+      // 出图逻辑
+    /*---------------------------------------------------------------------*/
     let userTemplateId = null    // 返回前端的该用户模板的新id,如果是执行更新，原样返回
     if (id && (isNumber(id) || isString(id))) {   // 传入id说明意图更新模板数据，尝试找找有没有在用户设计图数据库中
       const userDetail = await AllUserDesign.findByPk(Number(id))
