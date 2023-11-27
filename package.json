@@ -6,17 +6,19 @@
   "scripts": {
     "dev": "npm run dev:web & npm run dev:api",
     "dev:web": "NODE_ENV=dev vite-run dev",
+    "dev:web:origin_api": "NODE_ENV=prod vite-run dev",
     "dev:api": "NODE_ENV=dev nodemon --watch backend/ -e ts --exec ts-node-esm packages/backend/bin/www",
     "build:web": "NODE_ENV=prod vite-run build frontend",
     "build:api": "NODE_ENV=prod vite-run build backend  && NODE_ENV=prod node scripts/build_init_api_env.js",
     "test:api": "NODE_ENV=prod node packages/backend/dist/server.cjs",
-    "preview": "NODE_ENV=dev vite-run build && vite-run preview & npm run dev:server",
+    "preview": "NODE_ENV=prod  npm run build:web & npm run dev:api & vite-run preview",
     "init:table": "cross-env INIT_TABLE=true node packages/common/db/init-table.js",
     "spider": "cross-env NODE_ENV=dev SPIDER_ENV=prod node packages/spider/run.js",
     "spider:dev": "cross-env NODE_ENV=dev SPIDER_ENV=dev node packages/spider/run.js",
     "deploy:web": "cross-env NODE_ENV=prod && npm run build:web && NODE_ENV=prod node scripts/deploy_web.js",
     "deploy:api": "cross-env NODE_ENV=prod npm run build:api && NODE_ENV=prod node scripts/deploy_api.js",
-    "pm2:start:": "NODE_ENV=prod node ./server.js"
+    "pm2:start:": "NODE_ENV=prod node ./server.js",
+    "size": "vite-run size frontend"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
@@ -85,6 +87,7 @@
     "unplugin-element-plus": "^0.8.0",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^4.5.0",
+    "vite-plugin-cdn-import": "^0.3.5",
     "vite-plugin-node": "^3.1.0",
     "vite-run": "^1.2.17",
     "vue-tsc": "^1.8.22"

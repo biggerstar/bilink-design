@@ -7,7 +7,6 @@ export const CSS_DEFINE = {
   '--canvas-padding': '--canvas-padding',
 }
 
-
 export const DESIGN_OPTIONS = '__design_options__'
 export const DESIGN_SET_STATE = '__design_set_state__'
 export const DESIGN_GROUP_UPDATE_RECT = '__design_group_update_rect__'

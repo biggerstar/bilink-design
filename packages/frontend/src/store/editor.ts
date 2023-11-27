@@ -491,7 +491,10 @@ class EditorStore {
     const vueModelElementOptions = currentTemplateLayout.elements.find(elementConfig => elementConfig.uuid === newWidgetOptions.uuid) // 找到经过vue转换后的组件配置的代理对象
     nextTick(() => {
       const newWidElement = this.findWidgetElement(vueModelElementOptions, "options")
-      newWidElement && this.switchTextEditable(newWidElement)
+      newWidElement && this.switchTextEditable({
+        el: newWidElement,
+        type: "select"
+      })
     }).then()
   }
 
@@ -601,7 +604,7 @@ class EditorStore {
       if (!el) status = 'none'      // 如果点到无组件的空白位置处
       else if (isWidgetType(el, WIDGETS_NAMES.W_TEXT) && this.textWidgetInfo.target !== el) status = 'select'  /* 是文本节点但是切换到了其他文本节点*/
       else if (this.textWidgetInfo.target !== el) status = 'none'  // 如果点到其他不是文本节点的组件
-    }
+    } else status = type
     this.textWidgetInfo.type = status
     // console.log(status, el, el?.style?.zIndex)
 

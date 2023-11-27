@@ -10,6 +10,8 @@ import process from "node:process";
 import {config as dotenvConfig} from "dotenv";
 import {viteCertsPlugin} from "@biggerstar/localhost-certs";
 import {VitePluginNode} from "vite-plugin-node";
+import importToCDN, {autoComplete} from 'vite-plugin-cdn-import'
+import * as fs from "fs";
 
 dotenvConfig({path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`)})
 
@@ -93,13 +95,20 @@ export default defineViteRunConfig(() => {
       frontend_build: (options) => {
         return {
           rollupOptions: {
-            input: `${options.packagePath}/index.html`
+            input: `${options.packagePath}/index.html`,
+            output: {
+              sourcemap:false,
+              manualChunks(id) {
+                if (id.includes("node_modules")) {
+                  return id.toString().split("node_modules/.pnpm/")[1].split("/")[0].toString();
+                }
+              }
+            }
           }
         }
       },
       backend_build: (options) => {
         return {
-          watch: false,
           minify: false,
           rollupOptions: {
             input: `${options.packagePath}/bin/www.ts`,
@@ -133,7 +142,8 @@ export default defineViteRunConfig(() => {
     preview: {
       p10001: {
         port: 10001,
-        host: true
+        host: true,
+        strictPort: true
       }
     },
     css: {
@@ -151,8 +161,29 @@ export default defineViteRunConfig(() => {
         define: {
           __API_BASE_URL__: JSON.stringify(process.env.API_BASE_URL)
         },
+        plugins: [
+          importToCDN({
+            modules: [
+              // {
+              //   name: 'axios',
+              //   var: 'axios',
+              //   path: `https://cdn.bootcdn.net/ajax/libs/axios/1.5.0/axios.min.js`,
+              // },
+              // {
+              //   name: 'vue',
+              //   var: 'Vue',
+              //   path: `https://cdn.bootcdn.net/ajax/libs/vue/3.3.4/vue.global.prod.min.js`,
+              // },
+              // {
+              //   name: 'vue-router',
+              //   var: 'VueRouter',
+              //   path: `https://cdn.bootcdn.net/ajax/libs/vue-router/4.2.4/vue-router.global.prod.min.js`,
+              // },
+            ],
+          }),
+        ],
         resolve: {
-          extensions: ['.vue', '.css', '.js', '.ts', 'mjs', 'jsx'],
+          extensions: ['.vue', '.css', '.js', '.ts', 'mjs'],
           alias: {
             '@': resolve(__dirname, `${options.packagePath}/src`),
           }
