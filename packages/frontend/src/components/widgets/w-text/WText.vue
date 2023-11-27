@@ -133,10 +133,7 @@ async function listenKeydown() {
 }
 
 function dbClickW_Widget() {
-  const el = <HTMLElement>textRef.value
-  editorStore.switchTextEditable(true, W_Widget.value)
   editing.value = true
-  el.focus()
 }
 
 function blurText(_: MouseEvent) {
@@ -144,7 +141,6 @@ function blurText(_: MouseEvent) {
     textContent.value = inputContentTemp
     inputContentTemp = ''
   }
-  editorStore.switchTextEditable(false, W_Widget.value)
   editing.value = false
 }
 

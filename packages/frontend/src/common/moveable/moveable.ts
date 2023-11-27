@@ -19,8 +19,7 @@ import {
   LINE_GUIDE_HORIZONTAL_SELECTOR,
   LINE_GUIDE_VERTICAL_SELECTOR,
   MOVEABLE_ALL_DIRECTION,
-  WIDGET_SELECTOR,
-  WIDGETS_NAMES
+  WIDGET_SELECTOR
 } from "@/constant";
 import {LayoutWidget} from "@type/layout";
 import {pick} from "lodash-es";
@@ -74,6 +73,11 @@ export class MoveableManager {
   public currentElement: HTMLElement | void   // 当前聚焦的元素
   public currentGroupElement: HTMLElement | void   // 当前聚焦的元素
   public resizeObserver: ResizeObserver | null
+  public cycleMoved: boolean = false  // 是否在每次 mousedown -> mouseup 中间是否经历过移动,偏离值要超过 10px才算
+  public __temp__ = {
+    mousedownEvent: void 0,
+    cycleMovedOffset: 10
+  }
 
   public get currentWidget(): HTMLElement | void {   // 获取当前活跃的组件
     return parseWidget4DomChain(<any>this.currentElement)
@@ -248,6 +252,7 @@ export class MoveableManager {
    * 点击某个位置( 控制按钮， 空白处，组件  ),主要功能做数据和状态初始化与重置
    * */
   public mousedown(ev: MouseEvent) {
+    this.__temp__.mousedownEvent = ev
     const el: HTMLElement = getElement4EventTarget(ev)
     /*----------------------条件截断, 这些情况都不会改变moveable活跃元素----------------------*/
     if (editorStore.isSeparating) return     // 正在分离元素中退出组件操作
@@ -311,7 +316,19 @@ export class MoveableManager {
     this.moveable.dragStart(ev)
   }
 
+  public mousemove(ev: MouseEvent) {
+    const mousedownEvent = this.__temp__.mousedownEvent
+    const cycleMovedOffset = this.__temp__.cycleMovedOffset
+    if (mousedownEvent   // 判断在某个偏移值下判定为鼠标移动行为
+      && (Math.abs(mousedownEvent.clientX - ev.clientX) > cycleMovedOffset
+        || Math.abs(mousedownEvent.clientY - ev.clientY) > cycleMovedOffset)) {
+      this.cycleMoved = true
+    }
+  }
+
   public mouseup(el: HTMLElement, _: MouseEvent) {
+    this.cycleMoved = false
+    this.__temp__.mousedownEvent = null
     if (editorStore.selectoManager.selected.length) return
     // console.log('draggable', this.moveable.draggable, 'rotatable', this.moveable.rotatable, 'resizable', this.moveable.resizable);
     const widgetsEl = parseWidget4DomChain(el)

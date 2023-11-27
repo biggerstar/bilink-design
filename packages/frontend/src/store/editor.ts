@@ -16,11 +16,13 @@ import {nextTick, reactive, toRaw} from "vue";
 import {deepmerge} from "@biggerstar/deepmerge";
 import {
   CssTransformApi,
-  getWidgetName,
   getWidgetOptionsFromElement,
+  isWidgetType,
   loadFont,
   parseGroupWidget4DomChain,
   parseWidget4DomChain,
+  parseWidgetsInfo4DomChain,
+  removeAllTextSelectRanges,
   selectAllText4Element
 } from "@/utils/method";
 import {isFunction, isNumber} from "is-what";
@@ -489,7 +491,7 @@ class EditorStore {
     const vueModelElementOptions = currentTemplateLayout.elements.find(elementConfig => elementConfig.uuid === newWidgetOptions.uuid) // 找到经过vue转换后的组件配置的代理对象
     nextTick(() => {
       const newWidElement = this.findWidgetElement(vueModelElementOptions, "options")
-      newWidElement && this.switchTextEditable(newWidElement, true)
+      newWidElement && this.switchTextEditable(newWidElement)
     }).then()
   }
 
@@ -579,25 +581,52 @@ class EditorStore {
     }
   }
 
+  public textWidgetInfo: {
+    type: 'select' | 'edit' | 'none',
+    target: HTMLElement | null,
+    groupTarget: HTMLElement | null,
+  } = {}
+
   /**
-   * 尝试将文本组件切换编辑和显示状态
+   * 每次运行切换文本框可编辑的不同状态
    * */
-  public switchTextEditable(status: boolean, el?: HTMLElement) {
+  public switchTextEditable(opt: { el?: HTMLElement, type?: typeof this.textWidgetInfo["type"] } = {}) {
+    let {el, type} = opt
     if (!el) {
       const currentWidget = this.moveableManager.currentWidget
-      if (!currentWidget) return console.warn('切换文本时未找到文本组件dom元素')
-      el = currentWidget
+      if (currentWidget) el = currentWidget
     }
-    if (getWidgetName(el) !== WIDGETS_NAMES.W_TEXT) return
-    el.contentEditable = String(status)
-    el.style.zIndex = status ? '1000' : '0'
-    Array.from(el.querySelectorAll('*')).forEach(node => node.contentEditable = String(status)) // 关闭所有组件可编辑状态
-    if (status) {
+    let status = this.textWidgetInfo.type
+    if (!type) {   // 没有指定type时自动判断
+      if (!el) status = 'none'      // 如果点到无组件的空白位置处
+      else if (isWidgetType(el, WIDGETS_NAMES.W_TEXT) && this.textWidgetInfo.target !== el) status = 'select'  /* 是文本节点但是切换到了其他文本节点*/
+      else if (this.textWidgetInfo.target !== el) status = 'none'  // 如果点到其他不是文本节点的组件
+    }
+    this.textWidgetInfo.type = status
+    // console.log(status, el, el?.style?.zIndex)
+
+    if (status === 'select') {
+      const groupInfo = parseWidgetsInfo4DomChain(el)
+      el.contentEditable = 'true'
+      Array.from(el.querySelectorAll('*')).forEach(node => node.contentEditable = 'true')
       selectAllText4Element(el)
-      el.focus()
+      this.textWidgetInfo.type = 'edit'  // 下一个状态，类似红绿灯算法逻辑
+      this.textWidgetInfo.target = el
+      el.style.zIndex = '10000'
+      if (groupInfo.isGroup && groupInfo.rootWidgetElement) {
+        this.textWidgetInfo.groupTarget = groupInfo.rootWidgetElement
+        this.textWidgetInfo.groupTarget.style.zIndex = '10000'
+      }
+    } else if (status === 'edit') {
+      this.textWidgetInfo.target = el;
+      (this.textWidgetInfo.target || el).focus()
     } else {
-      window.getSelection().removeAllRanges()
-      el.blur()
+      Array.from(this.editorAreaTarget.querySelectorAll('*')).forEach(node => node.contentEditable = 'false')
+      removeAllTextSelectRanges();
+      if (this.textWidgetInfo.target || el) (this.textWidgetInfo.target || el).style.zIndex = '0'
+      this.textWidgetInfo.groupTarget && (this.textWidgetInfo.groupTarget.style.zIndex = '0')
+      this.textWidgetInfo.type = 'none'
+      this.textWidgetInfo.target = null
     }
   }
 }
