@@ -77,7 +77,7 @@ export async function doDeploy(opt) {
   })
 
   const result = await client.exists(serverConfig.originPath)
-  if (result && opt.emptyDir === true) {   // 是否清空远程文件夹
+  if (result && opt.emptyDir !== false) {   // 是否清空远程文件夹
     await Promise.resolve().then(() => {
       const listenInput = () => {
         return customInput(`${chalk.yellow('➜ 服务器已经存在目录，若覆盖将不可恢复, 是否覆盖? (yes/no): ')}`)
