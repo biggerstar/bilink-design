@@ -37,18 +37,7 @@
           <img :src="currentInfo.backgroundImage" class="w-[50px] h-[80px] rounded-lg object-fill" alt="bg"/>
         </div>
       </div>
-      <SliderNumber
-        v-if="isNumber(currentInfo.opacity)"
-        class="w-full mt-[20px]"
-        :max="100"
-        :min="0"
-        :step="1"
-        v-model:value="currentInfo.opacity"
-      >
-        <template #icon>
-          <span class="text-[0.9rem] w-1/3 min-w-[60px]">不透明度</span>
-        </template>
-      </SliderNumber>
+      <OpacityCard v-model:value="currentInfo.opacity"></OpacityCard>
     </card>
     <hr v-if="currentInfo.backgroundImage" class="hr-line">
 
@@ -70,6 +59,7 @@ import 'element-plus/es/components/color-picker/style/index.mjs'
 import {deepmerge} from "@biggerstar/deepmerge";
 import {pick} from "lodash-es";
 import {isNumber} from "is-what";
+import OpacityCard from '@/components/opacity-card/OpacityCard.vue'
 
 const isShowResizeCanvas = ref(false)
 const isShowDetailPage = ref(false)
@@ -86,7 +76,7 @@ const currentInfo = ref<Partial<CurrentInfoType>>({})
 onMounted(async () => {
   deepmerge(currentInfo.value, pick(editorStore.getCurrentTemplateLayout(), ['width', 'height', 'backgroundColor', 'backgroundImage', 'opacity']), {})
   const currentOptions = toRaw(editorStore.getCurrentOptions() || {})
-  currentInfo.value.opacity= isNumber(currentOptions.opacity) ? currentOptions.opacity * 100 : 100
+  currentInfo.value.opacity = isNumber(currentOptions.opacity) ? currentOptions.opacity * 100 : 100
   predefineColorList.value = editorStore.pageConfig.predefineColors
   isShowDetailPage.value = true
 })

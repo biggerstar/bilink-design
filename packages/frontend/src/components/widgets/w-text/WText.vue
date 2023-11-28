@@ -72,7 +72,6 @@ function filterText(text: string) {
 
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
 baseCssAction.expand({  // 对传入状态的处理函数
-  width: () => null,   // 宽度自动设置
   height: () => null,   // 高度自动设置
   color: (val) => baseCssAction.updateStyle('color', val || 'transparent', textRef.value),
   // rotate: (deg) => {

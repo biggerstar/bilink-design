@@ -48,6 +48,7 @@ declare module 'vue' {
     InfiniteScroll: typeof import('./src/components/infinite-scroll /InfiniteScroll.vue')['default']
     Material: typeof import('./src/components/aside/material/Material.vue')['default']
     MyDesign: typeof import('./src/components/aside/my-design/MyDesign.vue')['default']
+    OpacityCard: typeof import('./src/components/opacity-card/OpacityCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScaleControl: typeof import('./src/components/scale-control/ScaleControl.vue')['default']
