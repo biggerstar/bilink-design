@@ -30,7 +30,7 @@
       <div class="w-full h-[120px] relative  rounded-lg overflow-hidden">
         <div class="tooltip h-[20px] min-w-[60px]">
           <span class="iconfont icon-shuipingfanzhuan"
-                @click="editorStore.editorAreaBgTarget.style.transform = `scale(1.2)`"></span>
+                @click="flipYBackgroundImage"></span>
           <span class="iconfont icon-shanchu-" @click="currentInfo.backgroundImage = null"></span>
         </div>
         <div class="bg-preview-container flex-center fill-box">
@@ -60,6 +60,7 @@ import {deepmerge} from "@biggerstar/deepmerge";
 import {pick} from "lodash-es";
 import {isNumber} from "is-what";
 import OpacityCard from '@/components/opacity-card/OpacityCard.vue'
+import {CssTransformApi} from "@/utils/method";
 
 const isShowResizeCanvas = ref(false)
 const isShowDetailPage = ref(false)
@@ -72,6 +73,17 @@ type CurrentInfoType = {
   backgroundImage: string;
 }
 const currentInfo = ref<Partial<CurrentInfoType>>({})
+
+function flipYBackgroundImage() {   // 背景图片Y轴翻转
+  const cssTransformApi = new CssTransformApi()
+  const bgStyle = editorStore.editorAreaBgTarget.style
+  cssTransformApi.load(bgStyle.transform)
+  let rotateY = cssTransformApi.get("rotateY")
+  if (!rotateY) rotateY = ['0deg']
+  rotateY[0] = parseInt(rotateY[0]) === 180 ? '0deg' : '180deg'
+  cssTransformApi.set("rotateY", rotateY.toString())
+  bgStyle.transform = cssTransformApi.transform
+}
 
 onMounted(async () => {
   deepmerge(currentInfo.value, pick(editorStore.getCurrentTemplateLayout(), ['width', 'height', 'backgroundColor', 'backgroundImage', 'opacity']), {})

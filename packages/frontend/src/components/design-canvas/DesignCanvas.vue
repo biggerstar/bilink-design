@@ -247,10 +247,9 @@ onUnmounted(() => {
   left: 0;
   top: 0;
   background-color: transparent;
-  width: var(--canvas-width);
-  height: var(--canvas-height);
-  transform-origin: left top;
-  transform: scale(var(--canvas-scale));
+  transform-origin: center center;
+  width: 100%;
+  height: 100%;
   background-repeat: no-repeat;
   background-size: cover;
 }

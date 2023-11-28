@@ -199,7 +199,16 @@ export function handleImageError(ev) {
   }
 }
 
-type TransFormFunctionType = 'translate' | 'rotate' | 'translateX' | 'translateY' | 'matrix' | 'scale' | string
+type TransFormFunctionType =
+  'translate'
+  | 'rotate'
+  | 'rotateX'
+  | 'rotateY'
+  | 'translateX'
+  | 'translateY'
+  | 'matrix'
+  | 'scale'
+  | string
 
 /**
  * 后面可以单独拎出来当工具用
