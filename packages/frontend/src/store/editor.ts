@@ -32,7 +32,7 @@ import {apiGetFonts} from "@/api/getFonts";
 import {SelectoManager} from "@/common/selecto/selecto";
 import {cloneDeep, isNil} from "lodash-es";
 import {v4 as uuid4} from "uuid";
-import {Emitter} from 'mitt'
+import mitt, {Emitter} from 'mitt'
 import {DragWidgetManager} from "@/common/drag-widget/drag-widget";
 import {apiGetDetail, apiPostDetail} from "@/api/getDetail";
 import {notification} from "ant-design-vue";
@@ -57,7 +57,7 @@ class EditorStore {
   public dragWidgetManager: DragWidgetManager
   public lineGuides: LineGuides
   public drawGraph: DrawGraph
-  public bus: Emitter<EditorEvent>
+  public bus: Emitter<EditorEvent> =  mitt()
   /** 所有字体 */
   public allFont: object[] = []
 
@@ -491,10 +491,12 @@ class EditorStore {
     const vueModelElementOptions = currentTemplateLayout.elements.find(elementConfig => elementConfig.uuid === newWidgetOptions.uuid) // 找到经过vue转换后的组件配置的代理对象
     nextTick(() => {
       const newWidElement = this.findWidgetElement(vueModelElementOptions, "options")
-      newWidElement && this.switchTextEditable({
-        el: newWidElement,
-        type: "select"
-      })
+      if (newWidElement && isWidgetType(newWidElement, WIDGETS_NAMES.W_TEXT)) {   // 如果是文本节点进行全选高亮突出显示
+        newWidElement && this.switchTextEditable({
+          el: newWidElement,
+          type: "select"
+        })
+      }
     }).then()
   }
 
