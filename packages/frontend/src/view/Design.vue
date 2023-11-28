@@ -29,19 +29,19 @@
         </a>
       </div>
       <div class="widgets-panel relative" :style="{width: activeTagName ? '312px': '0'}">
-        <div class="aside-close-btn flex-col justify-center" v-show="activeTagName" @click="showTagPage()">
+        <div class="aside-close-btn flex-col justify-center" v-show="activeTagName" @click="showTagPage('')">
           <img draggable="false" src="https://cdn.dancf.com/fe-assets/20221227/c1af0eecfff91f6a33bb285bebe2036b.svg"
                alt="">
         </div>
         <div class=" w-full h-full overflow-hidden">
           <div v-if="currentAsideTagComp.comp" style="width: 312px" class="w-full h-full ">
-            <keep-alive :max="10">
-              <div class="fill-box">
+            <div class="fill-box">
+              <keep-alive>
                 <component :is="currentAsideTagComp.comp"
                            :config="currentActiveAsideTagConfig"
                            :key="currentAsideTagComp.name"></component>
-              </div>
-            </keep-alive>
+              </keep-alive>
+            </div>
           </div>
         </div>
       </div>
@@ -122,7 +122,6 @@
 <script setup lang="ts">
 import type {Component} from 'vue'
 import {nextTick, onMounted, onUnmounted, ref, shallowRef} from "vue";
-import mitt from "mitt";
 import {defaultMoveableOptions, MoveableManager} from '@/common/moveable/moveable'
 import DesignCanvas from "@/components/design-canvas/DesignCanvas.vue";
 import {editorStore} from "@/store/editor";
@@ -149,7 +148,6 @@ const showDesignCanvas = ref(false)
 const showNotFoundTemplate = ref(false)
 const showTemplateId = ref()
 const currentUsingWidgetConfigList = ref([])
-editorStore.bus = mitt()
 
 setTimeout(() => {
   // showTagPage('material')
@@ -162,6 +160,7 @@ setTimeout(() => {
 
 /** 显示标签页对应的资源页,若有传入名称则打开对应页面，如果传入空字符串或者没传入将关闭展开的左侧页面  */
 function showTagPage(name: '' | void | 'template' | 'text' | 'images' | 'material' | 'my-design' | 'add-panel' = "") {
+  console.log(name)
   activeTagName.value = activeTagName.value !== name ? name : void 0
   currentAsideTagComp.value.comp = name ? asideTagMap[activeTagName.value] : void 0
   currentAsideTagComp.value.name = activeTagName.value

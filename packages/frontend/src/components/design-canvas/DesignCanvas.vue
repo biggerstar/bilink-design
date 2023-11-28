@@ -87,14 +87,14 @@ const contextmenuData: {
     icon: 'icon-lianjieduankai',
     isShow: false,
     hotKey: ['ctrl+g', 'command+g'],
-    show: () => editorStore.moveableManager.currentGroupElement,
+    show: () => editorStore.moveableManager.currentGroupElement && !editorStore.isSeparating,
     handler: () => editorStore.separationGroup()
   },
   {
     text: '组内移动',
     icon: 'icon-icon-gongzuoliuchengtongji-xianxing',
     isShow: false,
-    show: () => editorStore.moveableManager.currentGroupElement,
+    show: () => editorStore.moveableManager.currentGroupElement && !editorStore.isSeparating,
     handler: () => editorStore.allowInGroupMovement = true
   },
   {

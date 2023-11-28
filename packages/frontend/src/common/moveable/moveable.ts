@@ -263,7 +263,7 @@ export class MoveableManager {
     let minAreaWidget = this.getMinAreaWidgetForMousePoint(ev.pageX, ev.pageY)
     const widgetsInfo = parseWidgetsInfo4DomChain(minAreaWidget, true)
     const beforeGroupElement = this.currentGroupElement
-    this.currentElement = !isMoveableControl(el) ? minAreaWidget || null : null     // 必须颗粒化精确到内部组件
+    this.currentElement = !isMoveableControl(el) ? minAreaWidget || null : this.currentElement     // 必须颗粒化精确到内部组件
     this.currentGroupElement = widgetsInfo?.isGroup ? widgetsInfo.rootWidgetElement : null
     if (ev.buttons !== 1) return  // 只有单击左键才响应
     // console.log(this.currentElement, this.currentGroupElement)

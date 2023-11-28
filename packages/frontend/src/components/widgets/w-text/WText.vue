@@ -16,9 +16,11 @@
     <a-spin :spinning="showSpin" size="large" class="fill-box">
       <div v-if="textContents" style="text-align: start; " ref="contentsRef">
         <span
+          data-content-type="contents"
           v-for="(item,index) in textContents"
           :key="index"
           @blur="blurText($event)"
+          class="edit-widget-area"
           v-html="item.content"
           spellcheck="false"
           :style="{
@@ -33,8 +35,10 @@
       </div>
       <div
         v-else
-        class="edit-widget-area" ref="textRef"
-        v-html="textContent" spellcheck="false">
+        ref="textRef"
+        data-content-type="content"
+        spellcheck="false">
+        <div class="edit-widget-area" v-html="textContent"></div>
       </div>
     </a-spin>
     <slot></slot>
@@ -68,6 +72,7 @@ function filterText(text: string) {
 
 let baseCssAction: ReturnType<typeof createBaseCssAction> = createBaseCssAction()
 baseCssAction.expand({  // 对传入状态的处理函数
+  width: () => null,   // 宽度自动设置
   height: () => null,   // 高度自动设置
   color: (val) => baseCssAction.updateStyle('color', val || 'transparent', textRef.value),
   // rotate: (deg) => {
@@ -91,12 +96,14 @@ baseCssAction.expand({  // 对传入状态的处理函数
     }
   })),
   textAlign: (name: string) => {
+    // console.log(name);
     const config = editorStore.getWidgetsDetailConfig(WIDGETS_NAMES.W_TEXT)
     if (!config) return
     const align = config.align || []
     const found = align.find(item => item.value === name)
     if (!found) return
     if (!isObject(found.style)) return
+    // console.log(found.style)
     for (const name in found.style) {
       const value = found.style[name]
       if (value && name) baseCssAction.updateStyle(<any>name, value, textRef.value)
@@ -126,9 +133,12 @@ let inputContentTemp = ''  // 文字输入临时
 
 async function listenKeydown() {
   // console.log(item)
-  setTimeout(() => {  // 必须等待延时等到dom更新拿到最新的文本值
-    inputContentTemp = filterText(textRef.value.innerText).replaceAll(' ', '</br>')
-    editorStore.updateActiveWidgetsState({content: textRef.value.innerText}, {effectDom: false})
+  setTimeout(() => {
+    // 必须等待延时等到dom更新拿到最新的文本值
+    inputContentTemp = filterText(textRef.value.innerText)
+    // .replaceAll(' ', '</br>')
+    // console.log(textRef.value.innerText)
+    editorStore.updateActiveWidgetsState({content: textRef.value.innerText.replaceAll('\n\n', '\n')})
   })
 }
 
@@ -137,17 +147,14 @@ function dbClickW_Widget() {
 }
 
 function blurText(_: MouseEvent) {
-  if (inputContentTemp) {
-    textContent.value = inputContentTemp
-    inputContentTemp = ''
-  }
+  if (inputContentTemp) inputContentTemp = ''
   editing.value = false
 }
 
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .w-position {
   position: absolute;
   cursor: move;
@@ -166,6 +173,12 @@ function blurText(_: MouseEvent) {
   white-space: nowrap;
   margin: 0;
   padding: 0;
+
+  div, span {
+    word-break: break-word;
+    white-space: nowrap;
+    //text-align: inherit;
+  }
 }
 
 .editing {

@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {onActivated, onMounted, ref} from 'vue'
 import {JustifiedInfiniteGrid} from "@egjs/vue3-infinitegrid";
 import {QuestionCircleFilled} from '@ant-design/icons-vue';
 import {editorStore} from "@/store/editor";
@@ -135,6 +135,11 @@ let curFetchPage = 1   // 记录当前加载的页数
 let pageEnd = false     // 数据是否已经都加载完了
 
 onMounted(() => loadNewRecordList())
+onActivated(() => {
+  materialDetail.value = []
+  curFetchPage = 1
+  loadNewRecordList()
+})
 
 function loadNewRecordList() {
   if (isLoading.value || pageEnd) return
@@ -204,7 +209,13 @@ async function deleteUserTemplate(item) {
       materialDetail.value.splice(foundIndex, 1)
     }
     message.success('删除成功', item.id);
-    editorStore.currentTemplate = null
+    const urls = new URL(location.href)
+    const id = urls.searchParams.get('id')
+    if (item.id.toString() === id) {   // 如果删除的工程是正在编辑的，则创建新画布
+      editorStore.initCanvas()
+      urls.searchParams.delete('id')
+      history.replaceState(history.state, null, urls.href)
+    }
   } else {
     message.success('删除失败-_-!', item.id, res.message);
   }

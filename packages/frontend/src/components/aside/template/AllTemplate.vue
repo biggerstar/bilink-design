@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import {apiGetWidgets} from "@/api/getWidgets";
 import {JustifiedInfiniteGrid} from "@egjs/vue3-infinitegrid";
 import {QuestionCircleFilled} from '@ant-design/icons-vue';
