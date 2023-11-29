@@ -8,6 +8,7 @@
     :class="{
       editing:editing
     }"
+    @click.capture=" baseCssAction.updateBoxSize()"
     @keydown="listenKeydown"
     @blur="blurText"
     @dblclick="dbClickW_Widget"
@@ -81,11 +82,9 @@ baseCssAction.expand({  // 对传入状态的处理函数
   fontSize: (size) => editorStore.setFontSize(<any>textRef.value, size),
   lineHeight: (val = '1') => {
     baseCssAction.updateStyle("lineHeight", val, textRef.value)
-    baseCssAction.updateBoxSize()
   },
   letterSpacing: (val) => {
     baseCssAction.updateStyle("letterSpacing", `${val}px`, textRef.value)
-    baseCssAction.updateBoxSize()
   },
   content: (text) => textContent.value = filterText(text),
   contents: (textList: any[]) => textList && (textContents.value = textList.map(item => {
