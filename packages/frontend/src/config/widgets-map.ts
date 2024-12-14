@@ -16,6 +16,7 @@ import WGroup from "@/components/widgets/w-group/WGroup.vue";
 import WSvg from "@/components/widgets/w-svg/WSvg.vue";
 import MyDesign from "@/components/aside/my-design/MyDesign.vue";
 import AddPanel from "@/components/aside/add-panel/AddPanel.vue";
+import WMask from "@/components/widgets/w-mask/WMask.vue";
 
 export const widgetsDetailMap = {
   'default': DefaultEditorDetail,

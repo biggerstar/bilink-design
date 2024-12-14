@@ -615,7 +615,7 @@ class EditorStore {
       el.contentEditable = 'true'
       Array.from(el.querySelectorAll('*')).forEach(node => node.contentEditable = 'true')
       selectAllText4Element(el)
-      this.textWidgetInfo.type = 'edit'  // 下一个状态，类似红绿灯算法逻辑
+      this.textWidgetInfo.type = 'edit'  // 下一个状态，类似红绿灯算法
       this.textWidgetInfo.target = el
       el.style.zIndex = '10000'
       if (groupInfo.isGroup && groupInfo.rootWidgetElement) {

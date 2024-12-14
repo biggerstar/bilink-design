@@ -4,7 +4,7 @@
        @click.capture="preEvent"
        @mouseup.capture="preEvent"
        :class="{
-          'disable-content':props.disabled
+          // 'disable-content':props.disabled
        }"
   >
     <slot></slot>

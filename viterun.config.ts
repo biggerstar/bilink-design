@@ -183,7 +183,7 @@ export default defineViteRunConfig(() => {
           }),
         ],
         resolve: {
-          extensions: ['.vue', '.css', '.js', '.ts', 'mjs'],
+          extensions: ['.vue', '.css', '.js', '.ts', '.mjs'],
           alias: {
             '@': resolve(__dirname, `${options.packagePath}/src`),
           }

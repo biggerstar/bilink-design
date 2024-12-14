@@ -10,7 +10,7 @@
     "dev:api": "NODE_ENV=dev nodemon --watch backend/ -e ts --exec ts-node-esm packages/backend/bin/www",
     "build:web": "NODE_ENV=prod vite-run build frontend",
     "build:api": "NODE_ENV=prod vite-run build backend  && NODE_ENV=prod node scripts/build_init_api_env.js",
-    "test:api": "NODE_ENV=prod node packages/backend/dist/server.cjs",
+    "test:api": "NODE_ENV=prod node packages/backend/dist/server.js",
     "preview": "NODE_ENV=prod  npm run build:web & npm run dev:api & vite-run preview",
     "init:table": "cross-env INIT_TABLE=true node packages/common/db/init-table.js",
     "spider": "cross-env NODE_ENV=dev SPIDER_ENV=prod node packages/spider/run.js",
